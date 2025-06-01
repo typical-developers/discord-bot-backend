@@ -1,0 +1,131 @@
+definitions:
+  api_structures.Activity:
+    properties:
+      activity_roles:
+        items:
+          $ref: '#/definitions/api_structures.ActivityRole'
+        type: array
+      cooldown_seconds:
+        type: integer
+      grant_amount:
+        type: integer
+      is_enabled:
+        type: boolean
+    type: object
+  api_structures.ActivityRole:
+    properties:
+      required_points:
+        type: integer
+      role_id:
+        type: string
+    type: object
+  api_structures.GenericResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  api_structures.GuildSettings:
+    properties:
+      chat_activity:
+        $ref: '#/definitions/api_structures.Activity'
+    type: object
+info:
+  contact: {}
+  description: The API for the main Typical Developers Discord bot.
+  title: Discord Bot API
+  version: "1.0"
+paths:
+  /guild-settings/{guild_id}:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.GuildSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /guild-settings/{guild_id}/create:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.GuildSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /guild-settings/{guild_id}/update:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.GuildSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+securityDefinitions:
+  APIKeyAuth:
+    in: header
+    name: X-API-KEY
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Guild endpoints.
+  name: Guilds

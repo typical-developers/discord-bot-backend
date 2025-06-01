@@ -1,0 +1,18 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  build: go build -ldflags "-w -s" -o bin/api-backend.exe
+  sqlc: cd internal/db && sqlc generate
+  swag:
+    cmds:
+      - swag fmt
+      - swag init --parseDependency -dir ./api --output ./internal/docs
+  migrate:up: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" up
+  migrate:down: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" down
+  dev:
+    cmds:
+      - air --build.cmd "task sqlc && task swag && task build" --build.bin ".\\bin\\api-backend.exe" --build.exclude_dir "internal\\db,internal\\docs,\\bin"
+    env:
+      ENVIRONMENT: development
