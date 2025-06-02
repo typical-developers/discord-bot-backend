@@ -276,7 +276,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		}
 
 		updatedProfile, err := queries.IncrememberMemberChatActivityPoints(ctx, db.IncrememberMemberChatActivityPointsParams{
-			Points:   1,
+			Points:   settings.ActivityTrackingGrant.Int32,
 			GuildID:  guildId,
 			MemberID: memberId,
 		})
