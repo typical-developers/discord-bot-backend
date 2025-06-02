@@ -168,6 +168,13 @@ func GetMemberProfile(c *fiber.Ctx) error {
 
 	profile, err := dbutil.GetMemberProfile(ctx, queries, guildId, memberId)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+				Success: false,
+				Message: "member not found.",
+			})
+		}
+
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
@@ -258,6 +265,13 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		MemberID: memberId,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+				Success: false,
+				Message: "member not found.",
+			})
+		}
+
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
 			Success: false,
