@@ -63,6 +63,35 @@ func GetGuildSettings(ctx context.Context, queries *db.Queries, guildId string) 
 	}, nil
 }
 
+type MemberProfile struct {
+	db.GetMemberProfileRow
+	db.GetMemberRankingsRow
+}
+
+// Fetches all relating member profile information.
+func GetMemberProfile(ctx context.Context, queries *db.Queries, guildId string, memberId string) (*MemberProfile, error) {
+	profile, err := queries.GetMemberProfile(ctx, db.GetMemberProfileParams{
+		GuildID:  guildId,
+		MemberID: memberId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	rankings, err := queries.GetMemberRankings(ctx, db.GetMemberRankingsParams{
+		GuildID:  guildId,
+		MemberID: memberId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &MemberProfile{
+		GetMemberProfileRow:  profile,
+		GetMemberRankingsRow: rankings,
+	}, nil
+}
+
 type MemberRoles struct {
 	Next    models.ActivityRoleProgress
 	Current []models.ActivityRole

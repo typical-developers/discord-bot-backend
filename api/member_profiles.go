@@ -166,27 +166,13 @@ func GetMemberProfile(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	profile, err := queries.GetMemberProfile(ctx, db.GetMemberProfileParams{
-		GuildID:  guildId,
-		MemberID: memberId,
-	})
+	profile, err := dbutil.GetMemberProfile(ctx, queries, guildId, memberId)
 	if err != nil {
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+
 		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
 			Success: false,
 			Message: "failed to get member profile.",
-		})
-	}
-
-	rankings, err := queries.GetMemberRankings(ctx, db.GetMemberRankingsParams{
-		GuildID:  guildId,
-		MemberID: memberId,
-	})
-	if err != nil {
-		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
-			Success: false,
-			Message: "failed to get member rankings.",
 		})
 	}
 
@@ -196,7 +182,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 	return c.JSON(models.MemberProfile{
 		CardStyle: models.CardStyle(profile.CardStyle),
 		ChatActivity: models.MemberActivity{
-			Rank:         int(rankings.ChatRank),
+			Rank:         int(profile.ChatRank),
 			LastGrant:    grantTime,
 			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
 			Points:       int(profile.ActivityPoints),
