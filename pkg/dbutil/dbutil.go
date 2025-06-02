@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	api_structures "github.com/typical-developers/discord-bot-backend/internal"
+	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 )
 
@@ -51,7 +51,7 @@ func GetGuildSettings(ctx context.Context, queries *db.Queries, guildId string) 
 
 	chatGrantRoles, err := queries.GetGuildActivityRoles(ctx, db.GetGuildActivityRolesParams{
 		GuildID:      guildId,
-		ActivityType: string(api_structures.ActivityTypeChat),
+		ActivityType: string(models.ActivityTypeChat),
 	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
@@ -64,21 +64,21 @@ func GetGuildSettings(ctx context.Context, queries *db.Queries, guildId string) 
 }
 
 type MemberRoles struct {
-	Next    api_structures.ActivityRoleProgress
-	Current []api_structures.ActivityRole
+	Next    models.ActivityRoleProgress
+	Current []models.ActivityRole
 }
 
 // Gets information on the member's next role and current roles based on their points.
 // Roles must be fetched and provided separately.
 func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) MemberRoles {
-	nextRole := api_structures.ActivityRoleProgress{}
-	currentRoles := []api_structures.ActivityRole{}
+	nextRole := models.ActivityRoleProgress{}
+	currentRoles := []models.ActivityRole{}
 
 	requiredPoints := int32(0)
 	for _, role := range activityRoles {
 		requiredPoints += role.RequiredPoints.Int32
 		if requiredPoints <= int32(points) {
-			currentRoles = append(currentRoles, api_structures.ActivityRole{
+			currentRoles = append(currentRoles, models.ActivityRole{
 				RoleID:         role.RoleID,
 				RequiredPoints: int(role.RequiredPoints.Int32),
 			})
@@ -86,7 +86,7 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 			continue
 		}
 
-		nextRole = api_structures.ActivityRoleProgress{
+		nextRole = models.ActivityRoleProgress{
 			RoleID:          role.RoleID,
 			Progress:        points - (int(requiredPoints - role.RequiredPoints.Int32)),
 			RemainingPoints: int(requiredPoints) - points,

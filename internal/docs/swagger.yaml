@@ -1,9 +1,9 @@
 definitions:
-  api_structures.ActivityConfig:
+  models.ActivityConfig:
     properties:
       activity_roles:
         items:
-          $ref: '#/definitions/api_structures.ActivityRole'
+          $ref: '#/definitions/models.ActivityRole'
         type: array
       cooldown_seconds:
         type: integer
@@ -12,14 +12,14 @@ definitions:
       is_enabled:
         type: boolean
     type: object
-  api_structures.ActivityRole:
+  models.ActivityRole:
     properties:
       required_points:
         type: integer
       role_id:
         type: string
     type: object
-  api_structures.ActivityRoleProgress:
+  models.ActivityRoleProgress:
     properties:
       progress:
         type: integer
@@ -30,13 +30,13 @@ definitions:
       role_id:
         type: string
     type: object
-  api_structures.CardStyle:
+  models.CardStyle:
     enum:
     - 0
     type: integer
     x-enum-varnames:
     - CardStyleDefault
-  api_structures.GenericResponse:
+  models.GenericResponse:
     properties:
       data: {}
       message:
@@ -44,12 +44,12 @@ definitions:
       success:
         type: boolean
     type: object
-  api_structures.GuildSettings:
+  models.GuildSettings:
     properties:
       chat_activity:
-        $ref: '#/definitions/api_structures.ActivityConfig'
+        $ref: '#/definitions/models.ActivityConfig'
     type: object
-  api_structures.MemberActivity:
+  models.MemberActivity:
     properties:
       is_on_cooldown:
         type: boolean
@@ -60,22 +60,22 @@ definitions:
       rank:
         type: integer
       roles:
-        $ref: '#/definitions/api_structures.MemberRoles'
+        $ref: '#/definitions/models.MemberRoles'
     type: object
-  api_structures.MemberProfile:
+  models.MemberProfile:
     properties:
       card_style:
-        $ref: '#/definitions/api_structures.CardStyle'
+        $ref: '#/definitions/models.CardStyle'
       chat_activity:
-        $ref: '#/definitions/api_structures.MemberActivity'
+        $ref: '#/definitions/models.MemberActivity'
     type: object
-  api_structures.MemberRoles:
+  models.MemberRoles:
     properties:
       next:
-        $ref: '#/definitions/api_structures.ActivityRoleProgress'
+        $ref: '#/definitions/models.ActivityRoleProgress'
       obtained:
         items:
-          $ref: '#/definitions/api_structures.ActivityRole'
+          $ref: '#/definitions/models.ActivityRole'
         type: array
     type: object
 info:
@@ -96,19 +96,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.GuildSettings'
+            $ref: '#/definitions/models.GuildSettings'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -125,15 +125,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.GuildSettings'
+            $ref: '#/definitions/models.GuildSettings'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -155,15 +155,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.MemberProfile'
+            $ref: '#/definitions/models.MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -192,15 +192,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.MemberProfile'
+            $ref: '#/definitions/models.MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -222,15 +222,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.MemberProfile'
+            $ref: '#/definitions/models.MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -247,19 +247,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api_structures.GuildSettings'
+            $ref: '#/definitions/models.GuildSettings'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api_structures.GenericResponse'
+            $ref: '#/definitions/models.GenericResponse'
       security:
       - APIKeyAuth: []
       tags:

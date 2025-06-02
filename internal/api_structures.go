@@ -1,4 +1,4 @@
-package api_structures
+package models
 
 import (
 	"time"

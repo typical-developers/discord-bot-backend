@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	api_structures "github.com/typical-developers/discord-bot-backend/internal"
+	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/pkg/dbutil"
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
@@ -20,10 +20,10 @@ import (
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	api_structures.GuildSettings
+//	@Success	200			{object}	models.GuildSettings
 //
-//	@Failure	400			{object}	api_structures.GenericResponse
-//	@Failure	500			{object}	api_structures.GenericResponse
+//	@Failure	400			{object}	models.GenericResponse
+//	@Failure	500			{object}	models.GenericResponse
 //
 // nolint:staticcheck
 func CreateGuildSettings(c *fiber.Ctx) error {
@@ -31,7 +31,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 
 	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(api_structures.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
 			Success: false,
 			Message: "guild_id is not snowflake.",
 		})
@@ -47,25 +47,25 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 		if ok && errCode == dbutil.SQLStateUniqueViolation {
 			logger.Log.Debug("Guild already has settings.", "guild_id", guildId, "error", err)
 
-			return c.Status(fiber.StatusBadRequest).JSON(api_structures.GenericResponse{
+			return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
 				Success: false,
 				Message: "guild already has settings.",
 			})
 		}
 
 		logger.Log.Error("Failed to create guild settings.", "guild_id", guildId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(api_structures.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
 			Success: false,
 			Message: "failed to create guild settings.",
 		})
 	}
 
-	return c.JSON(api_structures.GuildSettings{
-		ChatActivity: api_structures.ActivityConfig{
+	return c.JSON(models.GuildSettings{
+		ChatActivity: models.ActivityConfig{
 			IsEnabled:       settings.ActivityTracking.Bool,
 			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
 			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
-			ActivityRoles:   []api_structures.ActivityRole{},
+			ActivityRoles:   []models.ActivityRole{},
 		},
 	})
 }
@@ -77,11 +77,11 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	api_structures.GuildSettings
+//	@Success	200			{object}	models.GuildSettings
 //
-//	@Failure	400			{object}	api_structures.GenericResponse
-//	@Failure	404			{object}	api_structures.GenericResponse
-//	@Failure	500			{object}	api_structures.GenericResponse
+//	@Failure	400			{object}	models.GenericResponse
+//	@Failure	404			{object}	models.GenericResponse
+//	@Failure	500			{object}	models.GenericResponse
 //
 // nolint:staticcheck
 func GetGuildSettings(c *fiber.Ctx) error {
@@ -99,7 +99,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(api_structures.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
 				Success: false,
 				Message: "guild settings not found.",
 			})
@@ -109,16 +109,16 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	var mappedChatRoles []api_structures.ActivityRole
+	var mappedChatRoles []models.ActivityRole
 	for _, role := range settings.ChatActivityRoles {
-		mappedChatRoles = append(mappedChatRoles, api_structures.ActivityRole{
+		mappedChatRoles = append(mappedChatRoles, models.ActivityRole{
 			RoleID:         role.RoleID,
 			RequiredPoints: int(role.RequiredPoints.Int32),
 		})
 	}
 
-	return c.JSON(api_structures.GuildSettings{
-		ChatActivity: api_structures.ActivityConfig{
+	return c.JSON(models.GuildSettings{
+		ChatActivity: models.ActivityConfig{
 			IsEnabled:       settings.ActivityTracking.Bool,
 			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
 			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
@@ -134,11 +134,11 @@ func GetGuildSettings(c *fiber.Ctx) error {
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	api_structures.GuildSettings
+//	@Success	200			{object}	models.GuildSettings
 //
-//	@Failure	400			{object}	api_structures.GenericResponse
-//	@Failure	404			{object}	api_structures.GenericResponse
-//	@Failure	500			{object}	api_structures.GenericResponse
+//	@Failure	400			{object}	models.GenericResponse
+//	@Failure	404			{object}	models.GenericResponse
+//	@Failure	500			{object}	models.GenericResponse
 //
 // nolint:staticcheck
 func UpdateGuildSettings(c *fiber.Ctx) error {

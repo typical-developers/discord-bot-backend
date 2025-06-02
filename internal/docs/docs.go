@@ -38,25 +38,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GuildSettings"
+                            "$ref": "#/definitions/models.GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -85,19 +85,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GuildSettings"
+                            "$ref": "#/definitions/models.GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -133,19 +133,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.MemberProfile"
+                            "$ref": "#/definitions/models.MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -191,19 +191,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.MemberProfile"
+                            "$ref": "#/definitions/models.MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -239,19 +239,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.MemberProfile"
+                            "$ref": "#/definitions/models.MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -280,25 +280,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GuildSettings"
+                            "$ref": "#/definitions/models.GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api_structures.GenericResponse"
+                            "$ref": "#/definitions/models.GenericResponse"
                         }
                     }
                 }
@@ -306,13 +306,13 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api_structures.ActivityConfig": {
+        "models.ActivityConfig": {
             "type": "object",
             "properties": {
                 "activity_roles": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/api_structures.ActivityRole"
+                        "$ref": "#/definitions/models.ActivityRole"
                     }
                 },
                 "cooldown_seconds": {
@@ -326,7 +326,7 @@ const docTemplate = `{
                 }
             }
         },
-        "api_structures.ActivityRole": {
+        "models.ActivityRole": {
             "type": "object",
             "properties": {
                 "required_points": {
@@ -337,7 +337,7 @@ const docTemplate = `{
                 }
             }
         },
-        "api_structures.ActivityRoleProgress": {
+        "models.ActivityRoleProgress": {
             "type": "object",
             "properties": {
                 "progress": {
@@ -354,7 +354,7 @@ const docTemplate = `{
                 }
             }
         },
-        "api_structures.CardStyle": {
+        "models.CardStyle": {
             "type": "integer",
             "enum": [
                 0
@@ -363,7 +363,7 @@ const docTemplate = `{
                 "CardStyleDefault"
             ]
         },
-        "api_structures.GenericResponse": {
+        "models.GenericResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -375,15 +375,15 @@ const docTemplate = `{
                 }
             }
         },
-        "api_structures.GuildSettings": {
+        "models.GuildSettings": {
             "type": "object",
             "properties": {
                 "chat_activity": {
-                    "$ref": "#/definitions/api_structures.ActivityConfig"
+                    "$ref": "#/definitions/models.ActivityConfig"
                 }
             }
         },
-        "api_structures.MemberActivity": {
+        "models.MemberActivity": {
             "type": "object",
             "properties": {
                 "is_on_cooldown": {
@@ -399,31 +399,31 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "roles": {
-                    "$ref": "#/definitions/api_structures.MemberRoles"
+                    "$ref": "#/definitions/models.MemberRoles"
                 }
             }
         },
-        "api_structures.MemberProfile": {
+        "models.MemberProfile": {
             "type": "object",
             "properties": {
                 "card_style": {
-                    "$ref": "#/definitions/api_structures.CardStyle"
+                    "$ref": "#/definitions/models.CardStyle"
                 },
                 "chat_activity": {
-                    "$ref": "#/definitions/api_structures.MemberActivity"
+                    "$ref": "#/definitions/models.MemberActivity"
                 }
             }
         },
-        "api_structures.MemberRoles": {
+        "models.MemberRoles": {
             "type": "object",
             "properties": {
                 "next": {
-                    "$ref": "#/definitions/api_structures.ActivityRoleProgress"
+                    "$ref": "#/definitions/models.ActivityRoleProgress"
                 },
                 "obtained": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/api_structures.ActivityRole"
+                        "$ref": "#/definitions/models.ActivityRole"
                     }
                 }
             }
