@@ -1,5 +1,5 @@
 definitions:
-  api_structures.Activity:
+  api_structures.ActivityConfig:
     properties:
       activity_roles:
         items:
@@ -19,8 +19,26 @@ definitions:
       role_id:
         type: string
     type: object
+  api_structures.ActivityRoleProgress:
+    properties:
+      progress:
+        type: integer
+      remaining_points:
+        type: integer
+      required_points:
+        type: integer
+      role_id:
+        type: string
+    type: object
+  api_structures.CardStyle:
+    enum:
+    - 0
+    type: integer
+    x-enum-varnames:
+    - CardStyleDefault
   api_structures.GenericResponse:
     properties:
+      data: {}
       message:
         type: string
       success:
@@ -29,7 +47,36 @@ definitions:
   api_structures.GuildSettings:
     properties:
       chat_activity:
-        $ref: '#/definitions/api_structures.Activity'
+        $ref: '#/definitions/api_structures.ActivityConfig'
+    type: object
+  api_structures.MemberActivity:
+    properties:
+      is_on_cooldown:
+        type: boolean
+      last_grant:
+        type: string
+      points:
+        type: integer
+      rank:
+        type: integer
+      roles:
+        $ref: '#/definitions/api_structures.MemberRoles'
+    type: object
+  api_structures.MemberProfile:
+    properties:
+      card_style:
+        $ref: '#/definitions/api_structures.CardStyle'
+      chat_activity:
+        $ref: '#/definitions/api_structures.MemberActivity'
+    type: object
+  api_structures.MemberRoles:
+    properties:
+      next:
+        $ref: '#/definitions/api_structures.ActivityRoleProgress'
+      obtained:
+        items:
+          $ref: '#/definitions/api_structures.ActivityRole'
+        type: array
     type: object
 info:
   contact: {}
@@ -37,7 +84,7 @@ info:
   title: Discord Bot API
   version: "1.0"
 paths:
-  /guild-settings/{guild_id}:
+  /guild/{guild_id}:
     get:
       parameters:
       - description: The guild ID.
@@ -66,7 +113,7 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
-  /guild-settings/{guild_id}/create:
+  /guild/{guild_id}/create:
     post:
       parameters:
       - description: The guild ID.
@@ -91,7 +138,104 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
-  /guild-settings/{guild_id}/update:
+  /guild/{guild_id}/member/{member_id}:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Members
+  /guild/{guild_id}/member/{member_id}/activity-points/increment:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: The activity type.
+        enum:
+        - chat
+        in: query
+        name: activity_type
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Members
+  /guild/{guild_id}/member/{member_id}/create:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_structures.MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_structures.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Members
+  /guild/{guild_id}/update:
     patch:
       parameters:
       - description: The guild ID.
@@ -129,3 +273,5 @@ swagger: "2.0"
 tags:
 - description: Guild endpoints.
   name: Guilds
+- description: Member endpoints.
+  name: Members

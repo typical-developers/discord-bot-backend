@@ -17,8 +17,8 @@ func init() {
 	}
 
 	prettyHandler := prettylog.NewHandler(&slog.HandlerOptions{
-		Level: logLevel,
-		// AddSource:   true,
+		Level:       logLevel,
+		AddSource:   true,
 		ReplaceAttr: nil,
 	})
 

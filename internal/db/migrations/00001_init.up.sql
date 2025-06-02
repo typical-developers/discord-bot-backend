@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS guild_active_voice_rooms (
 
 CREATE TABLE IF NOT EXISTS guild_activity_roles (
     insert_epoch INT DEFAULT EXTRACT (EPOCH FROM now()),
-    grant_type INT NOT NULL,
+    grant_type TEXT NOT NULL,
     guild_id TEXT NOT NULL,
     role_id TEXT NOT NULL,
     required_points INT DEFAULT 0,
@@ -35,12 +35,12 @@ CREATE TABLE IF NOT EXISTS guild_activity_tracking_weekly (
 );
 
 CREATE TABLE IF NOT EXISTS guild_profiles (
-    insert_epoch INT DEFAULT EXTRACT (EPOCH FROM now()),
+    insert_epoch INT DEFAULT EXTRACT (EPOCH FROM now() AT TIME ZONE 'utc'),
     guild_id TEXT NOT NULL,
     member_id TEXT NOT NULL,
     card_style INT DEFAULT 0 NOT NULL,
     activity_points INT NOT NULL,
-    last_grant_epoch INT NOT NULL,
+    last_grant_epoch INT NOT NULL DEFAULT (EXTRACT (EPOCH FROM now() AT TIME ZONE 'utc')),
     PRIMARY KEY (guild_id, member_id)
 );
 

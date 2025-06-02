@@ -2,6 +2,7 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries:
+      - queries/members.sql
       - queries/settings.sql
     schema: migrations
     gen:

@@ -44,7 +44,7 @@ ORDER BY required_points ASC
 
 type GetGuildActivityRolesParams struct {
 	GuildID      string
-	ActivityType int32
+	ActivityType string
 }
 
 type GetGuildActivityRolesRow struct {

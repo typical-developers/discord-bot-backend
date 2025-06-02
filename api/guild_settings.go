@@ -13,7 +13,7 @@ import (
 	"github.com/typical-developers/discord-bot-backend/pkg/regexutil"
 )
 
-//	@Router		/guild-settings/{guild_id}/create [post]
+//	@Router		/guild/{guild_id}/create [post]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -61,7 +61,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(api_structures.GuildSettings{
-		ChatActivity: api_structures.Activity{
+		ChatActivity: api_structures.ActivityConfig{
 			IsEnabled:       settings.ActivityTracking.Bool,
 			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
 			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
@@ -70,7 +70,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 	})
 }
 
-//	@Router		/guild-settings/{guild_id} [get]
+//	@Router		/guild/{guild_id} [get]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -96,7 +96,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 	queries := db.New(connection)
 	defer connection.Release()
 
-	settings, err := queries.GetGuildSettings(ctx, guildId)
+	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(api_structures.GenericResponse{
@@ -109,21 +109,8 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	chatGrantRoles, err := queries.GetGuildActivityRoles(ctx, db.GetGuildActivityRolesParams{
-		GuildID:      guildId,
-		ActivityType: int32(dbutil.ActivityGrantTypeChat),
-	})
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		logger.Log.Error("Failed to get chat activity roles.", "guild_id", guildId, "error", err)
-
-		return c.Status(fiber.StatusInternalServerError).JSON(api_structures.GenericResponse{
-			Success: false,
-			Message: "failed to get chat activity roles.",
-		})
-	}
-
-	mappedChatRoles := make([]api_structures.ActivityRole, len(chatGrantRoles))
-	for _, role := range chatGrantRoles {
+	var mappedChatRoles []api_structures.ActivityRole
+	for _, role := range settings.ChatActivityRoles {
 		mappedChatRoles = append(mappedChatRoles, api_structures.ActivityRole{
 			RoleID:         role.RoleID,
 			RequiredPoints: int(role.RequiredPoints.Int32),
@@ -131,7 +118,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(api_structures.GuildSettings{
-		ChatActivity: api_structures.Activity{
+		ChatActivity: api_structures.ActivityConfig{
 			IsEnabled:       settings.ActivityTracking.Bool,
 			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
 			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
@@ -140,7 +127,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 	})
 }
 
-//	@Router		/guild-settings/{guild_id}/update [patch]
+//	@Router		/guild/{guild_id}/update [patch]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth

@@ -11,8 +11,9 @@ tasks:
       - swag init --parseDependency -dir ./api --output ./internal/docs
   migrate:up: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" up
   migrate:down: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" down
+  templ:live:
+    cmd: templ generate --watch --proxy="http://localhost:8080"
   dev:
-    cmds:
-      - air --build.cmd "task sqlc && task swag && task build" --build.bin ".\\bin\\api-backend.exe" --build.exclude_dir "internal\\db,internal\\docs,\\bin"
+    cmd: air
     env:
       ENVIRONMENT: development

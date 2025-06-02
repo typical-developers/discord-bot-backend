@@ -20,7 +20,7 @@ type GuildActiveVoiceRoom struct {
 
 type GuildActivityRole struct {
 	InsertEpoch    pgtype.Int4
-	GrantType      int32
+	GrantType      string
 	GuildID        string
 	RoleID         string
 	RequiredPoints pgtype.Int4

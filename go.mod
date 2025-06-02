@@ -3,6 +3,7 @@ module github.com/typical-developers/discord-bot-backend
 go 1.23.3
 
 require (
+	github.com/a-h/templ v0.3.887
 	github.com/dusted-go/logging v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gofiber/swagger v1.1.1
@@ -43,6 +44,6 @@ require (
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
-	golang.org/x/tools v0.26.0 // indirect
+	golang.org/x/tools v0.32.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

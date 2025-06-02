@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/guild-settings/{guild_id}": {
+        "/guild/{guild_id}": {
             "get": {
                 "security": [
                     {
@@ -62,7 +62,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild-settings/{guild_id}/create": {
+        "/guild/{guild_id}/create": {
             "post": {
                 "security": [
                     {
@@ -103,7 +103,161 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild-settings/{guild_id}/update": {
+        "/guild/{guild_id}/member/{member_id}": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/member/{member_id}/activity-points/increment": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "chat"
+                        ],
+                        "type": "string",
+                        "description": "The activity type.",
+                        "name": "activity_type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/member/{member_id}/create": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api_structures.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/update": {
             "patch": {
                 "security": [
                     {
@@ -152,7 +306,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api_structures.Activity": {
+        "api_structures.ActivityConfig": {
             "type": "object",
             "properties": {
                 "activity_roles": {
@@ -183,9 +337,36 @@ const docTemplate = `{
                 }
             }
         },
+        "api_structures.ActivityRoleProgress": {
+            "type": "object",
+            "properties": {
+                "progress": {
+                    "type": "integer"
+                },
+                "remaining_points": {
+                    "type": "integer"
+                },
+                "required_points": {
+                    "type": "integer"
+                },
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_structures.CardStyle": {
+            "type": "integer",
+            "enum": [
+                0
+            ],
+            "x-enum-varnames": [
+                "CardStyleDefault"
+            ]
+        },
         "api_structures.GenericResponse": {
             "type": "object",
             "properties": {
+                "data": {},
                 "message": {
                     "type": "string"
                 },
@@ -198,7 +379,52 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "chat_activity": {
-                    "$ref": "#/definitions/api_structures.Activity"
+                    "$ref": "#/definitions/api_structures.ActivityConfig"
+                }
+            }
+        },
+        "api_structures.MemberActivity": {
+            "type": "object",
+            "properties": {
+                "is_on_cooldown": {
+                    "type": "boolean"
+                },
+                "last_grant": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "roles": {
+                    "$ref": "#/definitions/api_structures.MemberRoles"
+                }
+            }
+        },
+        "api_structures.MemberProfile": {
+            "type": "object",
+            "properties": {
+                "card_style": {
+                    "$ref": "#/definitions/api_structures.CardStyle"
+                },
+                "chat_activity": {
+                    "$ref": "#/definitions/api_structures.MemberActivity"
+                }
+            }
+        },
+        "api_structures.MemberRoles": {
+            "type": "object",
+            "properties": {
+                "next": {
+                    "$ref": "#/definitions/api_structures.ActivityRoleProgress"
+                },
+                "obtained": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_structures.ActivityRole"
+                    }
                 }
             }
         }
@@ -214,6 +440,10 @@ const docTemplate = `{
         {
             "description": "Guild endpoints.",
             "name": "Guilds"
+        },
+        {
+            "description": "Member endpoints.",
+            "name": "Members"
         }
     ]
 }`

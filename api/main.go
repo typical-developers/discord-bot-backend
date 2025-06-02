@@ -13,6 +13,9 @@ import (
 //	@tag.name					Guilds
 //	@tag.description			Guild endpoints.
 //
+//	@tag.name					Members
+//	@tag.description			Member endpoints.
+//
 //	@securitydefinitions.apikey	APIKeyAuth
 //	@in							header
 //	@name						X-API-KEY
@@ -25,18 +28,21 @@ func Register(app *fiber.App) {
 		DocExpansion: "list",
 	}))
 
-	guildSettings := app.Group("/guild-settings", handlers.CheckAuthorization, handlers.LogRequest, handlers.SetPoolConn)
+	guild := app.Group("/guild/:guild_id", handlers.CheckAuthorization, handlers.LogRequest, handlers.SetPoolConn)
 	{
-		guildSettings.Post("/:guild_id/create",
-			CreateGuildSettings,
-		)
+		guild.Post("/create", CreateGuildSettings)
+		guild.Get("/", GetGuildSettings)
+		guild.Patch("/update", UpdateGuildSettings)
 
-		guildSettings.Get("/:guild_id",
-			GetGuildSettings,
-		)
+		member := guild.Group("/member/:member_id")
+		{
+			member.Post("/create", CreateMemberProfile)
+			member.Get("/", GetMemberProfile)
+			member.Post("/activity-points/increment", IncrementActivityPoints)
+		}
+	}
 
-		guildSettings.Patch("/:guild_id/update",
-			UpdateGuildSettings,
-		)
+	_ = app.Group("/html", handlers.CheckAuthorization, handlers.LogRequest, handlers.SetPoolConn)
+	{
 	}
 }
