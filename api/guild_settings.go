@@ -10,10 +10,9 @@ import (
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/pkg/dbutil"
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
-	"github.com/typical-developers/discord-bot-backend/pkg/regexutil"
 )
 
-//	@Router		/guild/{guild_id}/create [post]
+//	@Router		/guild/{guild_id}/create-settings [post]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -29,15 +28,6 @@ import (
 func CreateGuildSettings(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
-
-	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "guild_id is not snowflake.",
-			},
-		})
-	}
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
@@ -76,7 +66,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 	})
 }
 
-//	@Router		/guild/{guild_id} [get]
+//	@Router		/guild/{guild_id}/settings [get]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -93,10 +83,6 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 func GetGuildSettings(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
-
-	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)

@@ -11,10 +11,9 @@ import (
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/pkg/dbutil"
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
-	"github.com/typical-developers/discord-bot-backend/pkg/regexutil"
 )
 
-//	@Router		/guild/{guild_id}/member/{member_id}/create [post]
+//	@Router		/guild/{guild_id}/member/{member_id}/create-profile [post]
 //	@Tags		Members
 //
 //	@Security	APIKeyAuth
@@ -32,24 +31,6 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
 	memberId := c.Params("member_id")
-
-	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "guild_id is not snowflake.",
-			},
-		})
-	}
-
-	if !regexutil.Snowflake.MatchString(memberId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "member_id is not snowflake.",
-			},
-		})
-	}
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	tx, err := connection.Begin(ctx)
@@ -147,7 +128,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	})
 }
 
-//	@Router		/guild/{guild_id}/member/{member_id} [get]
+//	@Router		/guild/{guild_id}/member/{member_id}/profile [get]
 //	@Tags		Members
 //
 //	@Security	APIKeyAuth
@@ -227,7 +208,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 	})
 }
 
-//	@Router		/guild/{guild_id}/member/{member_id}/activity-points/increment [post]
+//	@Router		/guild/{guild_id}/member/{member_id}/profile/increment-points [post]
 //	@Tags		Members
 //
 //	@Security	APIKeyAuth
@@ -247,24 +228,6 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	memberId := c.Params("member_id")
 	activityType := models.ActivityType(c.Query("activity_type"))
-
-	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "guild_id is not snowflake.",
-			},
-		})
-	}
-
-	if !regexutil.Snowflake.MatchString(memberId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "member_id is not snowflake.",
-			},
-		})
-	}
 
 	if !activityType.Valid() {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{

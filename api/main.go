@@ -33,16 +33,20 @@ func Register(app *fiber.App) {
 
 	guild := app.Group("/guild/:guild_id", handlers.CheckAuthorization, handlers.LogRequest, handlers.SetPoolConn)
 	{
-		guild.Post("/create", CreateGuildSettings)
-		guild.Get("/", GetGuildSettings)
-		guild.Patch("/update", UpdateGuildSettings)
+		guildSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id"})
+
+		guild.Post("/create-settings", guildSnowflakeHandler, CreateGuildSettings)
+		guild.Get("/settings", guildSnowflakeHandler, GetGuildSettings)
+		guild.Patch("/update-settings", guildSnowflakeHandler, UpdateGuildSettings)
 
 		member := guild.Group("/member/:member_id")
 		{
-			member.Post("/create", CreateMemberProfile)
-			member.Get("/", GetMemberProfile)
-			member.Get("/profile-card", MemberProfileCard)
-			member.Post("/activity-points/increment", IncrementActivityPoints)
+			memberSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "member_id"})
+
+			member.Post("/create-profile", memberSnowflakeHandler, CreateMemberProfile)
+			member.Get("/profile", memberSnowflakeHandler, GetMemberProfile)
+			member.Get("/profile/card", memberSnowflakeHandler, MemberProfileCard)
+			member.Post("/profile/increment-points", memberSnowflakeHandler, IncrementActivityPoints)
 		}
 	}
 

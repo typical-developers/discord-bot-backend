@@ -104,7 +104,7 @@ func GetHTMLAsset(c *fiber.Ctx) error {
 	return c.Send(fileContents)
 }
 
-//	@Router		/guild/{guild_id}/member/{member_id}/profile-card [get]
+//	@Router		/guild/{guild_id}/member/{member_id}/profile/card [get]
 //	@Summary	Get the HTML generation for a member's profile card.
 //	@Tags		HTML Generation
 //
@@ -124,6 +124,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
 	memberId := c.Params("member_id")
+
 	displayName := c.Query("display_name")
 	username := c.Query("username")
 	avatarUrl := c.Query("avatar_url")
