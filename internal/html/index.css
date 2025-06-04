@@ -1,0 +1,17 @@
+:root {
+    --app-background: #12101A;
+    --border-subtle: rgba(255, 255, 255, 0.15);
+    --text-color: #FFFFFF;
+}
+
+html, body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+    height: 100%;
+
+    color: var(--text-background);
+    background-color: var(--app-background);
+}

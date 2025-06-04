@@ -1,0 +1,40 @@
+.typography {
+    color: var(--text-color);
+    line-height: 1rem;
+}
+
+.font-size-small {
+    font-size: 12px;
+}
+
+.font-size-normal {
+    font-size: 14px;
+}
+
+.font-size-medium {
+    font-size: 18px;
+}
+
+.font-size-large {
+    font-size: 22px;
+}
+
+.font-size-extra-large {
+    font-size: 24px;
+}
+
+.font-weight-regular {
+    font-weight: normal;
+}
+
+.font-weight-semi-bold {
+    font-weight: 600;
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}
+
+.font-weight-black {
+    font-weight: 900;
+}

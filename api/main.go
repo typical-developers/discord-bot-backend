@@ -16,6 +16,9 @@ import (
 //	@tag.name					Members
 //	@tag.description			Member endpoints.
 //
+//	@tag.name					HTML Generation
+//	@tag.description			HTML generation endpoints.
+//
 //	@securitydefinitions.apikey	APIKeyAuth
 //	@in							header
 //	@name						X-API-KEY
@@ -38,11 +41,13 @@ func Register(app *fiber.App) {
 		{
 			member.Post("/create", CreateMemberProfile)
 			member.Get("/", GetMemberProfile)
+			member.Get("/profile-card", MemberProfileCard)
 			member.Post("/activity-points/increment", IncrementActivityPoints)
 		}
 	}
 
-	_ = app.Group("/html", handlers.CheckAuthorization, handlers.LogRequest, handlers.SetPoolConn)
-	{
-	}
+	// All HTML related assets are publicly accessible if the endpoint is known.
+	// They're not the most sensitive thing and securing them would be annoying.
+	app.Get("/html/*", GetHTMLAsset)
+	app.Get("/html-version.json", Version)
 }
