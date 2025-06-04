@@ -257,6 +257,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/guild/{guild_id}/member/{member_id}/profile-card": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "HTML Generation"
+                ],
+                "summary": "Get the HTML generation for a member's profile card.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The avatar of the member.",
+                        "name": "avatar_url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/guild/{guild_id}/update": {
             "patch": {
                 "security": [
@@ -302,6 +358,23 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/{file}": {
+            "get": {
+                "tags": [
+                    "HTML Generation"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset file location.",
+                        "name": "file",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
             }
         }
     },
@@ -444,6 +517,10 @@ const docTemplate = `{
         {
             "description": "Member endpoints.",
             "name": "Members"
+        },
+        {
+            "description": "HTML generation endpoints.",
+            "name": "HTML Generation"
         }
     ]
 }`

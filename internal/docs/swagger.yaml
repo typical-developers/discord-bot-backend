@@ -84,6 +84,17 @@ info:
   title: Discord Bot API
   version: "1.0"
 paths:
+  /{file}:
+    get:
+      parameters:
+      - description: Asset file location.
+        in: path
+        name: file
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - HTML Generation
   /guild/{guild_id}:
     get:
       parameters:
@@ -235,6 +246,42 @@ paths:
       - APIKeyAuth: []
       tags:
       - Members
+  /guild/{guild_id}/member/{member_id}/profile-card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: The avatar of the member.
+        in: query
+        name: avatar_url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.GenericResponse'
+      security:
+      - APIKeyAuth: []
+      summary: Get the HTML generation for a member's profile card.
+      tags:
+      - HTML Generation
   /guild/{guild_id}/update:
     patch:
       parameters:
@@ -275,3 +322,5 @@ tags:
   name: Guilds
 - description: Member endpoints.
   name: Members
+- description: HTML generation endpoints.
+  name: HTML Generation
