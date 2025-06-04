@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -128,6 +129,15 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	displayName := c.Query("display_name")
 	username := c.Query("username")
 	avatarUrl := c.Query("avatar_url")
+
+	if _, err := url.Parse(avatarUrl); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "invalid avatar url.",
+			},
+		})
+	}
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
