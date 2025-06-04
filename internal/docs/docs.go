@@ -15,54 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/guild/{guild_id}": {
-            "get": {
-                "security": [
-                    {
-                        "APIKeyAuth": []
-                    }
-                ],
-                "tags": [
-                    "Guilds"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The guild ID.",
-                        "name": "guild_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/guild/{guild_id}/create": {
+        "/guild/{guild_id}/create-settings": {
             "post": {
                 "security": [
                     {
@@ -103,7 +56,55 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild/{guild_id}/member/{member_id}": {
+        "/guild/{guild_id}/member/{member_id}/create-profile": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/member/{member_id}/profile": {
             "get": {
                 "security": [
                     {
@@ -151,7 +152,63 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild/{guild_id}/member/{member_id}/activity-points/increment": {
+        "/guild/{guild_id}/member/{member_id}/profile/card": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "HTML Generation"
+                ],
+                "summary": "Get the HTML generation for a member's profile card.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The avatar of the member.",
+                        "name": "avatar_url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/member/{member_id}/profile/increment-points": {
             "post": {
                 "security": [
                     {
@@ -209,55 +266,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild/{guild_id}/member/{member_id}/create": {
-            "post": {
-                "security": [
-                    {
-                        "APIKeyAuth": []
-                    }
-                ],
-                "tags": [
-                    "Members"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The guild ID.",
-                        "name": "guild_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The member ID.",
-                        "name": "member_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/guild/{guild_id}/member/{member_id}/profile-card": {
+        "/guild/{guild_id}/settings": {
             "get": {
                 "security": [
                     {
@@ -265,9 +274,8 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "HTML Generation"
+                    "Guilds"
                 ],
-                "summary": "Get the HTML generation for a member's profile card.",
                 "parameters": [
                     {
                         "type": "string",
@@ -275,31 +283,23 @@ const docTemplate = `{
                         "name": "guild_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The member ID.",
-                        "name": "member_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The avatar of the member.",
-                        "name": "avatar_url",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }

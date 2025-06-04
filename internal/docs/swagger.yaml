@@ -113,36 +113,7 @@ paths:
       responses: {}
       tags:
       - HTML Generation
-  /guild/{guild_id}:
-    get:
-      parameters:
-      - description: The guild ID.
-        in: path
-        name: guild_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse-GuildSettings'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-      security:
-      - APIKeyAuth: []
-      tags:
-      - Guilds
-  /guild/{guild_id}/create:
+  /guild/{guild_id}/create-settings:
     post:
       parameters:
       - description: The guild ID.
@@ -167,7 +138,37 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
-  /guild/{guild_id}/member/{member_id}:
+  /guild/{guild_id}/member/{member_id}/create-profile:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Members
+  /guild/{guild_id}/member/{member_id}/profile:
     get:
       parameters:
       - description: The guild ID.
@@ -197,7 +198,43 @@ paths:
       - APIKeyAuth: []
       tags:
       - Members
-  /guild/{guild_id}/member/{member_id}/activity-points/increment:
+  /guild/{guild_id}/member/{member_id}/profile/card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: The avatar of the member.
+        in: query
+        name: avatar_url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      summary: Get the HTML generation for a member's profile card.
+      tags:
+      - HTML Generation
+  /guild/{guild_id}/member/{member_id}/profile/increment-points:
     post:
       parameters:
       - description: The guild ID.
@@ -234,37 +271,7 @@ paths:
       - APIKeyAuth: []
       tags:
       - Members
-  /guild/{guild_id}/member/{member_id}/create:
-    post:
-      parameters:
-      - description: The guild ID.
-        in: path
-        name: guild_id
-        required: true
-        type: string
-      - description: The member ID.
-        in: path
-        name: member_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse-MemberProfile'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-      security:
-      - APIKeyAuth: []
-      tags:
-      - Members
-  /guild/{guild_id}/member/{member_id}/profile-card:
+  /guild/{guild_id}/settings:
     get:
       parameters:
       - description: The guild ID.
@@ -272,23 +279,17 @@ paths:
         name: guild_id
         required: true
         type: string
-      - description: The member ID.
-        in: path
-        name: member_id
-        required: true
-        type: string
-      - description: The avatar of the member.
-        in: query
-        name: avatar_url
-        required: true
-        type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse-MemberProfile'
+            $ref: '#/definitions/models.APIResponse-GuildSettings'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
@@ -297,9 +298,8 @@ paths:
             $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
-      summary: Get the HTML generation for a member's profile card.
       tags:
-      - HTML Generation
+      - Guilds
   /guild/{guild_id}/update:
     patch:
       parameters:
