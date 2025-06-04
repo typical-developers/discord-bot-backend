@@ -31,7 +31,6 @@ var (
 
 func init() {
 	initPaths()
-	println(fmt.Sprintf("assets: %v", assets))
 }
 
 func initPaths() {
