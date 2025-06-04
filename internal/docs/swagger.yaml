@@ -1,4 +1,25 @@
 definitions:
+  models.APIResponse-ErrorResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.ErrorResponse'
+      success:
+        type: boolean
+    type: object
+  models.APIResponse-GuildSettings:
+    properties:
+      data:
+        $ref: '#/definitions/models.GuildSettings'
+      success:
+        type: boolean
+    type: object
+  models.APIResponse-MemberProfile:
+    properties:
+      data:
+        $ref: '#/definitions/models.MemberProfile'
+      success:
+        type: boolean
+    type: object
   models.ActivityConfig:
     properties:
       activity_roles:
@@ -36,13 +57,10 @@ definitions:
     type: integer
     x-enum-varnames:
     - CardStyleDefault
-  models.GenericResponse:
+  models.ErrorResponse:
     properties:
-      data: {}
       message:
         type: string
-      success:
-        type: boolean
     type: object
   models.GuildSettings:
     properties:
@@ -107,19 +125,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GuildSettings'
+            $ref: '#/definitions/models.APIResponse-GuildSettings'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -140,11 +158,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -166,15 +184,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MemberProfile'
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -203,15 +221,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MemberProfile'
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -233,15 +251,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MemberProfile'
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:
@@ -268,15 +286,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MemberProfile'
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       summary: Get the HTML generation for a member's profile card.
@@ -294,19 +312,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GuildSettings'
+            $ref: '#/definitions/models.APIResponse-GuildSettings'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.GenericResponse'
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
       security:
       - APIKeyAuth: []
       tags:

@@ -114,10 +114,10 @@ func GetHTMLAsset(c *fiber.Ctx) error {
 //	@Param		member_id	path		string	true	"The member ID."
 //	@Param		avatar_url	query		string	true	"The avatar of the member."
 //
-//	@Success	200			{object}	models.MemberProfile
+//	@Success	200			{object}	models.APIResponse[MemberProfile]
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func MemberProfileCard(c *fiber.Ctx) error {
@@ -135,9 +135,11 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "guild settings not found.",
+				},
 			})
 		}
 
@@ -148,17 +150,21 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	profile, err := dbutil.GetMemberProfile(ctx, queries, guildId, memberId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "member not found.",
+				},
 			})
 		}
 
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "failed to get member profile.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 

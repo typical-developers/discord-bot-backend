@@ -38,25 +38,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GuildSettings"
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -91,13 +91,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -133,19 +133,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -191,19 +191,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -239,19 +239,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -295,19 +295,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -336,25 +336,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GuildSettings"
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GenericResponse"
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
                         }
                     }
                 }
@@ -379,6 +379,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.APIResponse-ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.ErrorResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.APIResponse-GuildSettings": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.GuildSettings"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.APIResponse-MemberProfile": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.MemberProfile"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.ActivityConfig": {
             "type": "object",
             "properties": {
@@ -436,15 +469,11 @@ const docTemplate = `{
                 "CardStyleDefault"
             ]
         },
-        "models.GenericResponse": {
+        "models.ErrorResponse": {
             "type": "object",
             "properties": {
-                "data": {},
                 "message": {
                     "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
                 }
             }
         },

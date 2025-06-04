@@ -22,8 +22,8 @@ import (
 //
 //	@Success	200			{object}	models.GuildSettings
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func CreateGuildSettings(c *fiber.Ctx) error {
@@ -31,9 +31,11 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 
 	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "guild_id is not snowflake.",
+			Data: models.ErrorResponse{
+				Message: "guild_id is not snowflake.",
+			},
 		})
 	}
 
@@ -47,16 +49,20 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 		if ok && errCode == dbutil.SQLStateUniqueViolation {
 			logger.Log.Debug("Guild already has settings.", "guild_id", guildId, "error", err)
 
-			return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild already has settings.",
+				Data: models.ErrorResponse{
+					Message: "guild already has settings.",
+				},
 			})
 		}
 
 		logger.Log.Error("Failed to create guild settings.", "guild_id", guildId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "failed to create guild settings.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
@@ -77,11 +83,11 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	models.GuildSettings
+//	@Success	200			{object}	models.APIResponse[GuildSettings]
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	404			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	404			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func GetGuildSettings(c *fiber.Ctx) error {
@@ -99,9 +105,11 @@ func GetGuildSettings(c *fiber.Ctx) error {
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "guild settings not found.",
+				},
 			})
 		}
 
@@ -134,11 +142,11 @@ func GetGuildSettings(c *fiber.Ctx) error {
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	models.GuildSettings
+//	@Success	200			{object}	models.APIResponse[GuildSettings]
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	404			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	404			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func UpdateGuildSettings(c *fiber.Ctx) error {

@@ -11,9 +11,11 @@ func SetPoolConn(c *fiber.Ctx) error {
 	conn, err := db.Client(c.Context())
 	if err != nil {
 		logger.Log.Error("Failed to get database connection", "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 

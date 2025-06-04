@@ -22,10 +22,10 @@ import (
 //	@Param		guild_id	path		string	true	"The guild ID."
 //	@Param		member_id	path		string	true	"The member ID."
 //
-//	@Success	200			{object}	models.MemberProfile
+//	@Success	200			{object}	models.APIResponse[MemberProfile]
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func CreateMemberProfile(c *fiber.Ctx) error {
@@ -34,16 +34,20 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	memberId := c.Params("member_id")
 
 	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "guild_id is not snowflake.",
+			Data: models.ErrorResponse{
+				Message: "guild_id is not snowflake.",
+			},
 		})
 	}
 
 	if !regexutil.Snowflake.MatchString(memberId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "member_id is not snowflake.",
+			Data: models.ErrorResponse{
+				Message: "member_id is not snowflake.",
+			},
 		})
 	}
 
@@ -51,9 +55,11 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	tx, err := connection.Begin(ctx)
 	if err != nil {
 		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 	queries := db.New(connection).WithTx(tx)
@@ -64,9 +70,11 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		_ = tx.Rollback(ctx)
 
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "guild settings not found.",
+				},
 			})
 		}
 
@@ -83,9 +91,11 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		_ = tx.Rollback(ctx)
 
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
@@ -97,34 +107,41 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
 		_ = tx.Rollback(ctx)
 
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		logger.Log.Error("Failed to commit transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 
 	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
-	return c.JSON(models.MemberProfile{
-		CardStyle: models.CardStyle(profile.CardStyle),
-		ChatActivity: models.MemberActivity{
-			Rank:         int(rankings.ChatRank),
-			LastGrant:    grantTime,
-			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
-			Points:       int(profile.ActivityPoints),
-			Roles: models.MemberRoles{
-				Next:     roles.Next,
-				Obtained: roles.Current,
+	return c.JSON(models.APIResponse[models.MemberProfile]{
+		Success: true,
+		Data: models.MemberProfile{
+			CardStyle: models.CardStyle(profile.CardStyle),
+			ChatActivity: models.MemberActivity{
+				Rank:         int(rankings.ChatRank),
+				LastGrant:    grantTime,
+				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+				Points:       int(profile.ActivityPoints),
+				Roles: models.MemberRoles{
+					Next:     roles.Next,
+					Obtained: roles.Current,
+				},
 			},
 		},
 	})
@@ -138,10 +155,10 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 //	@Param		guild_id	path		string	true	"The guild ID."
 //	@Param		member_id	path		string	true	"The member ID."
 //
-//	@Success	200			{object}	models.MemberProfile
+//	@Success	200			{object}	models.APIResponse[MemberProfile]
 //
-//	@Failure	400			{object}	models.GenericResponse
-//	@Failure	500			{object}	models.GenericResponse
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func GetMemberProfile(c *fiber.Ctx) error {
@@ -156,9 +173,11 @@ func GetMemberProfile(c *fiber.Ctx) error {
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "guild settings not found.",
+				},
 			})
 		}
 
@@ -169,33 +188,40 @@ func GetMemberProfile(c *fiber.Ctx) error {
 	profile, err := dbutil.GetMemberProfile(ctx, queries, guildId, memberId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "member not found.",
+				Data: models.ErrorResponse{
+					Message: "member not found.",
+				},
 			})
 		}
 
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "failed to get member profile.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 
 	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
-	return c.JSON(models.MemberProfile{
-		CardStyle: models.CardStyle(profile.CardStyle),
-		ChatActivity: models.MemberActivity{
-			Rank:         int(profile.ChatRank),
-			LastGrant:    grantTime,
-			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
-			Points:       int(profile.ActivityPoints),
-			Roles: models.MemberRoles{
-				Next:     roles.Next,
-				Obtained: roles.Current,
+	return c.JSON(models.APIResponse[models.MemberProfile]{
+		Success: true,
+		Data: models.MemberProfile{
+			CardStyle: models.CardStyle(profile.CardStyle),
+			ChatActivity: models.MemberActivity{
+				Rank:         int(profile.ChatRank),
+				LastGrant:    grantTime,
+				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+				Points:       int(profile.ActivityPoints),
+				Roles: models.MemberRoles{
+					Next:     roles.Next,
+					Obtained: roles.Current,
+				},
 			},
 		},
 	})
@@ -210,10 +236,10 @@ func GetMemberProfile(c *fiber.Ctx) error {
 //	@Param		member_id		path		string				true	"The member ID."
 //	@Param		activity_type	query		models.ActivityType	true	"The activity type."
 //
-//	@Success	200				{object}	models.MemberProfile
+//	@Success	200				{object}	models.APIResponse[MemberProfile]
 //
-//	@Failure	400				{object}	models.GenericResponse
-//	@Failure	500				{object}	models.GenericResponse
+//	@Failure	400				{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500				{object}	models.APIResponse[ErrorResponse]
 //
 // nolint:staticcheck
 func IncrementActivityPoints(c *fiber.Ctx) error {
@@ -223,23 +249,29 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	activityType := models.ActivityType(c.Query("activity_type"))
 
 	if !regexutil.Snowflake.MatchString(guildId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "guild_id is not snowflake.",
+			Data: models.ErrorResponse{
+				Message: "guild_id is not snowflake.",
+			},
 		})
 	}
 
 	if !regexutil.Snowflake.MatchString(memberId) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "member_id is not snowflake.",
+			Data: models.ErrorResponse{
+				Message: "member_id is not snowflake.",
+			},
 		})
 	}
 
 	if !activityType.Valid() {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "activity_type is not valid.",
+			Data: models.ErrorResponse{
+				Message: "activity_type is not valid (chat).",
+			},
 		})
 	}
 
@@ -250,9 +282,11 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "guild settings not found.",
+				Data: models.ErrorResponse{
+					Message: "guild settings not found.",
+				},
 			})
 		}
 
@@ -266,16 +300,20 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "member not found.",
+				Data: models.ErrorResponse{
+					Message: "member not found.",
+				},
 			})
 		}
 
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
@@ -283,9 +321,11 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	cooldown := int(settings.ActivityTrackingCooldown.Int32)
 	if activityType == models.ActivityTypeChat {
 		if dbutil.IsMemberOnCooldown(lastGrant, cooldown) {
-			return c.Status(fiber.StatusForbidden).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "cannot grant, member is on cooldown.",
+				Data: models.ErrorResponse{
+					Message: "cannot grant, member is on cooldown.",
+				},
 			})
 		}
 
@@ -296,9 +336,11 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		})
 		if err != nil {
 			logger.Log.Error("Failed to increment member chat activity points.", "guild_id", guildId, "member_id", memberId, "error", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
-				Message: "internal server error.",
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
 			})
 		}
 
@@ -316,24 +358,29 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
-			Message: "internal server error.",
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
 		})
 	}
 
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 
-	return c.JSON(models.MemberProfile{
-		CardStyle: models.CardStyle(profile.CardStyle),
-		ChatActivity: models.MemberActivity{
-			Rank:         int(rankings.ChatRank),
-			LastGrant:    grantTime,
-			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, cooldown),
-			Points:       int(profile.ActivityPoints),
-			Roles: models.MemberRoles{
-				Next:     roles.Next,
-				Obtained: roles.Current,
+	return c.JSON(models.APIResponse[models.MemberProfile]{
+		Success: true,
+		Data: models.MemberProfile{
+			CardStyle: models.CardStyle(profile.CardStyle),
+			ChatActivity: models.MemberActivity{
+				Rank:         int(rankings.ChatRank),
+				LastGrant:    grantTime,
+				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, cooldown),
+				Points:       int(profile.ActivityPoints),
+				Roles: models.MemberRoles{
+					Next:     roles.Next,
+					Obtained: roles.Current,
+				},
 			},
 		},
 	})

@@ -4,10 +4,8 @@ import (
 	"time"
 )
 
-type GenericResponse struct {
-	Success bool   `json:"success"`
+type ErrorResponse struct {
 	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
 }
 
 type ActivityRole struct {
@@ -68,4 +66,9 @@ type MemberActivity struct {
 type MemberProfile struct {
 	CardStyle    CardStyle      `json:"card_style"`
 	ChatActivity MemberActivity `json:"chat_activity"`
+}
+
+type APIResponse[T any] struct {
+	Success bool `json:"success"`
+	Data    T    `json:"data,omitempty"`
 }
