@@ -19,7 +19,7 @@ import (
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //
-//	@Success	200			{object}	models.GuildSettings
+//	@Success	200			{object}	models.APIResponse[GuildSettings]
 //
 //	@Failure	400			{object}	models.APIResponse[ErrorResponse]
 //	@Failure	500			{object}	models.APIResponse[ErrorResponse]
@@ -56,12 +56,15 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(models.GuildSettings{
-		ChatActivity: models.ActivityConfig{
-			IsEnabled:       settings.ActivityTracking.Bool,
-			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
-			ActivityRoles:   []models.ActivityRole{},
+	return c.JSON(models.APIResponse[models.GuildSettings]{
+		Success: true,
+		Data: models.GuildSettings{
+			ChatActivity: models.ActivityConfig{
+				IsEnabled:       settings.ActivityTracking.Bool,
+				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
+				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
+				ActivityRoles:   []models.ActivityRole{},
+			},
 		},
 	})
 }
@@ -111,12 +114,15 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(models.GuildSettings{
-		ChatActivity: models.ActivityConfig{
-			IsEnabled:       settings.ActivityTracking.Bool,
-			GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-			CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
-			ActivityRoles:   mappedChatRoles,
+	return c.JSON(models.APIResponse[models.GuildSettings]{
+		Success: true,
+		Data: models.GuildSettings{
+			ChatActivity: models.ActivityConfig{
+				IsEnabled:       settings.ActivityTracking.Bool,
+				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
+				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
+				ActivityRoles:   mappedChatRoles,
+			},
 		},
 	})
 }
