@@ -93,14 +93,14 @@ func GetMemberProfile(ctx context.Context, queries *db.Queries, guildId string, 
 }
 
 type MemberRoles struct {
-	Next    models.ActivityRoleProgress
+	Next    *models.ActivityRoleProgress
 	Current []models.ActivityRole
 }
 
 // Gets information on the member's next role and current roles based on their points.
 // Roles must be fetched and provided separately.
 func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) MemberRoles {
-	nextRole := models.ActivityRoleProgress{}
+	var nextRole *models.ActivityRoleProgress
 	currentRoles := []models.ActivityRole{}
 
 	requiredPoints := int32(0)
@@ -115,7 +115,7 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 			continue
 		}
 
-		nextRole = models.ActivityRoleProgress{
+		nextRole = &models.ActivityRoleProgress{
 			RoleID:          role.RoleID,
 			Progress:        points - (int(requiredPoints - role.RequiredPoints.Int32)),
 			RemainingPoints: int(requiredPoints) - points,

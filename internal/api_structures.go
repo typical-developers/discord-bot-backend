@@ -53,8 +53,8 @@ type ActivityRoleProgress struct {
 }
 
 type MemberRoles struct {
-	Next     ActivityRoleProgress `json:"next"`
-	Obtained []ActivityRole       `json:"obtained"`
+	Next     *ActivityRoleProgress `json:"next"`
+	Obtained []ActivityRole        `json:"obtained"`
 }
 
 type MemberActivity struct {
