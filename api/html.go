@@ -147,6 +147,13 @@ func MemberProfileCard(c *fiber.Ctx) error {
 
 	profile, err := dbutil.GetMemberProfile(ctx, queries, guildId, memberId)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(models.GenericResponse{
+				Success: false,
+				Message: "guild settings not found.",
+			})
+		}
+
 		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(models.GenericResponse{
@@ -156,6 +163,10 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	}
 
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
+
+	if roles.Next == nil {
+		roles.Next = &models.ActivityRoleProgress{}
+	}
 
 	html := html_page.ProfileCard(html_page.ProfileCardProps{
 		DisplayName: displayName,
