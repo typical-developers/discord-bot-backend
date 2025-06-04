@@ -39,7 +39,7 @@ WHERE
     guild_activity_roles.guild_id = $1
     AND grant_type = $2
 GROUP BY grant_type, role_id, required_points
-ORDER BY required_points ASC
+ORDER BY required_points DESC
 `
 
 type GetGuildActivityRolesParams struct {
