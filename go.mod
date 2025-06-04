@@ -3,13 +3,13 @@ module github.com/typical-developers/discord-bot-backend
 go 1.23.3
 
 require (
-	github.com/a-h/templ v0.3.887
 	github.com/dusted-go/logging v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gofiber/swagger v1.1.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/redis/go-redis/v9 v9.9.0
 	github.com/swaggo/swag v1.16.4
+	maragu.dev/gomponents v1.1.0
 )
 
 require (
