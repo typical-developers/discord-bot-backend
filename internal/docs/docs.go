@@ -38,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GuildSettings"
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
                         }
                     },
                     "400": {
