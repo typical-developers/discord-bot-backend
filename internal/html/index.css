@@ -5,13 +5,10 @@
 }
 
 html, body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     margin: 0;
     height: 100%;
 
     color: var(--text-background);
-    background-color: var(--app-background);
+    background-color: transparent;
+    /* background-color: var(--app-background); */
 }

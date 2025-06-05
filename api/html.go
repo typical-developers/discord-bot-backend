@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"mime"
@@ -129,6 +130,17 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	displayName := c.Query("display_name")
 	username := c.Query("username")
 	avatarUrl := c.Query("avatar_url")
+	chatActivityRole := c.Query("chat_activity_role")
+
+	var chatRoleInfo models.ChatActivityRoleQuery
+	if chatActivityRole != "" {
+		if err := json.Unmarshal([]byte(chatActivityRole), &chatRoleInfo); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data:    models.ErrorResponse{Message: "invalid chat_activity_role json"},
+			})
+		}
+	}
 
 	if _, err := url.Parse(avatarUrl); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
@@ -185,7 +197,14 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		roles.Next = &models.ActivityRoleProgress{}
 	}
 
+	protocol := c.Protocol()
+	if c.IsFromLocal() {
+		protocol = "http"
+	}
+
+	baseUrl := fmt.Sprintf("%s://%s", protocol, c.Hostname())
 	html := html_page.ProfileCard(html_page.ProfileCardProps{
+		APIUrl:      baseUrl,
 		DisplayName: displayName,
 		Username:    username,
 		AvatarURL:   avatarUrl,
@@ -194,6 +213,10 @@ func MemberProfileCard(c *fiber.Ctx) error {
 			TotalPoints:        int(profile.ActivityPoints),
 			RoleCurrentPoints:  roles.Next.Progress,
 			RoleRequiredPoints: roles.Next.RequiredPoints,
+			CurrentTitleInfo: &html_page.ActivityRole{
+				Text:   chatRoleInfo.Title,
+				Accent: chatRoleInfo.Accent,
+			},
 		},
 	})
 	c.Set("content-type", fiber.MIMETextHTML)

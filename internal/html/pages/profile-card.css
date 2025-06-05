@@ -1,9 +1,10 @@
 :root {
     --profile-card-background: #0E0911;
+    --profile-card-border: #342c38;
     --profile-card-image: url('/html/assets/card-style_0-background.png');
 }
 
-#card-root {
+#root {
     overflow: hidden;
     position: relative;
     box-sizing: border-box;
@@ -12,7 +13,7 @@
     padding: 30px;
     border-radius: 20px;
 
-    border: 1px solid var(--border-subtle);
+    /* border: 1px solid var(--border-subtle); */
 
     background: var(--profile-card-background);
     font-family: 'Fixel',  'Twemoji', sans-serif;

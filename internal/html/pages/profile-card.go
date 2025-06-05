@@ -2,7 +2,6 @@ package html_page
 
 import (
 	"fmt"
-	"os"
 
 	. "github.com/typical-developers/discord-bot-backend/internal/html/components"
 	. "maragu.dev/gomponents"
@@ -53,7 +52,7 @@ type UserInfoProps struct {
 
 func UserInfo(props UserInfoProps) Node {
 	var topActivityRole Node
-	if props.TopChatActivityRole != nil {
+	if props.TopChatActivityRole != nil && props.TopChatActivityRole.Text != "" && props.TopChatActivityRole.Accent != "" {
 		topActivityRole = Tag(TagProps{
 			Accent: props.TopChatActivityRole.Accent,
 			Icon:   ChatBubbleIcon(IconProps{Width: "18px", Height: "18px"}),
@@ -175,9 +174,11 @@ type ActivityInfo struct {
 	TotalPoints        int
 	RoleCurrentPoints  int
 	RoleRequiredPoints int
+	CurrentTitleInfo   *ActivityRole
 }
 
 type ProfileCardProps struct {
+	APIUrl       string
 	DisplayName  string
 	Username     string
 	AvatarURL    string
@@ -187,9 +188,10 @@ type ProfileCardProps struct {
 func ProfileCard(props ProfileCardProps) Node {
 	return HTML5(HTML5Props{
 		Head: []Node{
-			If(os.Getenv("ENVIRONMENT") == "development",
-				Script(Src("/html/hot-reload.js")),
-			),
+			// If(os.Getenv("ENVIRONMENT") == "development",
+			// 	Script(Src("/html/hot-reload.js")),
+			// ),
+			Base(Href(props.APIUrl)),
 
 			Link(Rel("stylesheet"), Href("/html/index.css")),
 			Link(Rel("stylesheet"), Href("/html/pages/profile-card.css")),
@@ -200,7 +202,7 @@ func ProfileCard(props ProfileCardProps) Node {
 			Link(Rel("stylesheet"), Href("/html/fonts/Twemoji/twemoji.css"), As("font")),
 		},
 		Body: []Node{
-			Div(ID("card-root"),
+			Div(ID("root"),
 				Div(
 					Class("content"),
 					Div(
@@ -209,12 +211,9 @@ func ProfileCard(props ProfileCardProps) Node {
 							URL: props.AvatarURL,
 						}),
 						UserInfo(UserInfoProps{
-							DisplayName: props.DisplayName,
-							Username:    props.Username,
-							TopChatActivityRole: &ActivityRole{
-								Accent: "#ffaee7",
-								Text:   "Active Goober",
-							},
+							DisplayName:         props.DisplayName,
+							Username:            props.Username,
+							TopChatActivityRole: props.ChatActivity.CurrentTitleInfo,
 						}),
 					),
 					Div(

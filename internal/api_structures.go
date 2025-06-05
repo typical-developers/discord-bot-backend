@@ -72,3 +72,8 @@ type APIResponse[T any] struct {
 	Success bool `json:"success"`
 	Data    T    `json:"data,omitempty"`
 }
+
+type ChatActivityRoleQuery struct {
+	Title  string `json:"title"`
+	Accent string `json:"accent"`
+}
