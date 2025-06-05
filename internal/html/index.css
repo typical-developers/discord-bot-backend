@@ -6,9 +6,15 @@
 
 html, body {
     margin: 0;
-    height: 100%;
+
+    width: fit-content;
+    height: fit-content;
 
     color: var(--text-background);
-    background-color: transparent;
     /* background-color: var(--app-background); */
+    background-color: transparent;
+}
+
+body {
+    padding: 1px;
 }

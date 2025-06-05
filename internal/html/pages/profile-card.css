@@ -13,7 +13,7 @@
     padding: 30px;
     border-radius: 20px;
 
-    /* border: 1px solid var(--border-subtle); */
+    border: 1px solid var(--border-subtle);
 
     background: var(--profile-card-background);
     font-family: 'Fixel',  'Twemoji', sans-serif;
@@ -72,10 +72,12 @@
 }
 
 .user .avatar {
+    box-sizing: border-box;
     width: 90px;
     height: 90px;
 
     border-radius: 15px;
+    border: 1px solid var(--border-subtle);
 }
 
 .user .user-info {
