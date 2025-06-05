@@ -94,6 +94,7 @@ func GetMemberProfile(ctx context.Context, queries *db.Queries, guildId string, 
 
 type MemberRoles struct {
 	Next    *models.ActivityRoleProgress
+	Recent  *models.ActivityRole
 	Current []models.ActivityRole
 }
 
@@ -101,16 +102,20 @@ type MemberRoles struct {
 // Roles must be fetched and provided separately.
 func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) MemberRoles {
 	var nextRole *models.ActivityRoleProgress
+	var recentRole *models.ActivityRole
 	currentRoles := []models.ActivityRole{}
 
 	requiredPoints := int32(0)
 	for _, role := range activityRoles {
 		requiredPoints += role.RequiredPoints.Int32
 		if requiredPoints <= int32(points) {
-			currentRoles = append(currentRoles, models.ActivityRole{
+			role := models.ActivityRole{
 				RoleID:         role.RoleID,
 				RequiredPoints: int(role.RequiredPoints.Int32),
-			})
+			}
+
+			currentRoles = append(currentRoles, role)
+			recentRole = &role
 
 			continue
 		}
@@ -126,6 +131,7 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 
 	return MemberRoles{
 		Next:    nextRole,
+		Recent:  recentRole,
 		Current: currentRoles,
 	}
 }
