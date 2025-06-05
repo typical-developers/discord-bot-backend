@@ -4,16 +4,22 @@ dotenv: ['.env']
 
 tasks:
   build: go build -ldflags "-w -s" -o bin/api-backend.exe
-  sqlc: cd internal/db && sqlc generate
+  sqlc: sqlc generate --file internal/db/sqlc.yaml
   swag:
     cmds:
       - swag fmt
       - swag init --parseDependency -dir ./api --output ./internal/docs
-  migrate:up: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" up
-  migrate:down: cd internal/db && migrate -path migrations -database "{{ .POSTGRES_URL }}" down
+  migrate:up: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" up
+  migrate:down: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" down
   templ:live:
     cmd: templ generate --watch --proxy="http://localhost:8080"
   dev:
-    cmd: air
+    cmd: air --build.cmd "task sqlc && task swag && task build"
+    env:
+      ENVIRONMENT: development
+  # This will only compile the binary and run it.
+  # It will not run sqlc or swag, mainly meant to compile faster for html rendering testing.
+  dev:compile-app-only:
+    cmd: air --build.cmd "task build"
     env:
       ENVIRONMENT: development
