@@ -199,7 +199,6 @@ func ProfileCard(props ProfileCardProps) Node {
 			Link(Rel("stylesheet"), Href("/html/components/icons.css")),
 
 			Link(Rel("stylesheet"), Href("/html/fonts/Fixel/fixel.css"), As("font")),
-			Link(Rel("stylesheet"), Href("/html/fonts/Twemoji/twemoji.css"), As("font")),
 		},
 		Body: []Node{
 			Div(ID("root"),
