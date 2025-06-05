@@ -18,7 +18,7 @@ WHERE
     guild_activity_roles.guild_id = @guild_id
     AND grant_type = @activity_type
 GROUP BY grant_type, role_id, required_points
-ORDER BY required_points DESC;
+ORDER BY required_points ASC;
 
 -- name: CreateGuildSettings :one
 INSERT INTO guild_settings (guild_id)
