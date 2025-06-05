@@ -1,12 +1,10 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -18,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
+	"github.com/typical-developers/discord-bot-backend/internal/discord"
 	html_page "github.com/typical-developers/discord-bot-backend/internal/html/pages"
 	"github.com/typical-developers/discord-bot-backend/pkg/dbutil"
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
@@ -127,30 +126,6 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	memberId := c.Params("member_id")
 
-	displayName := c.Query("display_name")
-	username := c.Query("username")
-	avatarUrl := c.Query("avatar_url")
-	chatActivityRole := c.Query("chat_activity_role")
-
-	var chatRoleInfo models.ChatActivityRoleQuery
-	if chatActivityRole != "" {
-		if err := json.Unmarshal([]byte(chatActivityRole), &chatRoleInfo); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-				Success: false,
-				Data:    models.ErrorResponse{Message: "invalid chat_activity_role json"},
-			})
-		}
-	}
-
-	if _, err := url.Parse(avatarUrl); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "invalid avatar url.",
-			},
-		})
-	}
-
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
 	defer connection.Release()
@@ -197,26 +172,61 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		roles.Next = &models.ActivityRoleProgress{}
 	}
 
+	guild, err := discord.Client.Guild(guildId)
+	if err != nil {
+		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+
+	member, err := discord.Client.GuildMember(guildId, memberId)
+	if err != nil {
+		logger.Log.Error("Failed to get member info.", "guild_id", guildId, "member_id", memberId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+
 	protocol := c.Protocol()
 	if c.IsFromLocal() {
 		protocol = "http"
 	}
 
+	avatarUrl := member.AvatarURL("100")
+	var chatActivityRole *html_page.ActivityRole
+	if roles.Recent != nil {
+		for _, role := range guild.Roles {
+			if role.ID != roles.Recent.RoleID {
+				continue
+			}
+
+			chatActivityRole = &html_page.ActivityRole{
+				Text:   role.Name,
+				Accent: fmt.Sprintf("#%06X", role.Color),
+			}
+			break
+		}
+	}
+
 	baseUrl := fmt.Sprintf("%s://%s", protocol, c.Hostname())
 	html := html_page.ProfileCard(html_page.ProfileCardProps{
 		APIUrl:      baseUrl,
-		DisplayName: displayName,
-		Username:    username,
+		DisplayName: member.DisplayName(),
+		Username:    member.User.Username,
 		AvatarURL:   avatarUrl,
 		ChatActivity: html_page.ActivityInfo{
 			Rank:               int(profile.ChatRank),
 			TotalPoints:        int(profile.ActivityPoints),
 			RoleCurrentPoints:  roles.Next.Progress,
 			RoleRequiredPoints: roles.Next.RequiredPoints,
-			CurrentTitleInfo: &html_page.ActivityRole{
-				Text:   chatRoleInfo.Title,
-				Accent: chatRoleInfo.Accent,
-			},
+			CurrentTitleInfo:   chatActivityRole,
 		},
 	})
 	c.Set("content-type", fiber.MIMETextHTML)
