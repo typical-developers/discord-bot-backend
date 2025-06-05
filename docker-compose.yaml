@@ -1,0 +1,14 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        POSTGRES_URL: ${POSTGRES_URL}
+    environment:
+      ENVIRONMENT: production
+      API_KEY: ${API_KEY}
+      POSTGRES_URL: ${POSTGRES_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
