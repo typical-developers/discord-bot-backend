@@ -3,6 +3,7 @@ module github.com/typical-developers/discord-bot-backend
 go 1.23.3
 
 require (
+	github.com/bwmarrin/discordgo v0.29.0
 	github.com/dusted-go/logging v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gofiber/swagger v1.1.1
@@ -17,7 +18,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
-	github.com/bwmarrin/discordgo v0.29.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect

@@ -169,7 +169,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		roles.Next = &models.ActivityRoleProgress{}
 	}
 
-	guild, err := discord.Client.Guild(guildId)
+	guild, err := discord.Client.Cache.Guild(guildId)
 	if err != nil {
 		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
@@ -180,7 +180,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		})
 	}
 
-	member, err := discord.Client.GuildMember(guildId, memberId)
+	member, err := discord.Client.Cache.GuildMember(guildId, memberId)
 	if err != nil {
 		logger.Log.Error("Failed to get member info.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
@@ -257,7 +257,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 	queries := db.New(connection)
 	defer connection.Release()
 
-	guild, err := discord.Client.Guild(guildId)
+	guild, err := discord.Client.Cache.Guild(guildId)
 	if err != nil {
 		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
@@ -292,9 +292,8 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 	}
 
 	leaderboardData := []html_page.LeaderboardDataField{}
-	// memberInfo := make(map[string]discordgo.Member)
 	for _, rank := range leaderboard {
-		member, err := discord.Client.GuildMember(guildId, rank.MemberID)
+		member, err := discord.Client.Cache.GuildMember(guildId, rank.MemberID)
 		if err != nil {
 			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
 				Rank:     int(rank.Rank),
