@@ -113,6 +113,35 @@ paths:
       responses: {}
       tags:
       - HTML Generation
+  /guild/{guild_id}/activity-leaderboard/card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity type.
+        enum:
+        - chat
+        in: query
+        name: activity_type
+        required: true
+        type: string
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      summary: Get the HTML generation for a member's profile card.
+      tags:
+      - HTML Generation
   /guild/{guild_id}/create-settings:
     post:
       parameters:
@@ -211,16 +240,7 @@ paths:
         name: member_id
         required: true
         type: string
-      - description: The avatar of the member.
-        in: query
-        name: avatar_url
-        required: true
-        type: string
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse-MemberProfile'
         "400":
           description: Bad Request
           schema:

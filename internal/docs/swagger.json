@@ -7,6 +7,52 @@
         "version": "1.0"
     },
     "paths": {
+        "/guild/{guild_id}/activity-leaderboard/card": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "HTML Generation"
+                ],
+                "summary": "Get the HTML generation for a member's profile card.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "chat"
+                        ],
+                        "type": "string",
+                        "description": "The activity type.",
+                        "name": "activity_type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/guild/{guild_id}/create-settings": {
             "post": {
                 "security": [
@@ -169,22 +215,9 @@
                         "name": "member_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The avatar of the member.",
-                        "name": "avatar_url",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {

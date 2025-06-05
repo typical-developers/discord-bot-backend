@@ -4,6 +4,7 @@ sql:
     queries:
       - queries/members.sql
       - queries/settings.sql
+      - queries/guilds.sql
     schema: migrations
     gen:
       go:

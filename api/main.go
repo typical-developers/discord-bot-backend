@@ -35,6 +35,8 @@ func Register(app *fiber.App) {
 	{
 		guildSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id"})
 
+		guild.Get("/activity-leaderboard/card", guildSnowflakeHandler, ActivityLeaderboardCard)
+
 		guild.Post("/create-settings", guildSnowflakeHandler, CreateGuildSettings)
 		guild.Get("/settings", guildSnowflakeHandler, GetGuildSettings)
 		guild.Patch("/update-settings", guildSnowflakeHandler, UpdateGuildSettings)

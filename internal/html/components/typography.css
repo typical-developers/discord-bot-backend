@@ -1,4 +1,5 @@
 .typography {
+    width: fit-content;
     color: var(--text-color);
     line-height: 1rem;
 }

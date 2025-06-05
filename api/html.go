@@ -73,7 +73,7 @@ func Version(c *fiber.Ctx) error {
 //	@Router	/{file} [get]
 //	@Tags	HTML Generation
 //
-//	@Param	file	path	string	true "Asset file location."
+//	@Param	file	path	string	true	"Asset file location."
 //
 // nolint:staticcheck
 func GetHTMLAsset(c *fiber.Ctx) error {
@@ -113,9 +113,6 @@ func GetHTMLAsset(c *fiber.Ctx) error {
 //
 //	@Param		guild_id	path		string	true	"The guild ID."
 //	@Param		member_id	path		string	true	"The member ID."
-//	@Param		avatar_url	query		string	true	"The avatar of the member."
-//
-//	@Success	200			{object}	models.APIResponse[MemberProfile]
 //
 //	@Failure	400			{object}	models.APIResponse[ErrorResponse]
 //	@Failure	500			{object}	models.APIResponse[ErrorResponse]
@@ -231,5 +228,102 @@ func MemberProfileCard(c *fiber.Ctx) error {
 	})
 	c.Set("content-type", fiber.MIMETextHTML)
 
+	return html.Render(c.Context())
+}
+
+//	@Router		/guild/{guild_id}/activity-leaderboard/card [get]
+//	@Summary	Get the HTML generation for a member's profile card.
+//	@Tags		HTML Generation
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id		path		string				true	"The guild ID."
+//	@Param		activity_type	query		models.ActivityType	true	"The activity type."
+//
+//	@Failure	400				{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500				{object}	models.APIResponse[ErrorResponse]
+//
+// nolint:staticcheck
+func ActivityLeaderboardCard(c *fiber.Ctx) error {
+	ctx := c.Context()
+	guildId := c.Params("guild_id")
+
+	protocol := c.Protocol()
+	if c.IsFromLocal() {
+		protocol = "http"
+	}
+
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	queries := db.New(connection)
+	defer connection.Release()
+
+	guild, err := discord.Client.Guild(guildId)
+	if err != nil {
+		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+
+	leaderboard, err := queries.GetAllTimeChatActivityRankings(ctx, db.GetAllTimeChatActivityRankingsParams{
+		GuildID:  guildId,
+		OffsetBy: 0,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "guild not found.",
+				},
+			})
+		}
+
+		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+
+	leaderboardData := []html_page.LeaderboardDataField{}
+	// memberInfo := make(map[string]discordgo.Member)
+	for _, rank := range leaderboard {
+		member, err := discord.Client.GuildMember(guildId, rank.MemberID)
+		if err != nil {
+			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+				Rank:     int(rank.Rank),
+				Username: rank.MemberID,
+				Value:    int(rank.ActivityPoints),
+			})
+			continue
+		}
+
+		leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+			Rank:     int(rank.Rank),
+			Username: member.User.Username,
+			Value:    int(rank.ActivityPoints),
+		})
+	}
+
+	baseUrl := fmt.Sprintf("%s://%s", protocol, c.Hostname())
+	html := html_page.SeverLeaderboard(html_page.SeverLeaderboardProps{
+		APIUrl: baseUrl,
+		ServerInfo: html_page.ServerInfo{
+			Icon: guild.IconURL("100"),
+			Name: guild.Name,
+		},
+		LeaderboardInfo: html_page.LeaderboardInfo{
+			Name: "Chat Activity - All Time",
+			Data: leaderboardData,
+		},
+	})
+
+	c.Set("content-type", fiber.MIMETextHTML)
 	return html.Render(c.Context())
 }
