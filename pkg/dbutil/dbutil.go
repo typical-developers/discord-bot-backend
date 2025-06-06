@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 )
@@ -50,8 +51,11 @@ func GetGuildSettings(ctx context.Context, queries *db.Queries, guildId string) 
 	}
 
 	chatGrantRoles, err := queries.GetGuildActivityRoles(ctx, db.GetGuildActivityRolesParams{
-		GuildID:      guildId,
-		ActivityType: string(models.ActivityTypeChat),
+		GuildID: guildId,
+		ActivityType: pgtype.Text{
+			String: string(models.ActivityTypeChat),
+			Valid:  true,
+		},
 	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
@@ -93,45 +97,79 @@ func GetMemberProfile(ctx context.Context, queries *db.Queries, guildId string, 
 }
 
 type MemberRoles struct {
-	Next    *models.ActivityRoleProgress
-	Recent  *models.ActivityRole
-	Current []models.ActivityRole
+	Next     *models.ActivityRoleProgress
+	Current  *models.ActivityRole
+	Obtained []models.ActivityRole
 }
 
 // Gets information on the member's next role and current roles based on their points.
 // Roles must be fetched and provided separately.
 func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) MemberRoles {
+	obtainedRoles := []models.ActivityRole{}
 	var nextRole *models.ActivityRoleProgress
-	var recentRole *models.ActivityRole
-	currentRoles := []models.ActivityRole{}
+	var currentRole *models.ActivityRole
 
+	lastRequired := int32(0)
 	requiredPoints := int32(0)
 	for _, role := range activityRoles {
-		requiredPoints += role.RequiredPoints.Int32
-		if requiredPoints <= int32(points) {
-			role := models.ActivityRole{
+		rolePoints := role.RequiredPoints.Int32
+
+		if requiredPoints <= int32(points)-lastRequired {
+			requiredPoints += rolePoints
+
+			obtainedRole := models.ActivityRole{
 				RoleID:         role.RoleID,
-				RequiredPoints: int(role.RequiredPoints.Int32),
+				RequiredPoints: int(rolePoints),
 			}
 
-			currentRoles = append(currentRoles, role)
-			recentRole = &role
+			currentRole = &obtainedRole
+			lastRequired = rolePoints
+
+			obtainedRoles = append(obtainedRoles, obtainedRole)
 
 			continue
 		}
 
 		nextRole = &models.ActivityRoleProgress{
-			RoleID:          role.RoleID,
-			Progress:        points - (int(requiredPoints - role.RequiredPoints.Int32)),
-			RemainingPoints: int(requiredPoints) - points,
-			RequiredPoints:  int(role.RequiredPoints.Int32),
+			RoleID:         role.RoleID,
+			Progress:       points - int(lastRequired),
+			RequiredPoints: int(rolePoints - lastRequired),
 		}
 		break
 	}
 
 	return MemberRoles{
-		Next:    nextRole,
-		Recent:  recentRole,
-		Current: currentRoles,
+		Next:     nextRole,
+		Current:  currentRole,
+		Obtained: obtainedRoles,
+	}
+}
+
+// ---------------------------------------------------------------------
+// i hate pgx.
+
+func Bool(b *bool) pgtype.Bool {
+	if b == nil {
+		return pgtype.Bool{
+			Valid: false,
+		}
+	}
+
+	return pgtype.Bool{
+		Bool:  *b,
+		Valid: true,
+	}
+}
+
+func Int32(i *int32) pgtype.Int4 {
+	if i == nil {
+		return pgtype.Int4{
+			Valid: false,
+		}
+	}
+
+	return pgtype.Int4{
+		Int32: *i,
+		Valid: true,
 	}
 }
