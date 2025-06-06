@@ -43,6 +43,18 @@ const docTemplate = `{
                         "name": "activity_type",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "all",
+                            "monthly",
+                            "weekly"
+                        ],
+                        "type": "string",
+                        "description": "The leaderboard display type.",
+                        "name": "display",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {

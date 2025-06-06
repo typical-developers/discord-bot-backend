@@ -237,8 +237,9 @@ func MemberProfileCard(c *fiber.Ctx) error {
 //
 //	@Security	APIKeyAuth
 //
-//	@Param		guild_id		path		string				true	"The guild ID."
-//	@Param		activity_type	query		models.ActivityType	true	"The activity type."
+//	@Param		guild_id		path		string					true	"The guild ID."
+//	@Param		activity_type	query		models.ActivityType		true	"The activity type."
+//	@Param		display			query		models.LeaderboardType	true	"The leaderboard display type."
 //
 //	@Failure	400				{object}	models.APIResponse[ErrorResponse]
 //	@Failure	500				{object}	models.APIResponse[ErrorResponse]
@@ -247,6 +248,26 @@ func MemberProfileCard(c *fiber.Ctx) error {
 func ActivityLeaderboardCard(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
+	activityType := models.ActivityType(c.Query("activity_type"))
+	displayType := models.LeaderboardType(c.Query("display"))
+
+	if !activityType.Valid() {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "activity_type is not valid (chat).",
+			},
+		})
+	}
+
+	if !displayType.Valid() {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "display is not valid (all, monthly, weekly).",
+			},
+		})
+	}
 
 	protocol := c.Protocol()
 	if c.IsFromLocal() {
@@ -268,46 +289,137 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 		})
 	}
 
-	leaderboard, err := queries.GetAllTimeChatActivityRankings(ctx, db.GetAllTimeChatActivityRankingsParams{
-		GuildID:  guildId,
-		OffsetBy: 0,
-	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+	leaderboardData := []html_page.LeaderboardDataField{}
+	var leaderboardName string
+	switch displayType {
+	case models.LeaderboardTypeAllTime:
+		leaderboardName = fmt.Sprintf("%s Activity - All Time", html_page.Uppercase(string(activityType)))
+		leaderboard, err := queries.GetAllTimeChatActivityRankings(ctx, db.GetAllTimeChatActivityRankingsParams{
+			GuildID:  guildId,
+			OffsetBy: 0,
+		})
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+					Success: false,
+					Data: models.ErrorResponse{
+						Message: "guild not found.",
+					},
+				})
+			}
+
+			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
-					Message: "guild not found.",
+					Message: "internal server error.",
 				},
 			})
 		}
 
-		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+		for _, rank := range leaderboard {
+			member, err := discord.Client.Cache.GuildMember(guildId, rank.MemberID)
+			if err != nil {
+				leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+					Rank:     int(rank.Rank),
+					Username: rank.MemberID,
+					Value:    int(rank.ActivityPoints),
+				})
+				continue
+			}
 
-	leaderboardData := []html_page.LeaderboardDataField{}
-	for _, rank := range leaderboard {
-		member, err := discord.Client.Cache.GuildMember(guildId, rank.MemberID)
-		if err != nil {
 			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
 				Rank:     int(rank.Rank),
-				Username: rank.MemberID,
+				Username: fmt.Sprintf("@%s", member.User.Username),
 				Value:    int(rank.ActivityPoints),
 			})
-			continue
+		}
+	case models.LeaderboardTypeMonthly:
+		leaderboardName = fmt.Sprintf("%s Activity - This Month", html_page.Uppercase(string(activityType)))
+		leaderboard, err := queries.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
+			GuildID:  guildId,
+			OffsetBy: 0,
+		})
+
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+					Success: false,
+					Data: models.ErrorResponse{
+						Message: "guild not found.",
+					},
+				})
+			}
+
+			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
+			})
 		}
 
-		leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
-			Rank:     int(rank.Rank),
-			Username: fmt.Sprintf("@%s", member.User.Username),
-			Value:    int(rank.ActivityPoints),
+		for _, rank := range leaderboard {
+			member, err := discord.Client.Cache.GuildMember(guildId, rank.MemberID)
+			if err != nil {
+				leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+					Rank:     int(rank.Rank),
+					Username: rank.MemberID,
+					Value:    int(rank.EarnedPoints),
+				})
+				continue
+			}
+
+			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+				Rank:     int(rank.Rank),
+				Username: fmt.Sprintf("@%s", member.User.Username),
+				Value:    int(rank.EarnedPoints),
+			})
+		}
+	case models.LeaderboardTypeWeekly:
+		leaderboardName = fmt.Sprintf("%s Activity - This Week", html_page.Uppercase(string(activityType)))
+		leaderboard, err := queries.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
+			GuildID:  guildId,
+			OffsetBy: 0,
 		})
+
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+					Success: false,
+					Data: models.ErrorResponse{
+						Message: "guild not found.",
+					},
+				})
+			}
+
+			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
+			})
+		}
+
+		for _, rank := range leaderboard {
+			member, err := discord.Client.Cache.GuildMember(guildId, rank.MemberID)
+			if err != nil {
+				leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+					Rank:     int(rank.Rank),
+					Username: rank.MemberID,
+					Value:    int(rank.EarnedPoints),
+				})
+				continue
+			}
+
+			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
+				Rank:     int(rank.Rank),
+				Username: fmt.Sprintf("@%s", member.User.Username),
+				Value:    int(rank.EarnedPoints),
+			})
+		}
 	}
 
 	baseUrl := fmt.Sprintf("%s://%s", protocol, c.Hostname())
@@ -318,7 +430,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 			Name: guild.Name,
 		},
 		LeaderboardInfo: html_page.LeaderboardInfo{
-			Name: "Chat Activity - All Time",
+			Name: leaderboardName,
 			Data: leaderboardData,
 		},
 	})

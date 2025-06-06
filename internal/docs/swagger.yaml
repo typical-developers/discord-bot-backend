@@ -155,6 +155,15 @@ paths:
         name: activity_type
         required: true
         type: string
+      - description: The leaderboard display type.
+        enum:
+        - all
+        - monthly
+        - weekly
+        in: query
+        name: display
+        required: true
+        type: string
       responses:
         "400":
           description: Bad Request

@@ -39,6 +39,18 @@ const (
 	// ActivityTypeVoice ActivityType = "voice"
 )
 
+type LeaderboardType string
+
+const (
+	LeaderboardTypeAllTime LeaderboardType = "all"
+	LeaderboardTypeMonthly LeaderboardType = "monthly"
+	LeaderboardTypeWeekly  LeaderboardType = "weekly"
+)
+
+func (l LeaderboardType) Valid() bool {
+	return l == LeaderboardTypeAllTime || l == LeaderboardTypeMonthly || l == LeaderboardTypeWeekly
+}
+
 func (a ActivityType) Valid() bool {
 	return a == ActivityTypeChat
 }
