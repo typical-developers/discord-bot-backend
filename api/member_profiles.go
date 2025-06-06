@@ -280,6 +280,16 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		logger.Log.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
+	if !settings.ActivityTracking.Bool {
+		_ = tx.Rollback(ctx)
+
+		return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "activity tracking is not enabled.",
+			},
+		})
+	}
 
 	profile, err := queries.GetMemberProfile(ctx, db.GetMemberProfileParams{
 		GuildID:  guildId,
@@ -310,6 +320,8 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	cooldown := int(settings.ActivityTrackingCooldown.Int32)
 	if activityType == models.ActivityTypeChat {
 		if dbutil.IsMemberOnCooldown(lastGrant, cooldown) {
+			_ = tx.Rollback(ctx)
+
 			return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -345,7 +357,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			GrantType:    string(models.ActivityTypeChat),
 			GuildID:      guildId,
 			MemberID:     memberId,
-			EarnedPoints: int32(profile.ActivityPoints),
+			EarnedPoints: int32(settings.ActivityTrackingGrant.Int32),
 		})
 		if err != nil {
 			_ = tx.Rollback(ctx)
@@ -363,7 +375,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			GrantType:    string(models.ActivityTypeChat),
 			GuildID:      guildId,
 			MemberID:     memberId,
-			EarnedPoints: int32(profile.ActivityPoints),
+			EarnedPoints: int32(settings.ActivityTrackingGrant.Int32),
 		})
 		if err != nil {
 			_ = tx.Rollback(ctx)
