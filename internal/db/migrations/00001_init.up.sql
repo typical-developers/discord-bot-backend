@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS guild_active_voice_rooms (
 
 CREATE TABLE IF NOT EXISTS guild_activity_roles (
     insert_epoch INT DEFAULT EXTRACT (EPOCH FROM now()),
-    grant_type TEXT NOT NULL,
     guild_id TEXT NOT NULL,
     role_id TEXT NOT NULL,
     required_points INT DEFAULT 0,

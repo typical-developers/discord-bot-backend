@@ -61,95 +61,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild/{guild_id}/create-settings": {
-            "post": {
-                "security": [
-                    {
-                        "APIKeyAuth": []
-                    }
-                ],
-                "tags": [
-                    "Guilds"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The guild ID.",
-                        "name": "guild_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/guild/{guild_id}/member/{member_id}/create-profile": {
-            "post": {
-                "security": [
-                    {
-                        "APIKeyAuth": []
-                    }
-                ],
-                "tags": [
-                    "Members"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The guild ID.",
-                        "name": "guild_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The member ID.",
-                        "name": "member_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/guild/{guild_id}/member/{member_id}/profile": {
             "get": {
                 "security": [
@@ -226,6 +137,54 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/member/{member_id}/profile/create": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -346,7 +305,48 @@ const docTemplate = `{
                 }
             }
         },
-        "/guild/{guild_id}/update": {
+        "/guild/{guild_id}/settings/create": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/settings/update/activity": {
             "patch": {
                 "security": [
                     {
@@ -363,6 +363,71 @@ const docTemplate = `{
                         "name": "guild_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "The activity settings.",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateActivitySettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/settings/update/add-activity-role": {
+            "patch": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The activity settings.",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddActivityRole"
+                        }
                     }
                 ],
                 "responses": {
@@ -482,8 +547,42 @@ const docTemplate = `{
                 "progress": {
                     "type": "integer"
                 },
-                "remaining_points": {
+                "required_points": {
                     "type": "integer"
+                },
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivitySettings": {
+            "type": "object",
+            "properties": {
+                "cooldown": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "grant_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.ActivityType": {
+            "type": "string",
+            "enum": [
+                "chat"
+            ],
+            "x-enum-varnames": [
+                "ActivityTypeChat"
+            ]
+        },
+        "models.AddActivityRole": {
+            "type": "object",
+            "properties": {
+                "grant_type": {
+                    "$ref": "#/definitions/models.ActivityType"
                 },
                 "required_points": {
                     "type": "integer"
@@ -560,6 +659,14 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.ActivityRole"
                     }
+                }
+            }
+        },
+        "models.UpdateActivitySettings": {
+            "type": "object",
+            "properties": {
+                "chat_activity": {
+                    "$ref": "#/definitions/models.ActivitySettings"
                 }
             }
         }

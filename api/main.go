@@ -37,16 +37,17 @@ func Register(app *fiber.App) {
 
 		guild.Get("/activity-leaderboard/card", guildSnowflakeHandler, ActivityLeaderboardCard)
 
-		guild.Post("/create-settings", guildSnowflakeHandler, CreateGuildSettings)
 		guild.Get("/settings", guildSnowflakeHandler, GetGuildSettings)
-		guild.Patch("/update-settings", guildSnowflakeHandler, UpdateGuildSettings)
+		guild.Post("/settings/create", guildSnowflakeHandler, CreateGuildSettings)
+		guild.Patch("/settings/update/activity", guildSnowflakeHandler, UpdateGuildActivitySettings)
+		guild.Post("/settings/update/add-activity-role", guildSnowflakeHandler, GuildAddActivityRole)
 
 		member := guild.Group("/member/:member_id")
 		{
 			memberSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "member_id"})
 
-			member.Post("/create-profile", memberSnowflakeHandler, CreateMemberProfile)
 			member.Get("/profile", memberSnowflakeHandler, GetMemberProfile)
+			member.Post("/profile/create", memberSnowflakeHandler, CreateMemberProfile)
 			member.Get("/profile/card", memberSnowflakeHandler, MemberProfileCard)
 			member.Post("/profile/increment-points", memberSnowflakeHandler, IncrementActivityPoints)
 		}

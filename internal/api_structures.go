@@ -44,10 +44,9 @@ func (a ActivityType) Valid() bool {
 }
 
 type ActivityRoleProgress struct {
-	RoleID          string `json:"role_id"`
-	Progress        int    `json:"progress"`
-	RemainingPoints int    `json:"remaining_points"`
-	RequiredPoints  int    `json:"required_points"`
+	RoleID         string `json:"role_id"`
+	Progress       int    `json:"progress"`
+	RequiredPoints int    `json:"required_points"`
 }
 
 type MemberRoles struct {
@@ -73,7 +72,27 @@ type APIResponse[T any] struct {
 	Data    T    `json:"data,omitempty"`
 }
 
+// ---------------------------------------------------------------------
+
 type ChatActivityRoleQuery struct {
 	Title  string `json:"title"`
 	Accent string `json:"accent"`
+}
+
+// ---------------------------------------------------------------------
+
+type ActivitySettings struct {
+	Enabled     *bool  `json:"enabled,omitempty"`
+	Cooldown    *int32 `json:"cooldown,omitempty"`
+	GrantAmount *int32 `json:"grant_amount,omitempty"`
+}
+
+type UpdateActivitySettings struct {
+	ChatActivity ActivitySettings `json:"chat_activity"`
+}
+
+type AddActivityRole struct {
+	GrantType      ActivityType `json:"grant_type"`
+	RoleID         string       `json:"role_id"`
+	RequiredPoints int          `json:"required_points"`
 }

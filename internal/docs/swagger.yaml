@@ -44,8 +44,30 @@ definitions:
     properties:
       progress:
         type: integer
-      remaining_points:
+      required_points:
         type: integer
+      role_id:
+        type: string
+    type: object
+  models.ActivitySettings:
+    properties:
+      cooldown:
+        type: integer
+      enabled:
+        type: boolean
+      grant_amount:
+        type: integer
+    type: object
+  models.ActivityType:
+    enum:
+    - chat
+    type: string
+    x-enum-varnames:
+    - ActivityTypeChat
+  models.AddActivityRole:
+    properties:
+      grant_type:
+        $ref: '#/definitions/models.ActivityType'
       required_points:
         type: integer
       role_id:
@@ -96,6 +118,11 @@ definitions:
           $ref: '#/definitions/models.ActivityRole'
         type: array
     type: object
+  models.UpdateActivitySettings:
+    properties:
+      chat_activity:
+        $ref: '#/definitions/models.ActivitySettings'
+    type: object
 info:
   contact: {}
   description: The API for the main Typical Developers Discord bot.
@@ -142,61 +169,6 @@ paths:
       summary: Get the HTML generation for a member's profile card.
       tags:
       - HTML Generation
-  /guild/{guild_id}/create-settings:
-    post:
-      parameters:
-      - description: The guild ID.
-        in: path
-        name: guild_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse-GuildSettings'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-      security:
-      - APIKeyAuth: []
-      tags:
-      - Guilds
-  /guild/{guild_id}/member/{member_id}/create-profile:
-    post:
-      parameters:
-      - description: The guild ID.
-        in: path
-        name: guild_id
-        required: true
-        type: string
-      - description: The member ID.
-        in: path
-        name: member_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse-MemberProfile'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIResponse-ErrorResponse'
-      security:
-      - APIKeyAuth: []
-      tags:
-      - Members
   /guild/{guild_id}/member/{member_id}/profile:
     get:
       parameters:
@@ -254,6 +226,36 @@ paths:
       summary: Get the HTML generation for a member's profile card.
       tags:
       - HTML Generation
+  /guild/{guild_id}/member/{member_id}/profile/create:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-MemberProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Members
   /guild/{guild_id}/member/{member_id}/profile/increment-points:
     post:
       parameters:
@@ -320,7 +322,32 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
-  /guild/{guild_id}/update:
+  /guild/{guild_id}/settings/create:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-GuildSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /guild/{guild_id}/settings/update/activity:
     patch:
       parameters:
       - description: The guild ID.
@@ -328,6 +355,47 @@ paths:
         name: guild_id
         required: true
         type: string
+      - description: The activity settings.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateActivitySettings'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-GuildSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /guild/{guild_id}/settings/update/add-activity-role:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddActivityRole'
       responses:
         "200":
           description: OK

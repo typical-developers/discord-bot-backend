@@ -44,7 +44,7 @@ ORDER BY required_points ASC
 
 type GetGuildActivityRolesParams struct {
 	GuildID      string
-	ActivityType string
+	ActivityType pgtype.Text
 }
 
 type GetGuildActivityRolesRow struct {
@@ -101,4 +101,56 @@ func (q *Queries) GetGuildSettings(ctx context.Context, guildID string) (GetGuil
 		&i.ActivityTrackingCooldown,
 	)
 	return i, err
+}
+
+const insertActivityRole = `-- name: InsertActivityRole :exec
+INSERT INTO guild_activity_roles (guild_id, grant_type, role_id, required_points)
+    VALUES ($1, $2, $3, $4::INT)
+ON CONFLICT DO NOTHING
+`
+
+type InsertActivityRoleParams struct {
+	GuildID        string
+	GrantType      pgtype.Text
+	RoleID         string
+	RequiredPoints int32
+}
+
+func (q *Queries) InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error {
+	_, err := q.db.Exec(ctx, insertActivityRole,
+		arg.GuildID,
+		arg.GrantType,
+		arg.RoleID,
+		arg.RequiredPoints,
+	)
+	return err
+}
+
+const updateActivitySettings = `-- name: UpdateActivitySettings :exec
+INSERT INTO
+    guild_settings (guild_id, activity_tracking, activity_tracking_grant, activity_tracking_cooldown)
+    VALUES ($1, $2, $3, $4)
+ON CONFLICT (guild_id)
+DO UPDATE SET
+    activity_tracking = COALESCE($2, guild_settings.activity_tracking),
+    activity_tracking_grant = COALESCE($3, guild_settings.activity_tracking_grant),
+    activity_tracking_cooldown = COALESCE($4, guild_settings.activity_tracking_cooldown)
+RETURNING insert_epoch, guild_id, activity_tracking, activity_tracking_grant, activity_tracking_cooldown
+`
+
+type UpdateActivitySettingsParams struct {
+	GuildID                  string
+	ActivityTracking         pgtype.Bool
+	ActivityTrackingGrant    pgtype.Int4
+	ActivityTrackingCooldown pgtype.Int4
+}
+
+func (q *Queries) UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error {
+	_, err := q.db.Exec(ctx, updateActivitySettings,
+		arg.GuildID,
+		arg.ActivityTracking,
+		arg.ActivityTrackingGrant,
+		arg.ActivityTrackingCooldown,
+	)
+	return err
 }

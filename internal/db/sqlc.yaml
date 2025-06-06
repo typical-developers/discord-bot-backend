@@ -11,3 +11,8 @@ sql:
         package: "db"
         out: "."
         sql_package: "pgx/v5"
+        emit_interface: true 
+        # overrides:
+        #   - db_type: "pg_catalog.bool"
+        #     go_type: "bool"
+        #     nullable: true
