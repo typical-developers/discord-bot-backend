@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
@@ -156,8 +155,6 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 			},
 		})
 	}
-
-	println(fmt.Sprintf("activitySettings: %+v", activitySettings))
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
