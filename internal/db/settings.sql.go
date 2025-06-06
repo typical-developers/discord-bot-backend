@@ -44,7 +44,7 @@ ORDER BY required_points ASC
 
 type GetGuildActivityRolesParams struct {
 	GuildID      string
-	ActivityType pgtype.Text
+	ActivityType string
 }
 
 type GetGuildActivityRolesRow struct {
@@ -111,7 +111,7 @@ ON CONFLICT DO NOTHING
 
 type InsertActivityRoleParams struct {
 	GuildID        string
-	GrantType      pgtype.Text
+	GrantType      string
 	RoleID         string
 	RequiredPoints int32
 }

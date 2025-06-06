@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -70,9 +69,21 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		ActivityPoints: 0,
 	})
 	if err != nil {
-		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		_ = tx.Rollback(ctx)
 
+		errCode, ok := dbutil.UnwrapSQLState(err)
+		if ok && errCode == dbutil.SQLStateUniqueViolation {
+			logger.Log.Debug("Guild already has settings.", "guild_id", guildId, "error", err)
+
+			return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "member already has profile.",
+				},
+			})
+		}
+
+		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -188,7 +199,6 @@ func GetMemberProfile(c *fiber.Ctx) error {
 		})
 	}
 
-	println(fmt.Sprintf("profile: %+v", profile))
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 
 	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)

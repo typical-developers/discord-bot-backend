@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS guild_profiles (
     member_id TEXT NOT NULL,
     card_style INT DEFAULT 0 NOT NULL,
     activity_points INT NOT NULL,
-    last_grant_epoch INT NOT NULL DEFAULT 0,
+    last_grant_epoch INT NOT NULL,
     PRIMARY KEY (guild_id, member_id)
 );
 

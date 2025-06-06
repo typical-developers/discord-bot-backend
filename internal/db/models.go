@@ -23,7 +23,7 @@ type GuildActivityRole struct {
 	GuildID        string
 	RoleID         string
 	RequiredPoints pgtype.Int4
-	GrantType      pgtype.Text
+	GrantType      string
 }
 
 type GuildActivityTrackingMonthly struct {

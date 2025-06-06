@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
@@ -255,11 +254,8 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 	defer connection.Release()
 
 	err := queries.InsertActivityRole(ctx, db.InsertActivityRoleParams{
-		GuildID: guildId,
-		GrantType: pgtype.Text{
-			String: string(activityRole.GrantType),
-			Valid:  true,
-		},
+		GuildID:        guildId,
+		GrantType:      string(activityRole.GrantType),
 		RoleID:         activityRole.RoleID,
 		RequiredPoints: int32(activityRole.RequiredPoints),
 	})

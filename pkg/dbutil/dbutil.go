@@ -51,11 +51,8 @@ func GetGuildSettings(ctx context.Context, queries *db.Queries, guildId string) 
 	}
 
 	chatGrantRoles, err := queries.GetGuildActivityRoles(ctx, db.GetGuildActivityRolesParams{
-		GuildID: guildId,
-		ActivityType: pgtype.Text{
-			String: string(models.ActivityTypeChat),
-			Valid:  true,
-		},
+		GuildID:      guildId,
+		ActivityType: string(models.ActivityTypeChat),
 	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
