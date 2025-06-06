@@ -305,7 +305,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 
 		leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
 			Rank:     int(rank.Rank),
-			Username: member.User.Username,
+			Username: fmt.Sprintf("@%s", member.User.Username),
 			Value:    int(rank.ActivityPoints),
 		})
 	}
