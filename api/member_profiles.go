@@ -251,11 +251,23 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	}
 
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
-	queries := db.New(connection)
+	tx, err := connection.Begin(ctx)
+	if err != nil {
+		logger.Log.Error("Failed to start transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+	queries := db.New(connection).WithTx(tx)
 	defer connection.Release()
 
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
+		_ = tx.Rollback(ctx)
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
@@ -274,6 +286,8 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		MemberID: memberId,
 	})
 	if err != nil {
+		_ = tx.Rollback(ctx)
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
@@ -310,6 +324,8 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			MemberID: memberId,
 		})
 		if err != nil {
+			_ = tx.Rollback(ctx)
+
 			logger.Log.Error("Failed to increment member chat activity points.", "guild_id", guildId, "member_id", memberId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
@@ -324,6 +340,42 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			ActivityPoints: updatedProfile.ActivityPoints,
 			LastGrantEpoch: updatedProfile.LastGrantEpoch,
 		}
+
+		err = queries.IncrementWeeklyActivityLeaderboard(ctx, db.IncrementWeeklyActivityLeaderboardParams{
+			GrantType:    string(models.ActivityTypeChat),
+			GuildID:      guildId,
+			MemberID:     memberId,
+			EarnedPoints: int32(profile.ActivityPoints),
+		})
+		if err != nil {
+			_ = tx.Rollback(ctx)
+
+			logger.Log.Error("Failed to increment weekly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
+			})
+		}
+
+		err = queries.IncrementMonthlyActivityLeaderboard(ctx, db.IncrementMonthlyActivityLeaderboardParams{
+			GrantType:    string(models.ActivityTypeChat),
+			GuildID:      guildId,
+			MemberID:     memberId,
+			EarnedPoints: int32(profile.ActivityPoints),
+		})
+		if err != nil {
+			_ = tx.Rollback(ctx)
+
+			logger.Log.Error("Failed to increment monthly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
+			})
+		}
 	}
 
 	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
@@ -332,6 +384,8 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		MemberID: memberId,
 	})
 	if err != nil {
+		_ = tx.Rollback(ctx)
+
 		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
@@ -341,8 +395,9 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		})
 	}
 
-	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
+	_ = tx.Commit(ctx)
 
+	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 	return c.JSON(models.APIResponse[models.MemberProfile]{
 		Success: true,
 		Data: models.MemberProfile{

@@ -16,7 +16,11 @@ type Querier interface {
 	GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
 	GetMemberRankings(ctx context.Context, arg GetMemberRankingsParams) (GetMemberRankingsRow, error)
+	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
+	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
 	IncrememberMemberChatActivityPoints(ctx context.Context, arg IncrememberMemberChatActivityPointsParams) (GuildProfile, error)
+	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
+	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
 	SetMemberChatActivityPoints(ctx context.Context, arg SetMemberChatActivityPointsParams) (GuildProfile, error)
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error

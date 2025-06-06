@@ -33,8 +33,22 @@ type GuildActivityTrackingMonthly struct {
 	EarnedPoints int32
 }
 
+type GuildActivityTrackingMonthlyCurrent struct {
+	GrantType    string
+	GuildID      string
+	MemberID     string
+	EarnedPoints int32
+}
+
 type GuildActivityTrackingWeekly struct {
 	WeekStart    int32
+	GuildID      string
+	MemberID     string
+	EarnedPoints int32
+}
+
+type GuildActivityTrackingWeeklyCurrent struct {
+	GrantType    string
 	GuildID      string
 	MemberID     string
 	EarnedPoints int32

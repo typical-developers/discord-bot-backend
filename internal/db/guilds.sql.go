@@ -54,3 +54,157 @@ func (q *Queries) GetAllTimeChatActivityRankings(ctx context.Context, arg GetAll
 	}
 	return items, nil
 }
+
+const getMonthlyActivityLeaderboard = `-- name: GetMonthlyActivityLeaderboard :many
+SELECT
+    CAST (
+        ROW_NUMBER() OVER (ORDER BY guild_activity_tracking_monthly_current.earned_points DESC) AS INT
+    ) AS rank,
+    member_id,
+    earned_points
+FROM guild_activity_tracking_monthly_current
+WHERE
+    guild_id = $1
+ORDER BY earned_points DESC
+LIMIT 15
+OFFSET $2
+`
+
+type GetMonthlyActivityLeaderboardParams struct {
+	GuildID  string
+	OffsetBy int32
+}
+
+type GetMonthlyActivityLeaderboardRow struct {
+	Rank         int32
+	MemberID     string
+	EarnedPoints int32
+}
+
+func (q *Queries) GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error) {
+	rows, err := q.db.Query(ctx, getMonthlyActivityLeaderboard, arg.GuildID, arg.OffsetBy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMonthlyActivityLeaderboardRow
+	for rows.Next() {
+		var i GetMonthlyActivityLeaderboardRow
+		if err := rows.Scan(&i.Rank, &i.MemberID, &i.EarnedPoints); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getWeeklyActivityLeaderboard = `-- name: GetWeeklyActivityLeaderboard :many
+SELECT
+    CAST (
+        ROW_NUMBER() OVER (ORDER BY guild_activity_tracking_weekly_current.earned_points DESC) AS INT
+    ) AS rank,
+    member_id,
+    earned_points
+FROM guild_activity_tracking_weekly_current
+WHERE
+    guild_id = $1
+ORDER BY earned_points DESC
+LIMIT 15
+OFFSET $2
+`
+
+type GetWeeklyActivityLeaderboardParams struct {
+	GuildID  string
+	OffsetBy int32
+}
+
+type GetWeeklyActivityLeaderboardRow struct {
+	Rank         int32
+	MemberID     string
+	EarnedPoints int32
+}
+
+func (q *Queries) GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error) {
+	rows, err := q.db.Query(ctx, getWeeklyActivityLeaderboard, arg.GuildID, arg.OffsetBy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetWeeklyActivityLeaderboardRow
+	for rows.Next() {
+		var i GetWeeklyActivityLeaderboardRow
+		if err := rows.Scan(&i.Rank, &i.MemberID, &i.EarnedPoints); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const incrementMonthlyActivityLeaderboard = `-- name: IncrementMonthlyActivityLeaderboard :exec
+INSERT INTO guild_activity_tracking_monthly_current (
+    grant_type, guild_id, member_id, earned_points
+)
+VALUES (
+    $1, $2, $3, $4
+)
+ON CONFLICT (grant_type, guild_id, member_id)
+DO UPDATE SET
+    earned_points = guild_activity_tracking_monthly_current.earned_points + $4
+WHERE
+    guild_activity_tracking_monthly_current.grant_type = $1
+`
+
+type IncrementMonthlyActivityLeaderboardParams struct {
+	GrantType    string
+	GuildID      string
+	MemberID     string
+	EarnedPoints int32
+}
+
+func (q *Queries) IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error {
+	_, err := q.db.Exec(ctx, incrementMonthlyActivityLeaderboard,
+		arg.GrantType,
+		arg.GuildID,
+		arg.MemberID,
+		arg.EarnedPoints,
+	)
+	return err
+}
+
+const incrementWeeklyActivityLeaderboard = `-- name: IncrementWeeklyActivityLeaderboard :exec
+INSERT INTO guild_activity_tracking_weekly_current (
+    grant_type, guild_id, member_id, earned_points
+)
+VALUES (
+    $1, $2, $3, $4
+)
+ON CONFLICT (grant_type, guild_id, member_id)
+DO UPDATE SET
+    earned_points = guild_activity_tracking_weekly_current.earned_points + $4
+WHERE
+    guild_activity_tracking_weekly_current.grant_type = $1
+`
+
+type IncrementWeeklyActivityLeaderboardParams struct {
+	GrantType    string
+	GuildID      string
+	MemberID     string
+	EarnedPoints int32
+}
+
+func (q *Queries) IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error {
+	_, err := q.db.Exec(ctx, incrementWeeklyActivityLeaderboard,
+		arg.GrantType,
+		arg.GuildID,
+		arg.MemberID,
+		arg.EarnedPoints,
+	)
+	return err
+}
