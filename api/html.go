@@ -198,9 +198,9 @@ func MemberProfileCard(c *fiber.Ctx) error {
 
 	avatarUrl := member.AvatarURL("100")
 	var chatActivityRole *html_page.ActivityRole
-	if roles.Recent != nil {
+	if roles.Current != nil {
 		for _, role := range guild.Roles {
-			if role.ID != roles.Recent.RoleID {
+			if role.ID != roles.Current.RoleID {
 				continue
 			}
 

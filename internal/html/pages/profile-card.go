@@ -91,8 +91,8 @@ func ProgressBar(props ProgressBarProps) Node {
 	pos1 := 100 - progress
 	pos2 := 200 - progress
 
-	progressText := fmt.Sprintf("%d/%d", props.CurrentProgress, props.RequiredProgress)
-	if props.CurrentProgress == props.RequiredProgress {
+	progressText := format.Sprintf("%d / %d", props.CurrentProgress, props.RequiredProgress)
+	if props.CurrentProgress >= props.RequiredProgress {
 		progressText = "MAX"
 
 		pos1 = 0
@@ -131,16 +131,16 @@ func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
 			Typography(TypographyProps{
 				Size:   FontSizeNormal,
 				Weight: FontWeightBlack,
-			}, Text(fmt.Sprintf("%s Activity", props.ActivityType))),
+			}, Text(format.Sprintf("%s Activity", props.ActivityType))),
 			Typography(TypographyProps{
 				Size:   FontSizeNormal,
 				Weight: FontWeightRegular,
-			}, Text(fmt.Sprintf("%d Points", props.TotalPoints))),
+			}, Text(format.Sprintf("%d Points", props.TotalPoints))),
 		),
 		Typography(TypographyProps{
 			Size:   FontSizeMedium,
 			Weight: FontWeightBlack,
-		}, Text(fmt.Sprintf("#%d", props.Rank))),
+		}, Text(format.Sprintf("#%d", props.Rank))),
 	)
 }
 

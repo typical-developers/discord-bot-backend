@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,7 +14,7 @@ import (
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
 )
 
-//	@Router		/guild/{guild_id}/member/{member_id}/create-profile [post]
+//	@Router		/guild/{guild_id}/member/{member_id}/profile/create [post]
 //	@Tags		Members
 //
 //	@Security	APIKeyAuth
@@ -120,8 +121,8 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
 				Points:       int(profile.ActivityPoints),
 				Roles: models.MemberRoles{
-					Next:     roles.Next,
-					Obtained: roles.Current,
+					Next: roles.Next,
+					// Obtained: roles.Current,
 				},
 			},
 		},
@@ -187,6 +188,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 		})
 	}
 
+	println(fmt.Sprintf("profile: %+v", profile))
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
 
 	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
@@ -201,7 +203,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 				Points:       int(profile.ActivityPoints),
 				Roles: models.MemberRoles{
 					Next:     roles.Next,
-					Obtained: roles.Current,
+					Obtained: roles.Obtained,
 				},
 			},
 		},
@@ -342,7 +344,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 				Points:       int(profile.ActivityPoints),
 				Roles: models.MemberRoles{
 					Next:     roles.Next,
-					Obtained: roles.Current,
+					Obtained: roles.Obtained,
 				},
 			},
 		},

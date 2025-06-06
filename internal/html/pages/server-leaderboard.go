@@ -2,7 +2,6 @@ package html_page
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	. "github.com/typical-developers/discord-bot-backend/internal/html/components"
@@ -57,7 +56,7 @@ func LeaderboardData(props LeaderboardDataProps) Node {
 	var rowItems []Node
 
 	for _, data := range props.Data {
-		value := strconv.Itoa(data.Value)
+		value := format.Sprintf("%d", data.Value)
 
 		d := Li(
 			Class("row-item"),
