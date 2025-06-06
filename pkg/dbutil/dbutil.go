@@ -107,13 +107,10 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 	var currentRole *models.ActivityRole
 
 	lastRequired := int32(0)
-	requiredPoints := int32(0)
 	for _, role := range activityRoles {
 		rolePoints := role.RequiredPoints.Int32
 
-		if requiredPoints <= int32(points)-lastRequired {
-			requiredPoints += rolePoints
-
+		if rolePoints <= int32(points)-lastRequired {
 			obtainedRole := models.ActivityRole{
 				RoleID:         role.RoleID,
 				RequiredPoints: int(rolePoints),
@@ -132,6 +129,7 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 			Progress:       points - int(lastRequired),
 			RequiredPoints: int(rolePoints - lastRequired),
 		}
+
 		break
 	}
 
