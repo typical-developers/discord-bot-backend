@@ -6,30 +6,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 )
 
-// Errors to help identify SQLState codes more cleanly.
-type SQLState string
-
-const (
-	SQLStateUniqueViolation SQLState = "23505"
-)
-
-// Utility to unwrap a pgconn.PgError cleanly.
-func UnwrapSQLState(err error) (SQLState, bool) {
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		return SQLState(pgErr.Code), true
-	}
-
-	return "", false
-}
-
+// Get a client from the pool.
 func Client(ctx context.Context) (*pgxpool.Conn, error) {
 	conn, err := db.Pool.Acquire(ctx)
 	if err != nil {
@@ -147,106 +129,5 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 		Next:     nextRole,
 		Current:  currentRole,
 		Obtained: obtainedRoles,
-	}
-}
-
-// ---------------------------------------------------------------------
-
-// All of this is essentially used for the scheduled tasks.
-// Tasks aren't on the backend itself in the event the API itself dies.
-// Also should make scaling easier if needed.
-
-func ResetWeeklyActivityLeaderboards(ctx context.Context) error {
-	connection, err := Client(ctx)
-	if err != nil {
-		return err
-	}
-
-	tx, err := connection.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	queries := db.New(connection).WithTx(tx)
-	defer connection.Release()
-
-	err = queries.ResetWeeklyActivityLeaderboard(ctx)
-	if err != nil {
-		_ = tx.Rollback(ctx)
-		return err
-	}
-
-	err = queries.TruncateWeeklyActivityLeaderboard(ctx)
-	if err != nil {
-		_ = tx.Rollback(ctx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ResetMonthlyActivityLeaderboards(ctx context.Context) error {
-	connection, err := Client(ctx)
-	if err != nil {
-		return err
-	}
-
-	tx, err := connection.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	queries := db.New(connection).WithTx(tx)
-	defer connection.Release()
-
-	err = queries.ResetMonthlyActivityLeaderboard(ctx)
-	if err != nil {
-		_ = tx.Rollback(ctx)
-		return err
-	}
-
-	err = queries.TruncateMonthlyActivityLeaderboard(ctx)
-	if err != nil {
-		_ = tx.Rollback(ctx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ---------------------------------------------------------------------
-// i hate pgx.
-
-func Bool(b *bool) pgtype.Bool {
-	if b == nil {
-		return pgtype.Bool{
-			Valid: false,
-		}
-	}
-
-	return pgtype.Bool{
-		Bool:  *b,
-		Valid: true,
-	}
-}
-
-func Int32(i *int32) pgtype.Int4 {
-	if i == nil {
-		return pgtype.Int4{
-			Valid: false,
-		}
-	}
-
-	return pgtype.Int4{
-		Int32: *i,
-		Valid: true,
 	}
 }
