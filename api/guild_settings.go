@@ -106,7 +106,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	var mappedChatRoles []models.ActivityRole
+	mappedChatRoles := []models.ActivityRole{}
 	for _, role := range settings.ChatActivityRoles {
 		mappedChatRoles = append(mappedChatRoles, models.ActivityRole{
 			RoleID:         role.RoleID,
