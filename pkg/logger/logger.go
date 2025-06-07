@@ -7,7 +7,12 @@ import (
 	"github.com/dusted-go/logging/prettylog"
 )
 
-var Log *slog.Logger
+type Logger struct {
+	*slog.Logger
+	WithSource *slog.Logger
+}
+
+var Log Logger
 
 func init() {
 	logLevel := slog.LevelInfo
@@ -16,11 +21,16 @@ func init() {
 		logLevel = slog.LevelDebug
 	}
 
-	prettyHandler := prettylog.NewHandler(&slog.HandlerOptions{
-		Level:       logLevel,
-		AddSource:   true,
-		ReplaceAttr: nil,
-	})
-
-	Log = slog.New(prettyHandler)
+	Log = Logger{
+		Logger: slog.New(prettylog.NewHandler(&slog.HandlerOptions{
+			Level:       logLevel,
+			AddSource:   false,
+			ReplaceAttr: nil,
+		})),
+		WithSource: slog.New(prettylog.NewHandler(&slog.HandlerOptions{
+			Level:       logLevel,
+			AddSource:   true,
+			ReplaceAttr: nil,
+		})),
+	}
 }

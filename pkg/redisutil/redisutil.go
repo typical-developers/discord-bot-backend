@@ -17,7 +17,7 @@ func GetCached[T any](ctx context.Context, key string) *T {
 
 	expanded, err := v.Expanded()
 	if err != nil {
-		logger.Log.Error("Failed to expand cached value: %s", "error", err)
+		logger.Log.WithSource.Error("Failed to expand cached value: %s", "error", err)
 		return nil
 	}
 
@@ -30,14 +30,14 @@ func GetCached[T any](ctx context.Context, key string) *T {
 
 	jsonBytes, err := json.Marshal(entry)
 	if err != nil {
-		logger.Log.Error("Failed to marshal cached data: %s", "error", err)
+		logger.Log.WithSource.Error("Failed to marshal cached data: %s", "error", err)
 		return nil
 	}
 
 	var t T
 	err = json.Unmarshal(jsonBytes, &t)
 	if err != nil {
-		logger.Log.Error("Failed to unmarshal cached data: %s", "error", err)
+		logger.Log.WithSource.Error("Failed to unmarshal cached data: %s", "error", err)
 		return nil
 	}
 

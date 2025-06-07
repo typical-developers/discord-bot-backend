@@ -138,7 +138,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get guild settings", "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -153,7 +153,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
@@ -171,7 +171,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 
 	guild, err := discord.Client.Cache.Guild(guildId)
 	if err != nil {
-		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -182,7 +182,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 
 	member, err := discord.Client.Cache.GuildMember(guildId, memberId)
 	if err != nil {
-		logger.Log.Error("Failed to get member info.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member info.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -280,7 +280,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 
 	guild, err := discord.Client.Cache.Guild(guildId)
 	if err != nil {
-		logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -308,7 +308,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 				})
 			}
 
-			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -351,7 +351,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 				})
 			}
 
-			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -394,7 +394,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 				})
 			}
 
-			logger.Log.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
+			logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{

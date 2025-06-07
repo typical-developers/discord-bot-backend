@@ -35,7 +35,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	tx, err := connection.Begin(ctx)
 	if err != nil {
-		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -59,7 +59,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get guild settings", "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -83,7 +83,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to create member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -97,7 +97,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		MemberID: memberId,
 	})
 	if err != nil {
-		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
 		_ = tx.Rollback(ctx)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
@@ -110,7 +110,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		logger.Log.Error("Failed to commit transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to commit transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -174,7 +174,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get guild settings", "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -189,7 +189,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
@@ -253,7 +253,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	tx, err := connection.Begin(ctx)
 	if err != nil {
-		logger.Log.Error("Failed to start transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to start transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -277,7 +277,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get guild settings", "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	if !settings.ActivityTracking.Bool {
@@ -307,7 +307,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member profile.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -338,7 +338,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		if err != nil {
 			_ = tx.Rollback(ctx)
 
-			logger.Log.Error("Failed to increment member chat activity points.", "guild_id", guildId, "member_id", memberId, "error", err)
+			logger.Log.WithSource.Error("Failed to increment member chat activity points.", "guild_id", guildId, "member_id", memberId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -362,7 +362,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		if err != nil {
 			_ = tx.Rollback(ctx)
 
-			logger.Log.Error("Failed to increment weekly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
+			logger.Log.WithSource.Error("Failed to increment weekly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -380,7 +380,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		if err != nil {
 			_ = tx.Rollback(ctx)
 
-			logger.Log.Error("Failed to increment monthly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
+			logger.Log.WithSource.Error("Failed to increment monthly activity leaderboard.", "guild_id", guildId, "member_id", memberId, "error", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 				Success: false,
 				Data: models.ErrorResponse{
@@ -398,7 +398,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	if err != nil {
 		_ = tx.Rollback(ctx)
 
-		logger.Log.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
+		logger.Log.WithSource.Error("Failed to get member rankings.", "guild_id", guildId, "member_id", memberId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{

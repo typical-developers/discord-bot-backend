@@ -47,7 +47,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to create guild settings.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to create guild settings.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -102,7 +102,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 			})
 		}
 
-		logger.Log.Error("Failed to get guild settings", "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -167,7 +167,7 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 		ActivityTrackingCooldown: dbutil.Int32(activitySettings.ChatActivity.Cooldown),
 	})
 	if err != nil {
-		logger.Log.Error("Failed to update guild settings.", "guild_id", guildId, "error", err, "settings", activitySettings)
+		logger.Log.WithSource.Error("Failed to update guild settings.", "guild_id", guildId, "error", err, "settings", activitySettings)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -178,7 +178,7 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
-		logger.Log.Error("Failed to get guild settings.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -257,7 +257,7 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 		RequiredPoints: int32(activityRole.RequiredPoints),
 	})
 	if err != nil {
-		logger.Log.Error("Failed to add activity role.", "guild_id", guildId, "error", err, "role", activityRole)
+		logger.Log.WithSource.Error("Failed to add activity role.", "guild_id", guildId, "error", err, "role", activityRole)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -268,7 +268,7 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
-		logger.Log.Error("Failed to get guild settings.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get guild settings.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{

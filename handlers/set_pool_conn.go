@@ -10,7 +10,7 @@ import (
 func SetPoolConn(c *fiber.Ctx) error {
 	conn, err := dbutil.Client(c.Context())
 	if err != nil {
-		logger.Log.Error("Failed to get database connection", "error", err)
+		logger.Log.WithSource.Error("Failed to get database connection", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{

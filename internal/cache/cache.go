@@ -26,7 +26,7 @@ func init() {
 	if db := os.Getenv("REDIS_DB"); db != "" {
 		dbNum, err := strconv.Atoi(db)
 		if err != nil {
-			logger.Log.Error("Failed to parse REDIS_DB as int, using default (0) instead.", "error", err)
+			logger.Log.WithSource.Error("Failed to parse REDIS_DB as int, using default (0) instead.", "error", err)
 		} else {
 			opts.DB = dbNum
 		}
