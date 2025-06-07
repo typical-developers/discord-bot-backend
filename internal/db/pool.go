@@ -13,7 +13,7 @@ import (
 
 var (
 	once sync.Once
-	pool *pgxpool.Pool
+	Pool *pgxpool.Pool
 )
 
 const (
@@ -47,19 +47,19 @@ func InitalizePool() (*pgxpool.Pool, error) {
 			return true
 		}
 
-		pool, dbError = pgxpool.NewWithConfig(ctx, config)
+		Pool, dbError = pgxpool.NewWithConfig(ctx, config)
 
 		if dbError != nil {
 			return
 		}
 
-		dbError = pool.Ping(ctx)
+		dbError = Pool.Ping(ctx)
 		if dbError != nil {
 			return
 		}
 	})
 
-	return pool, dbError
+	return Pool, dbError
 }
 
 func init() {
@@ -67,13 +67,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func Client(ctx context.Context) (*pgxpool.Conn, error) {
-	conn, err := pool.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
 }

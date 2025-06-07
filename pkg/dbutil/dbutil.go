@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	models "github.com/typical-developers/discord-bot-backend/internal"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 )
@@ -27,6 +28,15 @@ func UnwrapSQLState(err error) (SQLState, bool) {
 	}
 
 	return "", false
+}
+
+func Client(ctx context.Context) (*pgxpool.Conn, error) {
+	conn, err := db.Pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
 }
 
 // ---------------------------------------------------------------------
@@ -147,7 +157,7 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 // Also should make scaling easier if needed.
 
 func ResetWeeklyActivityLeaderboards(ctx context.Context) error {
-	connection, err := db.Client(ctx)
+	connection, err := Client(ctx)
 	if err != nil {
 		return err
 	}
@@ -180,7 +190,7 @@ func ResetWeeklyActivityLeaderboards(ctx context.Context) error {
 }
 
 func ResetMonthlyActivityLeaderboards(ctx context.Context) error {
-	connection, err := db.Client(ctx)
+	connection, err := Client(ctx)
 	if err != nil {
 		return err
 	}
