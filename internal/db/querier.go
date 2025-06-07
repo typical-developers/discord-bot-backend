@@ -22,7 +22,11 @@ type Querier interface {
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
+	ResetMonthlyActivityLeaderboard(ctx context.Context) error
+	ResetWeeklyActivityLeaderboard(ctx context.Context) error
 	SetMemberChatActivityPoints(ctx context.Context, arg SetMemberChatActivityPointsParams) (GuildProfile, error)
+	TruncateMonthlyActivityLeaderboard(ctx context.Context) error
+	TruncateWeeklyActivityLeaderboard(ctx context.Context) error
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
 }
 

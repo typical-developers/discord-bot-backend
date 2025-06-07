@@ -141,6 +141,78 @@ func MapMemberRoles(points int, activityRoles []db.GetGuildActivityRolesRow) Mem
 }
 
 // ---------------------------------------------------------------------
+
+// All of this is essentially used for the scheduled tasks.
+// Tasks aren't on the backend itself in the event the API itself dies.
+// Also should make scaling easier if needed.
+
+func ResetWeeklyActivityLeaderboards(ctx context.Context) error {
+	connection, err := db.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	tx, err := connection.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	queries := db.New(connection).WithTx(tx)
+	defer connection.Release()
+
+	err = queries.ResetWeeklyActivityLeaderboard(ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	err = queries.TruncateWeeklyActivityLeaderboard(ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ResetMonthlyActivityLeaderboards(ctx context.Context) error {
+	connection, err := db.Client(ctx)
+	if err != nil {
+		return err
+	}
+
+	tx, err := connection.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	queries := db.New(connection).WithTx(tx)
+	defer connection.Release()
+
+	err = queries.ResetMonthlyActivityLeaderboard(ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	err = queries.TruncateMonthlyActivityLeaderboard(ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ---------------------------------------------------------------------
 // i hate pgx.
 
 func Bool(b *bool) pgtype.Bool {

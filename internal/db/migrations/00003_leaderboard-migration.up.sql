@@ -1,3 +1,6 @@
+-- This is to migrate leaderboards to use separate tables.
+-- Having all of the current data in it's own table should optimize querying.
+
 CREATE TABLE IF NOT EXISTS guild_activity_tracking_monthly_current (
     grant_type TEXT NOT NULL DEFAULT 'chat',
     guild_id TEXT NOT NULL,

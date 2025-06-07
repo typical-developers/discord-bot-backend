@@ -208,3 +208,83 @@ func (q *Queries) IncrementWeeklyActivityLeaderboard(ctx context.Context, arg In
 	)
 	return err
 }
+
+const resetMonthlyActivityLeaderboard = `-- name: ResetMonthlyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_monthly AS archive
+USING (
+    SELECT
+        EXTRACT(epoch FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT AS month_start,
+        *
+    FROM guild_activity_tracking_monthly_current
+) AS current_leaderboard
+ON
+    archive.month_start = current_leaderboard.month_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (month_start, grant_type, guild_id, member_id, earned_points)
+    VALUES (
+        current_leaderboard.month_start,
+        current_leaderboard.grant_type,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.earned_points
+    )
+`
+
+func (q *Queries) ResetMonthlyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, resetMonthlyActivityLeaderboard)
+	return err
+}
+
+const resetWeeklyActivityLeaderboard = `-- name: ResetWeeklyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_weekly AS archive
+USING (
+    SELECT
+        EXTRACT(epoch FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT AS week_start,
+        *
+    FROM guild_activity_tracking_weekly_current
+) AS current_leaderboard
+ON
+    archive.week_start = current_leaderboard.week_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (week_start, grant_type, guild_id, member_id, earned_points)
+    VALUES (
+        current_leaderboard.week_start,
+        current_leaderboard.grant_type,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.earned_points
+    )
+`
+
+func (q *Queries) ResetWeeklyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, resetWeeklyActivityLeaderboard)
+	return err
+}
+
+const truncateMonthlyActivityLeaderboard = `-- name: TruncateMonthlyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_monthly_current
+`
+
+func (q *Queries) TruncateMonthlyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, truncateMonthlyActivityLeaderboard)
+	return err
+}
+
+const truncateWeeklyActivityLeaderboard = `-- name: TruncateWeeklyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_weekly_current
+`
+
+func (q *Queries) TruncateWeeklyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, truncateWeeklyActivityLeaderboard)
+	return err
+}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 
@@ -23,6 +24,10 @@ const (
 func InitalizePool() (*pgxpool.Pool, error) {
 	ctx := context.Background()
 	connectionUrl := os.Getenv("POSTGRES_URL")
+
+	if connectionUrl == "" {
+		return nil, fmt.Errorf("POSTGRES_URL is not set.")
+	}
 
 	var dbError error
 	once.Do(func() {
@@ -55,6 +60,13 @@ func InitalizePool() (*pgxpool.Pool, error) {
 	})
 
 	return pool, dbError
+}
+
+func init() {
+	_, err := InitalizePool()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func Client(ctx context.Context) (*pgxpool.Conn, error) {
