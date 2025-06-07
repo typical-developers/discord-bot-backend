@@ -65,6 +65,7 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
 				ActivityRoles:   []models.ActivityRole{},
 			},
+			VoiceRooms: []models.VoiceRoomLobbyConfig{},
 		},
 	})
 }
@@ -114,6 +115,22 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		})
 	}
 
+	voiceRooms, err := queries.GetVoiceRoomLobbies(ctx, guildId)
+	if err != nil {
+		logger.Log.WithSource.Error("Failed to get voice room lobbies.", "guild_id", guildId, "error", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	mappVoiceRooms := []models.VoiceRoomLobbyConfig{}
+	for _, room := range voiceRooms {
+		mappVoiceRooms = append(mappVoiceRooms, models.VoiceRoomLobbyConfig{
+			ChannelID:      room.VoiceChannelID,
+			UserLimit:      int(room.UserLimit),
+			CanRename:      room.CanRename,
+			CanLock:        room.CanLock,
+			CanAdjustLimit: room.CanAdjustLimit,
+		})
+	}
+
 	return c.JSON(models.APIResponse[models.GuildSettings]{
 		Success: true,
 		Data: models.GuildSettings{
@@ -123,6 +140,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
 				ActivityRoles:   mappedChatRoles,
 			},
+			VoiceRooms: mappVoiceRooms,
 		},
 	})
 }
@@ -216,7 +234,7 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 //	@Param		guild_id	path		string					true	"The guild ID."
 //	@Param		role		body		models.AddActivityRole	true	"The activity settings."
 //
-//	@Success	200			{object}	models.APIResponse[GuildSettings]
+//	@Success	200			{object}	models.APIResponse[[]models.ActivityRole]
 //
 //	@Failure	400			{object}	models.APIResponse[ErrorResponse]
 //	@Failure	404			{object}	models.APIResponse[ErrorResponse]
@@ -266,9 +284,12 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 		})
 	}
 
-	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
+	activityRoles, err := queries.GetGuildActivityRoles(ctx, db.GetGuildActivityRolesParams{
+		GuildID:      guildId,
+		ActivityType: string(models.ActivityTypeChat),
+	})
 	if err != nil {
-		logger.Log.WithSource.Error("Failed to get guild settings.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get activity roles.", "guild_id", guildId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -278,22 +299,15 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 	}
 
 	var mappedChatRoles []models.ActivityRole
-	for _, role := range settings.ChatActivityRoles {
+	for _, role := range activityRoles {
 		mappedChatRoles = append(mappedChatRoles, models.ActivityRole{
 			RoleID:         role.RoleID,
 			RequiredPoints: int(role.RequiredPoints.Int32),
 		})
 	}
 
-	return c.JSON(models.APIResponse[models.GuildSettings]{
+	return c.JSON(models.APIResponse[[]models.ActivityRole]{
 		Success: true,
-		Data: models.GuildSettings{
-			ChatActivity: models.ActivityConfig{
-				IsEnabled:       settings.ActivityTracking.Bool,
-				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
-				ActivityRoles:   mappedChatRoles,
-			},
-		},
+		Data:    mappedChatRoles,
 	})
 }

@@ -20,8 +20,17 @@ type ActivityConfig struct {
 	ActivityRoles   []ActivityRole `json:"activity_roles"`
 }
 
+type VoiceRoomLobbyConfig struct {
+	ChannelID      string `json:"channel_id"`
+	UserLimit      int    `json:"user_limit"`
+	CanRename      bool   `json:"can_rename"`
+	CanLock        bool   `json:"can_lock"`
+	CanAdjustLimit bool   `json:"can_adjust_limit"`
+}
+
 type GuildSettings struct {
-	ChatActivity ActivityConfig `json:"chat_activity"`
+	ChatActivity ActivityConfig         `json:"chat_activity"`
+	VoiceRooms   []VoiceRoomLobbyConfig `json:"voice_rooms"`
 }
 
 // ---------------------------------------------------------------------

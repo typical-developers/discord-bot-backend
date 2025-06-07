@@ -5,6 +5,7 @@ sql:
       - queries/members.sql
       - queries/settings.sql
       - queries/guilds.sql
+      - queries/voice-rooms.sql
     schema: migrations
     gen:
       go:

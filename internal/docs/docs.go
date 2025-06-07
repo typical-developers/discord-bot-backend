@@ -446,7 +446,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse-GuildSettings"
+                            "$ref": "#/definitions/models.APIResponse-array_models_ActivityRole"
                         }
                     },
                     "400": {
@@ -516,6 +516,20 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/models.MemberProfile"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.APIResponse-array_models_ActivityRole": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityRole"
+                    }
                 },
                 "success": {
                     "type": "boolean"
@@ -626,6 +640,12 @@ const docTemplate = `{
             "properties": {
                 "chat_activity": {
                     "$ref": "#/definitions/models.ActivityConfig"
+                },
+                "voice_rooms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VoiceRoomLobbyConfig"
+                    }
                 }
             }
         },
@@ -679,6 +699,26 @@ const docTemplate = `{
             "properties": {
                 "chat_activity": {
                     "$ref": "#/definitions/models.ActivitySettings"
+                }
+            }
+        },
+        "models.VoiceRoomLobbyConfig": {
+            "type": "object",
+            "properties": {
+                "can_adjust_limit": {
+                    "type": "boolean"
+                },
+                "can_lock": {
+                    "type": "boolean"
+                },
+                "can_rename": {
+                    "type": "boolean"
+                },
+                "channel_id": {
+                    "type": "string"
+                },
+                "user_limit": {
+                    "type": "integer"
                 }
             }
         }

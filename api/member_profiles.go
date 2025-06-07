@@ -229,7 +229,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 //	@Param		member_id		path		string				true	"The member ID."
 //	@Param		activity_type	query		models.ActivityType	true	"The activity type."
 //
-//	@Success	200				{object}	models.APIResponse[MemberProfile]
+//	@Success	200				{object}	models.APIResponse[MemberActivity]
 //
 //	@Failure	400				{object}	models.APIResponse[ErrorResponse]
 //	@Failure	500				{object}	models.APIResponse[ErrorResponse]
@@ -280,16 +280,6 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	if !settings.ActivityTracking.Bool {
-		_ = tx.Rollback(ctx)
-
-		return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "activity tracking is not enabled.",
-			},
-		})
-	}
 
 	profile, err := queries.GetMemberProfile(ctx, db.GetMemberProfileParams{
 		GuildID:  guildId,
@@ -319,6 +309,17 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	lastGrant := time.Unix(int64(profile.LastGrantEpoch), 0)
 	cooldown := int(settings.ActivityTrackingCooldown.Int32)
 	if activityType == models.ActivityTypeChat {
+		if !settings.ActivityTracking.Bool {
+			_ = tx.Rollback(ctx)
+
+			return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "activity tracking is not enabled.",
+				},
+			})
+		}
+
 		if dbutil.IsMemberOnCooldown(lastGrant, cooldown) {
 			_ = tx.Rollback(ctx)
 
@@ -410,19 +411,16 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	_ = tx.Commit(ctx)
 
 	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
-	return c.JSON(models.APIResponse[models.MemberProfile]{
+	return c.JSON(models.APIResponse[models.MemberActivity]{
 		Success: true,
-		Data: models.MemberProfile{
-			CardStyle: models.CardStyle(profile.CardStyle),
-			ChatActivity: models.MemberActivity{
-				Rank:         int(rankings.ChatRank),
-				LastGrant:    grantTime,
-				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, cooldown),
-				Points:       int(profile.ActivityPoints),
-				Roles: models.MemberRoles{
-					Next:     roles.Next,
-					Obtained: roles.Obtained,
-				},
+		Data: models.MemberActivity{
+			Rank:         int(rankings.ChatRank),
+			LastGrant:    grantTime,
+			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, cooldown),
+			Points:       int(profile.ActivityPoints),
+			Roles: models.MemberRoles{
+				Next:     roles.Next,
+				Obtained: roles.Obtained,
 			},
 		},
 	})

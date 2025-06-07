@@ -20,6 +20,15 @@ definitions:
       success:
         type: boolean
     type: object
+  models.APIResponse-array_models_ActivityRole:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.ActivityRole'
+        type: array
+      success:
+        type: boolean
+    type: object
   models.ActivityConfig:
     properties:
       activity_roles:
@@ -88,6 +97,10 @@ definitions:
     properties:
       chat_activity:
         $ref: '#/definitions/models.ActivityConfig'
+      voice_rooms:
+        items:
+          $ref: '#/definitions/models.VoiceRoomLobbyConfig'
+        type: array
     type: object
   models.MemberActivity:
     properties:
@@ -122,6 +135,19 @@ definitions:
     properties:
       chat_activity:
         $ref: '#/definitions/models.ActivitySettings'
+    type: object
+  models.VoiceRoomLobbyConfig:
+    properties:
+      can_adjust_limit:
+        type: boolean
+      can_lock:
+        type: boolean
+      can_rename:
+        type: boolean
+      channel_id:
+        type: string
+      user_limit:
+        type: integer
     type: object
 info:
   contact: {}
@@ -409,7 +435,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse-GuildSettings'
+            $ref: '#/definitions/models.APIResponse-array_models_ActivityRole'
         "400":
           description: Bad Request
           schema:

@@ -11,12 +11,16 @@ import (
 type Querier interface {
 	CreateGuildSettings(ctx context.Context, guildID string) (GuildSetting, error)
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
+	CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
+	DeleteVoiceRoomLobby(ctx context.Context, arg DeleteVoiceRoomLobbyParams) error
 	GetAllTimeChatActivityRankings(ctx context.Context, arg GetAllTimeChatActivityRankingsParams) ([]GetAllTimeChatActivityRankingsRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
 	GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
 	GetMemberRankings(ctx context.Context, arg GetMemberRankingsParams) (GetMemberRankingsRow, error)
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
+	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error)
+	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
 	IncrememberMemberChatActivityPoints(ctx context.Context, arg IncrememberMemberChatActivityPointsParams) (GuildProfile, error)
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
@@ -28,6 +32,7 @@ type Querier interface {
 	TruncateMonthlyActivityLeaderboard(ctx context.Context) error
 	TruncateWeeklyActivityLeaderboard(ctx context.Context) error
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
+	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 }
 
 var _ Querier = (*Queries)(nil)

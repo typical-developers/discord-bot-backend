@@ -51,6 +51,16 @@ func Register(app *fiber.App) {
 			member.Get("/profile/card", memberSnowflakeHandler, MemberProfileCard)
 			member.Post("/profile/increment-points", memberSnowflakeHandler, IncrementActivityPoints)
 		}
+
+		voiceRoom := guild.Group("/voice-room/:channel_id")
+		{
+			voiceRoomSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "channel_id"})
+
+			voiceRoom.Post("/create", voiceRoomSnowflakeHandler, CreateVoiceRoomLobby)
+			voiceRoom.Get("/", voiceRoomSnowflakeHandler, CreateVoiceRoomLobby)
+			voiceRoom.Patch("/update", voiceRoomSnowflakeHandler, UpdateVoiceRoomLobby)
+			voiceRoom.Delete("/delete", voiceRoomSnowflakeHandler, UpdateVoiceRoomLobby)
+		}
 	}
 
 	// All HTML related assets are publicly accessible if the endpoint is known.
