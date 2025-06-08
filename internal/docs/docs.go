@@ -252,7 +252,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse-MemberProfile"
+                            "$ref": "#/definitions/models.APIResponse-MemberActivity"
                         }
                     },
                     "400": {
@@ -470,6 +470,240 @@ const docTemplate = `{
                 }
             }
         },
+        "/guild/{guild_id}/voice-room/lobby/{channel_id}": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Voice Room Lobbies"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-models_VoiceRoomLobbyConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/voice-room/lobby/{channel_id}/create": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Voice Room Lobbies"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The activity settings.",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VoiceRoomLobbyModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-array_models_VoiceRoomLobbyConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/voice-room/lobby/{channel_id}/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Voice Room Lobbies"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-array_models_VoiceRoomLobbyConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/guild/{guild_id}/voice-room/lobby/{channel_id}/update": {
+            "patch": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Voice Room Lobbies"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The activity settings.",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VoiceRoomLobbyModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-models_VoiceRoomLobbyConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse-ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/{file}": {
             "get": {
                 "tags": [
@@ -511,6 +745,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.APIResponse-MemberActivity": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.MemberActivity"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.APIResponse-MemberProfile": {
             "type": "object",
             "properties": {
@@ -530,6 +775,31 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.ActivityRole"
                     }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.APIResponse-array_models_VoiceRoomLobbyConfig": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VoiceRoomLobbyConfig"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.APIResponse-models_VoiceRoomLobbyConfig": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.VoiceRoomLobbyConfig"
                 },
                 "success": {
                     "type": "boolean"
@@ -721,6 +991,23 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "models.VoiceRoomLobbyModify": {
+            "type": "object",
+            "properties": {
+                "can_adjust_limit": {
+                    "type": "boolean"
+                },
+                "can_lock": {
+                    "type": "boolean"
+                },
+                "can_rename": {
+                    "type": "boolean"
+                },
+                "user_limit": {
+                    "type": "integer"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -734,6 +1021,14 @@ const docTemplate = `{
         {
             "description": "Guild endpoints.",
             "name": "Guilds"
+        },
+        {
+            "description": "Voice room lobby endpoints.",
+            "name": "Voice Room Lobbies"
+        },
+        {
+            "description": "Voice room endpoints.",
+            "name": "Voice Rooms"
         },
         {
             "description": "Member endpoints.",

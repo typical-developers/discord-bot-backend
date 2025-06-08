@@ -13,6 +13,12 @@ import (
 //	@tag.name					Guilds
 //	@tag.description			Guild endpoints.
 //
+//	@tag.name					Voice Room Lobbies
+//	@tag.description			Voice room lobby endpoints.
+//
+//	@tag.name					Voice Rooms
+//	@tag.description			Voice room endpoints.
+//
 //	@tag.name					Members
 //	@tag.description			Member endpoints.
 //
@@ -42,24 +48,30 @@ func Register(app *fiber.App) {
 		guild.Patch("/settings/update/activity", guildSnowflakeHandler, UpdateGuildActivitySettings)
 		guild.Post("/settings/update/add-activity-role", guildSnowflakeHandler, GuildAddActivityRole)
 
-		member := guild.Group("/member/:member_id")
+		memberSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "member_id"})
+		member := guild.Group("/member/:member_id", memberSnowflakeHandler)
 		{
-			memberSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "member_id"})
 
-			member.Get("/profile", memberSnowflakeHandler, GetMemberProfile)
-			member.Post("/profile/create", memberSnowflakeHandler, CreateMemberProfile)
-			member.Get("/profile/card", memberSnowflakeHandler, MemberProfileCard)
-			member.Post("/profile/increment-points", memberSnowflakeHandler, IncrementActivityPoints)
+			member.Get("/profile", GetMemberProfile)
+			member.Post("/profile/create", CreateMemberProfile)
+			member.Get("/profile/card", MemberProfileCard)
+			member.Post("/profile/increment-points", IncrementActivityPoints)
 		}
 
-		voiceRoom := guild.Group("/voice-room/:channel_id")
+		voiceRoomSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "channel_id"})
+		voiceRoom := guild.Group("/voice-room")
 		{
-			voiceRoomSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "channel_id"})
+			lobby := voiceRoom.Group("/lobby/:channel_id", voiceRoomSnowflakeHandler)
+			{
+				lobby.Post("/create", CreateVoiceRoomLobby)
+				lobby.Get("/", GetVoiceRoomLobby)
+				lobby.Patch("/update", UpdateVoiceRoomLobby)
+				lobby.Delete("/delete", DeleteVoiceRoomLobby)
+			}
 
-			voiceRoom.Post("/create", voiceRoomSnowflakeHandler, CreateVoiceRoomLobby)
-			voiceRoom.Get("/", voiceRoomSnowflakeHandler, CreateVoiceRoomLobby)
-			voiceRoom.Patch("/update", voiceRoomSnowflakeHandler, UpdateVoiceRoomLobby)
-			voiceRoom.Delete("/delete", voiceRoomSnowflakeHandler, UpdateVoiceRoomLobby)
+			_ = lobby.Group("/room/:channel_id")
+			{
+			}
 		}
 	}
 

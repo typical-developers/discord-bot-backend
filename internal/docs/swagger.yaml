@@ -13,6 +13,13 @@ definitions:
       success:
         type: boolean
     type: object
+  models.APIResponse-MemberActivity:
+    properties:
+      data:
+        $ref: '#/definitions/models.MemberActivity'
+      success:
+        type: boolean
+    type: object
   models.APIResponse-MemberProfile:
     properties:
       data:
@@ -26,6 +33,22 @@ definitions:
         items:
           $ref: '#/definitions/models.ActivityRole'
         type: array
+      success:
+        type: boolean
+    type: object
+  models.APIResponse-array_models_VoiceRoomLobbyConfig:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.VoiceRoomLobbyConfig'
+        type: array
+      success:
+        type: boolean
+    type: object
+  models.APIResponse-models_VoiceRoomLobbyConfig:
+    properties:
+      data:
+        $ref: '#/definitions/models.VoiceRoomLobbyConfig'
       success:
         type: boolean
     type: object
@@ -146,6 +169,17 @@ definitions:
         type: boolean
       channel_id:
         type: string
+      user_limit:
+        type: integer
+    type: object
+  models.VoiceRoomLobbyModify:
+    properties:
+      can_adjust_limit:
+        type: boolean
+      can_lock:
+        type: boolean
+      can_rename:
+        type: boolean
       user_limit:
         type: integer
     type: object
@@ -315,7 +349,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse-MemberProfile'
+            $ref: '#/definitions/models.APIResponse-MemberActivity'
         "400":
           description: Bad Request
           schema:
@@ -452,6 +486,154 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
+  /guild/{guild_id}/voice-room/lobby/{channel_id}:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-models_VoiceRoomLobbyConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/lobby/{channel_id}/create:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.VoiceRoomLobbyModify'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-array_models_VoiceRoomLobbyConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/lobby/{channel_id}/delete:
+    delete:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-array_models_VoiceRoomLobbyConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/lobby/{channel_id}/update:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.VoiceRoomLobbyModify'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-models_VoiceRoomLobbyConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
 securityDefinitions:
   APIKeyAuth:
     in: header
@@ -461,6 +643,10 @@ swagger: "2.0"
 tags:
 - description: Guild endpoints.
   name: Guilds
+- description: Voice room lobby endpoints.
+  name: Voice Room Lobbies
+- description: Voice room endpoints.
+  name: Voice Rooms
 - description: Member endpoints.
   name: Members
 - description: HTML generation endpoints.

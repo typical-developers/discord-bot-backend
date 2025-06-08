@@ -12,19 +12,35 @@ import (
 )
 
 const createVoiceRoomLobby = `-- name: CreateVoiceRoomLobby :one
-INSERT INTO guild_voice_rooms_settings (guild_id, voice_channel_id)
-VALUES ($1, $2)
-ON CONFLICT DO NOTHING
+INSERT INTO guild_voice_rooms_settings (
+    guild_id, voice_channel_id,
+    user_limit, can_rename, can_lock, can_adjust_limit
+)
+VALUES (
+    $1, $2,
+    $3, $4, $5, $6
+)
 RETURNING insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_lock, can_adjust_limit
 `
 
 type CreateVoiceRoomLobbyParams struct {
 	GuildID        string
 	VoiceChannelID string
+	UserLimit      int32
+	CanRename      bool
+	CanLock        bool
+	CanAdjustLimit bool
 }
 
 func (q *Queries) CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error) {
-	row := q.db.QueryRow(ctx, createVoiceRoomLobby, arg.GuildID, arg.VoiceChannelID)
+	row := q.db.QueryRow(ctx, createVoiceRoomLobby,
+		arg.GuildID,
+		arg.VoiceChannelID,
+		arg.UserLimit,
+		arg.CanRename,
+		arg.CanLock,
+		arg.CanAdjustLimit,
+	)
 	var i GuildVoiceRoomsSetting
 	err := row.Scan(
 		&i.InsertEpoch,

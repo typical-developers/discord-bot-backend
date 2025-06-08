@@ -28,6 +28,13 @@ type VoiceRoomLobbyConfig struct {
 	CanAdjustLimit bool   `json:"can_adjust_limit"`
 }
 
+type VoiceRoomLobbyModify struct {
+	UserLimit      *int32 `json:"user_limit,omitempty"`
+	CanRename      *bool  `json:"can_rename,omitempty"`
+	CanLock        *bool  `json:"can_lock,omitempty"`
+	CanAdjustLimit *bool  `json:"can_adjust_limit,omitempty"`
+}
+
 type GuildSettings struct {
 	ChatActivity ActivityConfig         `json:"chat_activity"`
 	VoiceRooms   []VoiceRoomLobbyConfig `json:"voice_rooms"`
@@ -90,7 +97,7 @@ type MemberProfile struct {
 
 type APIResponse[T any] struct {
 	Success bool `json:"success"`
-	Data    T    `json:"data,omitempty"`
+	Data    T    `json:"data"`
 }
 
 // ---------------------------------------------------------------------

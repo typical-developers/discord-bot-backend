@@ -6,9 +6,14 @@ WHERE
 LIMIT 1;
 
 -- name: CreateVoiceRoomLobby :one
-INSERT INTO guild_voice_rooms_settings (guild_id, voice_channel_id)
-VALUES (@guild_id, @voice_channel_id)
-ON CONFLICT DO NOTHING
+INSERT INTO guild_voice_rooms_settings (
+    guild_id, voice_channel_id,
+    user_limit, can_rename, can_lock, can_adjust_limit
+)
+VALUES (
+    @guild_id, @voice_channel_id,
+    @user_limit, @can_rename, @can_lock, @can_adjust_limit
+)
 RETURNING *;
 
 -- name: GetVoiceRoomLobby :one
