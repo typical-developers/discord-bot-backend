@@ -12,6 +12,7 @@ type Querier interface {
 	CreateGuildSettings(ctx context.Context, guildID string) (GuildSetting, error)
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
 	CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
+	DeleteVoiceRoom(ctx context.Context, arg DeleteVoiceRoomParams) error
 	DeleteVoiceRoomLobby(ctx context.Context, arg DeleteVoiceRoomLobbyParams) error
 	GetAllTimeChatActivityRankings(ctx context.Context, arg GetAllTimeChatActivityRankingsParams) ([]GetAllTimeChatActivityRankingsRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
@@ -21,17 +22,20 @@ type Querier interface {
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
 	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error)
 	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
+	GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error)
 	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
 	IncrememberMemberChatActivityPoints(ctx context.Context, arg IncrememberMemberChatActivityPointsParams) (GuildProfile, error)
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
+	RegisterVoiceRoom(ctx context.Context, arg RegisterVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	ResetMonthlyActivityLeaderboard(ctx context.Context) error
 	ResetWeeklyActivityLeaderboard(ctx context.Context) error
 	SetMemberChatActivityPoints(ctx context.Context, arg SetMemberChatActivityPointsParams) (GuildProfile, error)
 	TruncateMonthlyActivityLeaderboard(ctx context.Context) error
 	TruncateWeeklyActivityLeaderboard(ctx context.Context) error
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
+	UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 }
 

@@ -115,19 +115,43 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	voiceRooms, err := queries.GetVoiceRoomLobbies(ctx, guildId)
+	lobbies, err := queries.GetVoiceRoomLobbies(ctx, guildId)
 	if err != nil {
 		logger.Log.WithSource.Error("Failed to get voice room lobbies.", "guild_id", guildId, "error", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	mappVoiceRooms := []models.VoiceRoomLobbyConfig{}
-	for _, room := range voiceRooms {
-		mappVoiceRooms = append(mappVoiceRooms, models.VoiceRoomLobbyConfig{
-			ChannelID:      room.VoiceChannelID,
-			UserLimit:      int(room.UserLimit),
-			CanRename:      room.CanRename,
-			CanLock:        room.CanLock,
-			CanAdjustLimit: room.CanAdjustLimit,
+	mappedLobbies := []models.VoiceRoomLobbyConfig{}
+	for _, lobby := range lobbies {
+		rooms, err := queries.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+			GuildID:         guildId,
+			OriginChannelID: lobby.VoiceChannelID,
+		})
+		if err != nil {
+			logger.Log.WithSource.Error("Failed to get voice rooms.", "guild_id", guildId, "channel_id", lobby.VoiceChannelID, "error", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "internal server error.",
+				},
+			})
+		}
+		mappedRooms := []models.VoiceRoomConfig{}
+		for _, room := range rooms {
+			mappedRooms = append(mappedRooms, models.VoiceRoomConfig{
+				RoomChannelID:   room.ChannelID,
+				CreatedByUserID: room.CreatedByUserID,
+				CurrentOwnerID:  room.CurrentOwnerID,
+				IsLocked:        room.IsLocked.Bool,
+			})
+		}
+
+		mappedLobbies = append(mappedLobbies, models.VoiceRoomLobbyConfig{
+			ChannelID:      lobby.VoiceChannelID,
+			UserLimit:      int(lobby.UserLimit),
+			CanRename:      lobby.CanRename,
+			CanLock:        lobby.CanLock,
+			CanAdjustLimit: lobby.CanAdjustLimit,
+			CurrentRooms:   mappedRooms,
 		})
 	}
 
@@ -140,7 +164,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
 				ActivityRoles:   mappedChatRoles,
 			},
-			VoiceRooms: mappVoiceRooms,
+			VoiceRooms: mappedLobbies,
 		},
 	})
 }

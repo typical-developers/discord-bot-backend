@@ -114,6 +114,7 @@ func CreateVoiceRoomLobby(c *fiber.Ctx) error {
 			CanRename:      lobby.CanRename,
 			CanLock:        lobby.CanLock,
 			CanAdjustLimit: lobby.CanAdjustLimit,
+			CurrentRooms:   []models.VoiceRoomConfig{},
 		})
 	}
 
@@ -170,6 +171,29 @@ func GetVoiceRoomLobby(c *fiber.Ctx) error {
 		})
 	}
 
+	rooms, err := queries.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+		GuildID:         guildId,
+		OriginChannelID: channelId,
+	})
+	if err != nil {
+		logger.Log.WithSource.Error("Failed to get voice rooms.", "guild_id", guildId, "channel_id", channelId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+	mappedRooms := []models.VoiceRoomConfig{}
+	for _, room := range rooms {
+		mappedRooms = append(mappedRooms, models.VoiceRoomConfig{
+			RoomChannelID:   room.ChannelID,
+			CreatedByUserID: room.CreatedByUserID,
+			CurrentOwnerID:  room.CurrentOwnerID,
+			IsLocked:        room.IsLocked.Bool,
+		})
+	}
+
 	return c.JSON(models.APIResponse[models.VoiceRoomLobbyConfig]{
 		Success: true,
 		Data: models.VoiceRoomLobbyConfig{
@@ -178,6 +202,85 @@ func GetVoiceRoomLobby(c *fiber.Ctx) error {
 			CanRename:      lobby.CanRename,
 			CanLock:        lobby.CanLock,
 			CanAdjustLimit: lobby.CanAdjustLimit,
+			CurrentRooms:   mappedRooms,
+		},
+	})
+}
+
+//	@Router		/guild/{guild_id}/voice-room/lobby/{channel_id}/register [post]
+//	@Tags		Voice Room Lobbies
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id	path		string					true	"The guild ID."
+//	@Param		channel_id	path		string					true	"The channel ID."
+//	@Param		settings	body		models.VoiceRoomCreate	true	"The settings for the voice room."
+//
+//	@Success	200			{object}	models.APIResponse[models.VoiceRoomConfig]
+//
+//	@Failure	400			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	409			{object}	models.APIResponse[ErrorResponse]
+//	@Failure	500			{object}	models.APIResponse[ErrorResponse]
+//
+// nolint:staticcheck
+func RegisterVoiceRoom(c *fiber.Ctx) error {
+	ctx := c.Context()
+	guildId := c.Params("guild_id")
+	channelId := c.Params("channel_id")
+
+	var settings *models.VoiceRoomCreate
+	if err := c.BodyParser(&settings); err != nil {
+		logger.Log.Debug("Failed to parse body.", "error", err)
+
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "invalid structure.",
+			},
+		})
+	}
+
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	queries := db.New(connection)
+	defer connection.Release()
+
+	room, err := queries.RegisterVoiceRoom(ctx, db.RegisterVoiceRoomParams{
+		GuildID:         guildId,
+		OriginChannelID: channelId,
+		ChannelID:       settings.RoomChannelID,
+		CreatedByUserID: settings.CreatedByUserID,
+		CurrentOwnerID:  settings.CurrentOwnerID,
+	})
+	if err != nil {
+		errCode, ok := dbutil.UnwrapSQLState(err)
+		if ok && errCode == dbutil.SQLStateUniqueViolation {
+			logger.Log.Debug("Room already exists.", "guild_id", guildId, "channel_id", channelId, "error", err)
+
+			return c.Status(fiber.StatusConflict).JSON(models.APIResponse[models.ErrorResponse]{
+				Success: false,
+				Data: models.ErrorResponse{
+					Message: "room already exists.",
+				},
+			})
+		}
+
+		logger.Log.WithSource.Error("Failed to create voice room lobby.", "guild_id", guildId, "channel_id", channelId, "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+			Success: false,
+			Data: models.ErrorResponse{
+				Message: "internal server error.",
+			},
+		})
+	}
+
+	return c.JSON(models.APIResponse[models.VoiceRoomConfig]{
+		Success: true,
+		Data: models.VoiceRoomConfig{
+			OriginChannelID: room.OriginChannelID,
+			RoomChannelID:   room.ChannelID,
+			CreatedByUserID: room.CreatedByUserID,
+			CurrentOwnerID:  room.CurrentOwnerID,
+			IsLocked:        room.IsLocked.Bool,
 		},
 	})
 }
@@ -217,7 +320,7 @@ func UpdateVoiceRoomLobby(c *fiber.Ctx) error {
 	queries := db.New(connection)
 	defer connection.Release()
 
-	_, err := queries.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
+	lobby, err := queries.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
 		GuildID:        guildId,
 		VoiceChannelID: channelId,
 		UserLimit:      dbutil.Int32(settings.UserLimit),
@@ -244,9 +347,12 @@ func UpdateVoiceRoomLobby(c *fiber.Ctx) error {
 		})
 	}
 
-	lobbies, err := queries.GetVoiceRoomLobbies(ctx, guildId)
+	rooms, err := queries.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+		GuildID:         guildId,
+		OriginChannelID: channelId,
+	})
 	if err != nil {
-		logger.Log.WithSource.Error("Failed to get voice room lobbies.", "guild_id", guildId, "error", err)
+		logger.Log.WithSource.Error("Failed to get voice rooms.", "guild_id", guildId, "channel_id", channelId, "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
 			Data: models.ErrorResponse{
@@ -254,20 +360,27 @@ func UpdateVoiceRoomLobby(c *fiber.Ctx) error {
 			},
 		})
 	}
-	mappedLobbies := []models.VoiceRoomLobbyConfig{}
-	for _, lobby := range lobbies {
-		mappedLobbies = append(mappedLobbies, models.VoiceRoomLobbyConfig{
+	mappedRooms := []models.VoiceRoomConfig{}
+	for _, room := range rooms {
+		mappedRooms = append(mappedRooms, models.VoiceRoomConfig{
+			OriginChannelID: room.OriginChannelID,
+			RoomChannelID:   room.ChannelID,
+			CreatedByUserID: room.CreatedByUserID,
+			CurrentOwnerID:  room.CurrentOwnerID,
+			IsLocked:        room.IsLocked.Bool,
+		})
+	}
+
+	return c.JSON(models.APIResponse[models.VoiceRoomLobbyConfig]{
+		Success: true,
+		Data: models.VoiceRoomLobbyConfig{
 			ChannelID:      lobby.VoiceChannelID,
 			UserLimit:      int(lobby.UserLimit),
 			CanRename:      lobby.CanRename,
 			CanLock:        lobby.CanLock,
 			CanAdjustLimit: lobby.CanAdjustLimit,
-		})
-	}
-
-	return c.JSON(models.APIResponse[[]models.VoiceRoomLobbyConfig]{
-		Success: true,
-		Data:    mappedLobbies,
+			CurrentRooms:   mappedRooms,
+		},
 	})
 }
 

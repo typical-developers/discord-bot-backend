@@ -21,11 +21,12 @@ type ActivityConfig struct {
 }
 
 type VoiceRoomLobbyConfig struct {
-	ChannelID      string `json:"channel_id"`
-	UserLimit      int    `json:"user_limit"`
-	CanRename      bool   `json:"can_rename"`
-	CanLock        bool   `json:"can_lock"`
-	CanAdjustLimit bool   `json:"can_adjust_limit"`
+	ChannelID      string            `json:"channel_id"`
+	UserLimit      int               `json:"user_limit"`
+	CanRename      bool              `json:"can_rename"`
+	CanLock        bool              `json:"can_lock"`
+	CanAdjustLimit bool              `json:"can_adjust_limit"`
+	CurrentRooms   []VoiceRoomConfig `json:"current_rooms"`
 }
 
 type VoiceRoomLobbyModify struct {
@@ -33,6 +34,25 @@ type VoiceRoomLobbyModify struct {
 	CanRename      *bool  `json:"can_rename,omitempty"`
 	CanLock        *bool  `json:"can_lock,omitempty"`
 	CanAdjustLimit *bool  `json:"can_adjust_limit,omitempty"`
+}
+
+type VoiceRoomConfig struct {
+	OriginChannelID string `json:"origin_channel_id"`
+	RoomChannelID   string `json:"room_channel_id"`
+	CreatedByUserID string `json:"created_by_user_id"`
+	CurrentOwnerID  string `json:"current_owner_id"`
+	IsLocked        bool   `json:"is_locked"`
+}
+
+type VoiceRoomCreate struct {
+	RoomChannelID   string `json:"room_channel_id"`
+	CreatedByUserID string `json:"created_by_user_id"`
+	CurrentOwnerID  string `json:"current_owner_id"`
+}
+
+type VoiceRoomModify struct {
+	CurrentOwnerID *string `json:"current_owner_id,omitempty"`
+	IsLocked       *bool   `json:"is_locked,omitempty"`
 }
 
 type GuildSettings struct {

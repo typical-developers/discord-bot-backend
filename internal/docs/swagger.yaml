@@ -45,6 +45,13 @@ definitions:
       success:
         type: boolean
     type: object
+  models.APIResponse-models_VoiceRoomConfig:
+    properties:
+      data:
+        $ref: '#/definitions/models.VoiceRoomConfig'
+      success:
+        type: boolean
+    type: object
   models.APIResponse-models_VoiceRoomLobbyConfig:
     properties:
       data:
@@ -159,6 +166,28 @@ definitions:
       chat_activity:
         $ref: '#/definitions/models.ActivitySettings'
     type: object
+  models.VoiceRoomConfig:
+    properties:
+      created_by_user_id:
+        type: string
+      current_owner_id:
+        type: string
+      is_locked:
+        type: boolean
+      origin_channel_id:
+        type: string
+      room_channel_id:
+        type: string
+    type: object
+  models.VoiceRoomCreate:
+    properties:
+      created_by_user_id:
+        type: string
+      current_owner_id:
+        type: string
+      room_channel_id:
+        type: string
+    type: object
   models.VoiceRoomLobbyConfig:
     properties:
       can_adjust_limit:
@@ -169,6 +198,10 @@ definitions:
         type: boolean
       channel_id:
         type: string
+      current_rooms:
+        items:
+          $ref: '#/definitions/models.VoiceRoomConfig'
+        type: array
       user_limit:
         type: integer
     type: object
@@ -182,6 +215,13 @@ definitions:
         type: boolean
       user_limit:
         type: integer
+    type: object
+  models.VoiceRoomModify:
+    properties:
+      current_owner_id:
+        type: string
+      is_locked:
+        type: boolean
     type: object
 info:
   contact: {}
@@ -594,6 +634,46 @@ paths:
       - APIKeyAuth: []
       tags:
       - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/lobby/{channel_id}/register:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      - description: The settings for the voice room.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.VoiceRoomCreate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-models_VoiceRoomConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
   /guild/{guild_id}/voice-room/lobby/{channel_id}/update:
     patch:
       parameters:
@@ -618,6 +698,78 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.APIResponse-models_VoiceRoomLobbyConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/room/{channel_id}/unregister:
+    delete:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse-ErrorResponse'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Voice Room Lobbies
+  /guild/{guild_id}/voice-room/room/{channel_id}/update:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.VoiceRoomModify'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse-models_VoiceRoomConfig'
         "400":
           description: Bad Request
           schema:

@@ -41,3 +41,36 @@ DELETE FROM guild_voice_rooms_settings
 WHERE
     guild_id = @guild_id
     AND voice_channel_id = @voice_channel_id;
+
+-- name: RegisterVoiceRoom :one
+INSERT INTO guild_active_voice_rooms (
+    guild_id, origin_channel_id,
+    channel_id, created_by_user_id, current_owner_id
+)
+VALUES (
+    @guild_id, @origin_channel_id,
+    @channel_id, @created_by_user_id, @current_owner_id
+)
+RETURNING *;
+
+-- name: GetVoiceRooms :many
+SELECT * FROM guild_active_voice_rooms
+WHERE
+    guild_id = @guild_id
+    AND origin_channel_id = @origin_channel_id;
+
+-- name: UpdateVoiceRoom :one
+UPDATE guild_active_voice_rooms
+SET
+    current_owner_id = COALESCE(sqlc.narg(current_owner_id), guild_active_voice_rooms.current_owner_id),
+    is_locked = COALESCE(sqlc.narg(is_locked), guild_active_voice_rooms.is_locked)
+WHERE
+    guild_id = @guild_id
+    AND channel_id = @channel_id
+RETURNING *;
+
+-- name: DeleteVoiceRoom :exec
+DELETE FROM guild_active_voice_rooms
+WHERE
+    guild_id = @guild_id
+    AND channel_id = @channel_id;

@@ -64,13 +64,16 @@ func Register(app *fiber.App) {
 			lobby := voiceRoom.Group("/lobby/:channel_id", voiceRoomSnowflakeHandler)
 			{
 				lobby.Post("/create", CreateVoiceRoomLobby)
+				lobby.Post("/register", RegisterVoiceRoom)
 				lobby.Get("/", GetVoiceRoomLobby)
 				lobby.Patch("/update", UpdateVoiceRoomLobby)
 				lobby.Delete("/delete", DeleteVoiceRoomLobby)
 			}
 
-			_ = lobby.Group("/room/:channel_id")
+			room := voiceRoom.Group("/room/:channel_id", voiceRoomSnowflakeHandler)
 			{
+				room.Delete("/unregister", DeleteVoiceRoom)
+				room.Patch("/update", UpdateVoiceRoom)
 			}
 		}
 	}

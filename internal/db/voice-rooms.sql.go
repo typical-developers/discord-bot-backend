@@ -54,6 +54,23 @@ func (q *Queries) CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomL
 	return i, err
 }
 
+const deleteVoiceRoom = `-- name: DeleteVoiceRoom :exec
+DELETE FROM guild_active_voice_rooms
+WHERE
+    guild_id = $1
+    AND channel_id = $2
+`
+
+type DeleteVoiceRoomParams struct {
+	GuildID   string
+	ChannelID string
+}
+
+func (q *Queries) DeleteVoiceRoom(ctx context.Context, arg DeleteVoiceRoomParams) error {
+	_, err := q.db.Exec(ctx, deleteVoiceRoom, arg.GuildID, arg.ChannelID)
+	return err
+}
+
 const deleteVoiceRoomLobby = `-- name: DeleteVoiceRoomLobby :exec
 DELETE FROM guild_voice_rooms_settings
 WHERE
@@ -132,6 +149,125 @@ func (q *Queries) GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyPa
 		&i.CanRename,
 		&i.CanLock,
 		&i.CanAdjustLimit,
+	)
+	return i, err
+}
+
+const getVoiceRooms = `-- name: GetVoiceRooms :many
+SELECT insert_epoch, guild_id, origin_channel_id, channel_id, created_by_user_id, current_owner_id, is_locked FROM guild_active_voice_rooms
+WHERE
+    guild_id = $1
+    AND origin_channel_id = $2
+`
+
+type GetVoiceRoomsParams struct {
+	GuildID         string
+	OriginChannelID string
+}
+
+func (q *Queries) GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error) {
+	rows, err := q.db.Query(ctx, getVoiceRooms, arg.GuildID, arg.OriginChannelID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GuildActiveVoiceRoom
+	for rows.Next() {
+		var i GuildActiveVoiceRoom
+		if err := rows.Scan(
+			&i.InsertEpoch,
+			&i.GuildID,
+			&i.OriginChannelID,
+			&i.ChannelID,
+			&i.CreatedByUserID,
+			&i.CurrentOwnerID,
+			&i.IsLocked,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const registerVoiceRoom = `-- name: RegisterVoiceRoom :one
+INSERT INTO guild_active_voice_rooms (
+    guild_id, origin_channel_id,
+    channel_id, created_by_user_id, current_owner_id
+)
+VALUES (
+    $1, $2,
+    $3, $4, $5
+)
+RETURNING insert_epoch, guild_id, origin_channel_id, channel_id, created_by_user_id, current_owner_id, is_locked
+`
+
+type RegisterVoiceRoomParams struct {
+	GuildID         string
+	OriginChannelID string
+	ChannelID       string
+	CreatedByUserID string
+	CurrentOwnerID  string
+}
+
+func (q *Queries) RegisterVoiceRoom(ctx context.Context, arg RegisterVoiceRoomParams) (GuildActiveVoiceRoom, error) {
+	row := q.db.QueryRow(ctx, registerVoiceRoom,
+		arg.GuildID,
+		arg.OriginChannelID,
+		arg.ChannelID,
+		arg.CreatedByUserID,
+		arg.CurrentOwnerID,
+	)
+	var i GuildActiveVoiceRoom
+	err := row.Scan(
+		&i.InsertEpoch,
+		&i.GuildID,
+		&i.OriginChannelID,
+		&i.ChannelID,
+		&i.CreatedByUserID,
+		&i.CurrentOwnerID,
+		&i.IsLocked,
+	)
+	return i, err
+}
+
+const updateVoiceRoom = `-- name: UpdateVoiceRoom :one
+UPDATE guild_active_voice_rooms
+SET
+    current_owner_id = COALESCE($1, guild_active_voice_rooms.current_owner_id),
+    is_locked = COALESCE($2, guild_active_voice_rooms.is_locked)
+WHERE
+    guild_id = $3
+    AND channel_id = $4
+RETURNING insert_epoch, guild_id, origin_channel_id, channel_id, created_by_user_id, current_owner_id, is_locked
+`
+
+type UpdateVoiceRoomParams struct {
+	CurrentOwnerID pgtype.Text
+	IsLocked       pgtype.Bool
+	GuildID        string
+	ChannelID      string
+}
+
+func (q *Queries) UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error) {
+	row := q.db.QueryRow(ctx, updateVoiceRoom,
+		arg.CurrentOwnerID,
+		arg.IsLocked,
+		arg.GuildID,
+		arg.ChannelID,
+	)
+	var i GuildActiveVoiceRoom
+	err := row.Scan(
+		&i.InsertEpoch,
+		&i.GuildID,
+		&i.OriginChannelID,
+		&i.ChannelID,
+		&i.CreatedByUserID,
+		&i.CurrentOwnerID,
+		&i.IsLocked,
 	)
 	return i, err
 }

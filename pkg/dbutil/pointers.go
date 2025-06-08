@@ -4,6 +4,19 @@ package dbutil
 
 import "github.com/jackc/pgx/v5/pgtype"
 
+func String(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{
+			Valid: false,
+		}
+	}
+
+	return pgtype.Text{
+		String: *s,
+		Valid:  true,
+	}
+}
+
 func Bool(b *bool) pgtype.Bool {
 	if b == nil {
 		return pgtype.Bool{
