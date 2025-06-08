@@ -20,7 +20,7 @@ tasks:
     env:
       ENVIRONMENT: development
   dev:tasks:
-    cmd: air --build.cmd "task build:tasks" --build.bin "bin\\scheduled-tasks.exe"
+    cmd: air --build.cmd "task build:tasks" --build.bin "bin\\scheduled-tasks.exe" --build.exclude_dir "assets,tmp,vendor,testdata,bin,internal\\db,internal\\docs,api,handlers"
     env:
       ENVIRONMENT: development
   dev:compile-api-only:
