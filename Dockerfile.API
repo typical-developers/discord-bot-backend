@@ -19,6 +19,6 @@ RUN sqlc generate --file internal/db/sqlc.yaml
 RUN migrate -path internal/db/migrations -database "$POSTGRES_URL" up
 
 # Build the final app
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -o bin/api-backend
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -o bin/api-backend.exe ./cmd/api
 
 CMD ["./bin/api-backend"]

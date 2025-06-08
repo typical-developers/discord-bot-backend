@@ -9,6 +9,7 @@ require (
 	github.com/gofiber/swagger v1.1.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/redis/go-redis/v9 v9.9.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/text v0.25.0
 	maragu.dev/gomponents v1.1.0
