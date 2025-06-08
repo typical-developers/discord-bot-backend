@@ -649,7 +649,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "Voice Room Lobbies"
+                    "Voice Rooms"
                 ],
                 "parameters": [
                     {
@@ -775,7 +775,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "Voice Room Lobbies"
+                    "Voice Rooms"
                 ],
                 "parameters": [
                     {
@@ -826,7 +826,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "Voice Room Lobbies"
+                    "Voice Rooms"
                 ],
                 "parameters": [
                     {

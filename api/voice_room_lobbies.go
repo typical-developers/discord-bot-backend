@@ -208,7 +208,7 @@ func GetVoiceRoomLobby(c *fiber.Ctx) error {
 }
 
 //	@Router		/guild/{guild_id}/voice-room/lobby/{channel_id}/register [post]
-//	@Tags		Voice Room Lobbies
+//	@Tags		Voice Rooms
 //
 //	@Security	APIKeyAuth
 //

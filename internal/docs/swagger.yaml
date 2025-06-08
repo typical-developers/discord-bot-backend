@@ -673,7 +673,7 @@ paths:
       security:
       - APIKeyAuth: []
       tags:
-      - Voice Room Lobbies
+      - Voice Rooms
   /guild/{guild_id}/voice-room/lobby/{channel_id}/update:
     patch:
       parameters:
@@ -745,7 +745,7 @@ paths:
       security:
       - APIKeyAuth: []
       tags:
-      - Voice Room Lobbies
+      - Voice Rooms
   /guild/{guild_id}/voice-room/room/{channel_id}/update:
     patch:
       parameters:
@@ -785,7 +785,7 @@ paths:
       security:
       - APIKeyAuth: []
       tags:
-      - Voice Room Lobbies
+      - Voice Rooms
 securityDefinitions:
   APIKeyAuth:
     in: header

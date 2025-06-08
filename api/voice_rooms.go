@@ -13,7 +13,7 @@ import (
 )
 
 //	@Router		/guild/{guild_id}/voice-room/room/{channel_id}/update [patch]
-//	@Tags		Voice Room Lobbies
+//	@Tags		Voice Rooms
 //
 //	@Security	APIKeyAuth
 //
@@ -85,7 +85,7 @@ func UpdateVoiceRoom(c *fiber.Ctx) error {
 }
 
 //	@Router		/guild/{guild_id}/voice-room/room/{channel_id}/unregister [delete]
-//	@Tags		Voice Room Lobbies
+//	@Tags		Voice Rooms
 //
 //	@Security	APIKeyAuth
 //
