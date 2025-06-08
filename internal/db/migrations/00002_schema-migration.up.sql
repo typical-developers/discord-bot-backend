@@ -29,3 +29,15 @@ DROP FUNCTION IF EXISTS increment_activity_points;
 DROP FUNCTION IF EXISTS update_guild_activity_roles;
 DROP FUNCTION IF EXISTS update_monthly_tracking_leaderboard;
 DROP FUNCTION IF EXISTS update_weekly_tracking_leaderboard;
+
+-- Drop tables that are for Typical Developer experiences.
+DROP TABLE IF EXISTS experience_ban_wave;
+DROP TABLE IF EXISTS experience_infractions;
+DROP TABLE IF EXISTS oaklands_daily_materials_sold;
+DROP TABLE IF EXISTS oaklands_daily_materials_sold_current;
+DROP TABLE IF EXISTS oaklands_join_info;
+DROP TABLE IF EXISTS oaklands_monthly_player_earnings;
+DROP TABLE IF EXISTS oaklands_monthly_player_earnings_current;
+DROP TABLE IF EXISTS oaklands_sessions;
+DROP TABLE IF EXISTS oaklands_total_sold;
+DROP TABLE IF EXISTS oaklands_users_cash_earned;
