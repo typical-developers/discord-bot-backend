@@ -2,8 +2,7 @@
 SELECT *
 FROM guild_voice_rooms_settings
 WHERE
-    guild_voice_rooms_settings.guild_id = @guild_id
-LIMIT 1;
+    guild_voice_rooms_settings.guild_id = @guild_id;
 
 -- name: CreateVoiceRoomLobby :one
 INSERT INTO guild_voice_rooms_settings (
