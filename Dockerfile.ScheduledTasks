@@ -7,6 +7,6 @@ WORKDIR /app
 COPY . /app/
 
 # Build the final app
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -o bin/scheduled-tasks.exe ./cmd/tasks
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -o bin/scheduled-tasks ./cmd/tasks
 
 CMD ["./bin/scheduled-tasks"]
