@@ -138,6 +138,7 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		mappedRooms := []models.VoiceRoomConfig{}
 		for _, room := range rooms {
 			mappedRooms = append(mappedRooms, models.VoiceRoomConfig{
+				OriginChannelID: room.OriginChannelID,
 				RoomChannelID:   room.ChannelID,
 				CreatedByUserID: room.CreatedByUserID,
 				CurrentOwnerID:  room.CurrentOwnerID,
