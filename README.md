@@ -9,6 +9,7 @@ Refer to the `.env.example` for environmental variables.
 - [Golang 1.23+](https://go.dev/)
 - Docker
 - [Taskfile](https://taskfile.dev/)
+
 Run `go install` to install dependencies.
 
 ### Deploying API
