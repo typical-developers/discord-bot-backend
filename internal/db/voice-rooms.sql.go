@@ -93,7 +93,6 @@ SELECT insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_loc
 FROM guild_voice_rooms_settings
 WHERE
     guild_voice_rooms_settings.guild_id = $1
-LIMIT 1
 `
 
 func (q *Queries) GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error) {
