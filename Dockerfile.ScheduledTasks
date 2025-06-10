@@ -10,7 +10,7 @@ COPY . /app/
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # Handle schema generation
-RUN swag init --parseDependency -dir ./api --output ./internal/docs
+RUN sqlc generate --file internal/db/sqlc.yaml
 
 # Build the final app
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -o bin/scheduled-tasks ./cmd/tasks
