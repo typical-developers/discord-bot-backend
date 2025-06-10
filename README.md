@@ -10,9 +10,9 @@ Refer to the `.env.example` for environmental variables.
 - Docker
 - [Taskfile](https://taskfile.dev/)
 
-Run `go install` to install dependencies.
+Run `go mod download` to download dependencies.
 
-### Deploying API
+### Developing API
 ```
 task dev:api
 ```
@@ -30,7 +30,7 @@ task dev:tasks
 Migration are handled by [migrate](https://github.com/golang-migrate/migrate). Migrations should be created in `internal/db/migrations` and can be ran with `task migrate:up` (to update) or `task migrate:down` (to rollback). Queries should be tested before being pushed to production.
 
 ## Licensing
-All code for the bot is licensed under the [GNU General Public License v3.0](https://github.com/typical-developers/main-discord-bot/blob/main/LICENSE) license. Please refer to the LICENSE file for more information regarding rights and limitations.
+All code for this project is licensed under the [GNU General Public License v3.0](https://github.com/typical-developers/discord-bot-backend/blob/main/LICENSE) license. Please refer to the LICENSE file for more information regarding rights and limitations.
 
 TL;DR: You are allowed to do whatever with the code (modify, sell, redistribute, etc) as long as you allow others to do the same with yours.
 
