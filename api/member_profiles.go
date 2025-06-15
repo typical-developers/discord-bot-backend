@@ -241,6 +241,9 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	memberId := c.Params("member_id")
 	activityType := models.ActivityType(c.Query("activity_type"))
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	if !activityType.Valid() {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
@@ -250,7 +253,6 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	tx, err := connection.Begin(ctx)
 	if err != nil {
 		logger.Log.WithSource.Error("Failed to start transaction.", "guild_id", guildId, "member_id", memberId, "error", err)
@@ -262,7 +264,6 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		})
 	}
 	queries := db.New(connection).WithTx(tx)
-	defer connection.Release()
 
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {
@@ -444,6 +445,9 @@ func MigrateMemberProfile(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var info *models.MigrateProfile
 	if err := c.BodyParser(&info); err != nil {
 		logger.Log.Debug("Failed to parse body.", "error", err)
@@ -468,7 +472,6 @@ func MigrateMemberProfile(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	tx, err := connection.Begin(ctx)
 	if err != nil {
 		logger.Log.WithSource.Error("Failed to start transaction.", "guild_id", guildId, "error", err)
@@ -481,7 +484,6 @@ func MigrateMemberProfile(c *fiber.Ctx) error {
 	}
 	queries := db.New(connection)
 	queriesTx := queries.WithTx(tx)
-	defer connection.Release()
 
 	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
 	if err != nil {

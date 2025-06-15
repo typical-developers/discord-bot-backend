@@ -33,6 +33,9 @@ func UpdateVoiceRoom(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	channelId := c.Params("channel_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var settings *models.VoiceRoomModify
 	if err := c.BodyParser(&settings); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
@@ -43,9 +46,7 @@ func UpdateVoiceRoom(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
 
 	room, err := queries.UpdateVoiceRoom(ctx, db.UpdateVoiceRoomParams{
 		GuildID:        guildId,

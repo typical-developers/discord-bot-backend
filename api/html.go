@@ -251,6 +251,9 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 	activityType := models.ActivityType(c.Query("activity_type"))
 	displayType := models.LeaderboardType(c.Query("display"))
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	if !activityType.Valid() {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
 			Success: false,
@@ -274,10 +277,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 		protocol = "http"
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
-
 	guild, err := discord.Client.Cache.Guild(guildId)
 	if err != nil {
 		logger.Log.WithSource.Error("Failed to get guild info.", "guild_id", guildId, "error", err)

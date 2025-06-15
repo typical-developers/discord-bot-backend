@@ -189,6 +189,9 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var activitySettings *models.UpdateActivitySettings
 	if err := c.BodyParser(&activitySettings); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
@@ -199,10 +202,7 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
-
 	err := queries.UpdateActivitySettings(ctx, db.UpdateActivitySettingsParams{
 		GuildID:                  guildId,
 		ActivityTracking:         dbutil.Bool(activitySettings.ChatActivity.Enabled),
@@ -270,6 +270,9 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 	ctx := c.Context()
 	guildId := c.Params("guild_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var activityRole models.AddActivityRole
 	if err := c.BodyParser(&activityRole); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
@@ -289,10 +292,7 @@ func GuildAddActivityRole(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
-
 	err := queries.InsertActivityRole(ctx, db.InsertActivityRoleParams{
 		GuildID:        guildId,
 		GrantType:      string(activityRole.GrantType),

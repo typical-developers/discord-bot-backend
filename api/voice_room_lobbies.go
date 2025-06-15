@@ -33,6 +33,9 @@ func CreateVoiceRoomLobby(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	channelId := c.Params("channel_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var settings *models.VoiceRoomLobbyModify
 	if err := c.BodyParser(&settings); err != nil {
 		logger.Log.Debug("Failed to parse body.", "error", err)
@@ -45,9 +48,7 @@ func CreateVoiceRoomLobby(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
 
 	// This is a hacky way to set defaults and override them if they're provided.
 	// I'm sure there's a clearer way to do this.. will revisit in the future if it has problems.
@@ -228,6 +229,9 @@ func RegisterVoiceRoom(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	channelId := c.Params("channel_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var settings *models.VoiceRoomCreate
 	if err := c.BodyParser(&settings); err != nil {
 		logger.Log.Debug("Failed to parse body.", "error", err)
@@ -240,9 +244,7 @@ func RegisterVoiceRoom(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
 
 	room, err := queries.RegisterVoiceRoom(ctx, db.RegisterVoiceRoomParams{
 		GuildID:         guildId,
@@ -306,6 +308,9 @@ func UpdateVoiceRoomLobby(c *fiber.Ctx) error {
 	guildId := c.Params("guild_id")
 	channelId := c.Params("channel_id")
 
+	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	defer connection.Release()
+
 	var settings *models.VoiceRoomLobbyModify
 	if err := c.BodyParser(&settings); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
@@ -316,9 +321,7 @@ func UpdateVoiceRoomLobby(c *fiber.Ctx) error {
 		})
 	}
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
 	queries := db.New(connection)
-	defer connection.Release()
 
 	lobby, err := queries.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
 		GuildID:        guildId,
