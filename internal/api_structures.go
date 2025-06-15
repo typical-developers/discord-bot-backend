@@ -60,6 +60,11 @@ type GuildSettings struct {
 	VoiceRooms   []VoiceRoomLobbyConfig `json:"voice_rooms"`
 }
 
+type MigrateProfile struct {
+	FromID string `json:"from_id"`
+	ToID   string `json:"to_id"`
+}
+
 // ---------------------------------------------------------------------
 
 type CardStyle int

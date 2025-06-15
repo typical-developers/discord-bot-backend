@@ -47,11 +47,11 @@ func Register(app *fiber.App) {
 		guild.Post("/settings/create", guildSnowflakeHandler, CreateGuildSettings)
 		guild.Patch("/settings/update/activity", guildSnowflakeHandler, UpdateGuildActivitySettings)
 		guild.Post("/settings/update/add-activity-role", guildSnowflakeHandler, GuildAddActivityRole)
+		guild.Patch("/member-migrate", guildSnowflakeHandler, MigrateMemberProfile)
 
 		memberSnowflakeHandler := handlers.CheckSnowflakeParams([]string{"guild_id", "member_id"})
 		member := guild.Group("/member/:member_id", memberSnowflakeHandler)
 		{
-
 			member.Get("/profile", GetMemberProfile)
 			member.Post("/profile/create", CreateMemberProfile)
 			member.Get("/profile/card", MemberProfileCard)
