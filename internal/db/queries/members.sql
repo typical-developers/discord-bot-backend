@@ -4,15 +4,21 @@ INSERT INTO guild_profiles (guild_id, member_id, activity_points)
 RETURNING *;
 
 -- name: GetMemberRankings :one
-WITH member_rankings AS (
+SELECT
+    ranking.member_id,
+    ranking.chat_rank
+FROM (
     SELECT
         member_id,
-        CAST(ROW_NUMBER() OVER (ORDER BY activity_points DESC) AS BIGINT) AS chat_rank
+        ROW_NUMBER() OVER (
+            ORDER BY activity_points DESC
+        ) AS chat_rank
     FROM guild_profiles
-    WHERE guild_id = @guild_id
-)
-SELECT * FROM member_rankings
-WHERE member_id = @member_id;
+    WHERE
+        guild_id = @guild_id
+) AS ranking
+WHERE
+    member_id = @member_id;
 
 -- name: GetMemberProfile :one
 SELECT
