@@ -36,6 +36,14 @@ FROM (
 LIMIT 15
 OFFSET @offset_by;
 
+-- name: GetWeeklyActivityLeaderboardLastReset :one
+SELECT
+    week_start,
+    (SELECT EXTRACT(epoch FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT) AS expected_week_start
+FROM guild_activity_tracking_weekly
+ORDER BY week_start DESC
+LIMIT 1;
+
 -- name: GetMonthlyActivityLeaderboard :many
 SELECT
     rankings.rank,
@@ -55,6 +63,14 @@ FROM (
 ) AS rankings
 LIMIT 15
 OFFSET @offset_by;
+
+-- name: GetMonthlyActivityLeaderboardLastReset :one
+SELECT
+    month_start,
+    (SELECT EXTRACT(epoch FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT) AS expected_month_start
+FROM guild_activity_tracking_monthly
+ORDER BY month_start DESC
+LIMIT 1;
 
 -- name: IncrementWeeklyActivityLeaderboard :exec
 INSERT INTO guild_activity_tracking_weekly_current (

@@ -30,14 +30,14 @@ var JobRegistry = []JobRegistryEntry{
 	},
 	{
 		Name:             "FlushWeeklyActivityLeaderboard",
-		RunOnceAtStartup: false,
+		RunOnceAtStartup: true,
 		Disabled:         false,
 		Interval:         "0 0 * * 1",
 		Task:             tasks.FlushWeeklyActivityLeaderboard,
 	},
 	{
 		Name:             "FlushMonthlyActivityLeaderboard",
-		RunOnceAtStartup: false,
+		RunOnceAtStartup: true,
 		Disabled:         false,
 		Interval:         "0 0 1 * *",
 		Task:             tasks.FlushMonthlyActivityLeaderboard,
