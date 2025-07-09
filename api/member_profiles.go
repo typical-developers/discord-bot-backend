@@ -11,7 +11,6 @@ import (
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/pkg/dbutil"
 	"github.com/typical-developers/discord-bot-backend/pkg/logger"
-	"github.com/typical-developers/discord-bot-backend/pkg/regexutil"
 )
 
 //	@Router		/guild/{guild_id}/member/{member_id}/profile/create [post]
@@ -65,9 +64,9 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 	}
 
 	profile, err := queries.CreateMemberProfile(ctx, db.CreateMemberProfileParams{
-		GuildID:        guildId,
-		MemberID:       memberId,
-		ActivityPoints: 0,
+		GuildID:      guildId,
+		MemberID:     memberId,
+		ChatActivity: 0,
 	})
 	if err != nil {
 		_ = tx.Rollback(ctx)
@@ -120,9 +119,9 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 		})
 	}
 
-	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
+	roles := dbutil.MapMemberRoles(int(profile.ChatActivity), settings.ChatActivityRoles)
 
-	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
+	grantTime := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	return c.JSON(models.APIResponse[models.MemberProfile]{
 		Success: true,
 		Data: models.MemberProfile{
@@ -131,7 +130,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 				Rank:         int(rankings.ChatRank),
 				LastGrant:    grantTime,
 				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
-				Points:       int(profile.ActivityPoints),
+				Points:       int(profile.ChatActivity),
 				Roles: models.MemberRoles{
 					Next: roles.Next,
 					// Obtained: roles.Current,
@@ -200,8 +199,8 @@ func GetMemberProfile(c *fiber.Ctx) error {
 		})
 	}
 
-	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
-	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
+	roles := dbutil.MapMemberRoles(int(profile.ChatActivity), settings.ChatActivityRoles)
+	grantTime := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	return c.JSON(models.APIResponse[models.MemberProfile]{
 		Success: true,
 		Data: models.MemberProfile{
@@ -210,7 +209,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 				Rank:         int(profile.ChatRank),
 				LastGrant:    grantTime,
 				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
-				Points:       int(profile.ActivityPoints),
+				Points:       int(profile.ChatActivity),
 				Roles: models.MemberRoles{
 					Next:     roles.Next,
 					Obtained: roles.Obtained,
@@ -307,7 +306,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		})
 	}
 
-	lastGrant := time.Unix(int64(profile.LastGrantEpoch), 0)
+	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	cooldown := int(settings.ActivityTrackingCooldown.Int32)
 	if activityType == models.ActivityTypeChat {
 		if !settings.ActivityTracking.Bool {
@@ -350,9 +349,9 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		}
 
 		profile = db.GetMemberProfileRow{
-			CardStyle:      updatedProfile.CardStyle,
-			ActivityPoints: updatedProfile.ActivityPoints,
-			LastGrantEpoch: updatedProfile.LastGrantEpoch,
+			CardStyle:             updatedProfile.CardStyle,
+			ChatActivity:          updatedProfile.ChatActivity,
+			LastChatActivityGrant: updatedProfile.LastChatActivityGrant,
 		}
 
 		err = queries.IncrementWeeklyActivityLeaderboard(ctx, db.IncrementWeeklyActivityLeaderboardParams{
@@ -392,7 +391,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		}
 	}
 
-	grantTime := time.Unix(int64(profile.LastGrantEpoch), 0)
+	grantTime := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	rankings, err := queries.GetMemberRankings(ctx, db.GetMemberRankingsParams{
 		GuildID:  guildId,
 		MemberID: memberId,
@@ -411,14 +410,14 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 
 	_ = tx.Commit(ctx)
 
-	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
+	roles := dbutil.MapMemberRoles(int(profile.ChatActivity), settings.ChatActivityRoles)
 	return c.JSON(models.APIResponse[models.MemberActivity]{
 		Success: true,
 		Data: models.MemberActivity{
 			Rank:         int(rankings.ChatRank),
 			LastGrant:    grantTime,
 			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, cooldown),
-			Points:       int(profile.ActivityPoints),
+			Points:       int(profile.ChatActivity),
 			Roles: models.MemberRoles{
 				Next:     roles.Next,
 				Obtained: roles.Obtained,
@@ -442,174 +441,179 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 //
 // nolint:staticcheck
 func MigrateMemberProfile(c *fiber.Ctx) error {
-	ctx := c.Context()
-	guildId := c.Params("guild_id")
+	// This needs to be refactored due to the schema changes.
+	// Will revisit this in the future.
 
-	connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
-	defer connection.Release()
+	// ctx := c.Context()
+	// guildId := c.Params("guild_id")
 
-	var info *models.MigrateProfile
-	if err := c.BodyParser(&info); err != nil {
-		logger.Log.Debug("Failed to parse body.", "error", err)
+	// connection := c.Locals("db_pool_conn").(*pgxpool.Conn)
+	// defer connection.Release()
 
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "invalid structure.",
-			},
-		})
-	}
+	// var info *models.MigrateProfile
+	// if err := c.BodyParser(&info); err != nil {
+	// 	logger.Log.Debug("Failed to parse body.", "error", err)
 
-	// We only check if to_id is a proper snowflake.
-	// Since we check if the from_id exists a bit down, we don't need to worry about it being a snowflake or not.
-	// to_id actually has a chance to *create* a resource.
-	if err := regexutil.CheckSnowflake(info.ToID); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "to_id is not a valid snowflake.",
-			},
-		})
-	}
+	// 	return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "invalid structure.",
+	// 		},
+	// 	})
+	// }
 
-	tx, err := connection.Begin(ctx)
-	if err != nil {
-		logger.Log.WithSource.Error("Failed to start transaction.", "guild_id", guildId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
-	queries := db.New(connection)
-	queriesTx := queries.WithTx(tx)
+	// // We only check if to_id is a proper snowflake.
+	// // Since we check if the from_id exists a bit down, we don't need to worry about it being a snowflake or not.
+	// // to_id actually has a chance to *create* a resource.
+	// if err := regexutil.CheckSnowflake(info.ToID); err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "to_id is not a valid snowflake.",
+	// 		},
+	// 	})
+	// }
 
-	settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
-	if err != nil {
-		_ = tx.Rollback(ctx)
+	// tx, err := connection.Begin(ctx)
+	// if err != nil {
+	// 	logger.Log.WithSource.Error("Failed to start transaction.", "guild_id", guildId, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
+	// queries := db.New(connection)
+	// queriesTx := queries.WithTx(tx)
 
-		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
-				Success: false,
-				Data: models.ErrorResponse{
-					Message: "guild settings not found.",
-				},
-			})
-		}
+	// settings, err := dbutil.GetGuildSettings(ctx, queries, guildId)
+	// if err != nil {
+	// 	_ = tx.Rollback(ctx)
 
-		logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
-		return c.SendStatus(fiber.StatusInternalServerError)
-	}
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+	// 			Success: false,
+	// 			Data: models.ErrorResponse{
+	// 				Message: "guild settings not found.",
+	// 			},
+	// 		})
+	// 	}
 
-	// --- Migration Starts
+	// 	logger.Log.WithSource.Error("Failed to get guild settings", "error", err)
+	// 	return c.SendStatus(fiber.StatusInternalServerError)
+	// }
 
-	// First, we make sure the fromId exists.
-	_, err = queriesTx.GetMemberProfile(ctx, db.GetMemberProfileParams{
-		GuildID:  guildId,
-		MemberID: info.FromID,
-	})
-	if err != nil {
-		_ = tx.Rollback(ctx)
+	// // --- Migration Starts
 
-		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
-				Success: false,
-				Data: models.ErrorResponse{
-					Message: "from member not found.",
-				},
-			})
-		}
+	// // First, we make sure the fromId exists.
+	// _, err = queriesTx.GetMemberProfile(ctx, db.GetMemberProfileParams{
+	// 	GuildID:  guildId,
+	// 	MemberID: info.FromID,
+	// })
+	// if err != nil {
+	// 	_ = tx.Rollback(ctx)
 
-		logger.Log.WithSource.Error("Failed to get member profile.", "guild_id", guildId, "member_id", info.FromID, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		return c.Status(fiber.StatusNotFound).JSON(models.APIResponse[models.ErrorResponse]{
+	// 			Success: false,
+	// 			Data: models.ErrorResponse{
+	// 				Message: "from member not found.",
+	// 			},
+	// 		})
+	// 	}
 
-	// Then, we migrate from_id profile -> to_id profile.
-	newProfile, err := queriesTx.MigrateMemberProfile(ctx, db.MigrateMemberProfileParams{
-		GuildID: guildId,
-		FromID:  info.FromID,
-		ToID:    info.ToID,
-	})
-	if err != nil {
-		_ = tx.Rollback(ctx)
+	// 	logger.Log.WithSource.Error("Failed to get member profile.", "guild_id", guildId, "member_id", info.FromID, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
 
-		logger.Log.WithSource.Error("Failed to migrate member profile.", "guild_id", guildId, "from_id", info.FromID, "to_id", info.ToID, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+	// // Then, we migrate from_id profile -> to_id profile.
+	// newProfile, err := queriesTx.MigrateMemberProfile(ctx, db.MigrateMemberProfileParams{
+	// 	GuildID: guildId,
+	// 	FromID:  info.FromID,
+	// 	ToID:    info.ToID,
+	// })
+	// if err != nil {
+	// 	_ = tx.Rollback(ctx)
 
-	// Finally, we reset the old profile to defaults.
-	err = queriesTx.ResetOldMemberProfile(ctx, db.ResetOldMemberProfileParams{
-		GuildID:  guildId,
-		MemberID: info.FromID,
-	})
-	if err != nil {
-		_ = tx.Rollback(ctx)
+	// 	logger.Log.WithSource.Error("Failed to migrate member profile.", "guild_id", guildId, "from_id", info.FromID, "to_id", info.ToID, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
 
-		logger.Log.WithSource.Error("Failed to reset old member profile.", "guild_id", guildId, "member_id", info.FromID, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+	// // Finally, we reset the old profile to defaults.
+	// err = queriesTx.ResetOldMemberProfile(ctx, db.ResetOldMemberProfileParams{
+	// 	GuildID:  guildId,
+	// 	MemberID: info.FromID,
+	// })
+	// if err != nil {
+	// 	_ = tx.Rollback(ctx)
 
-	err = tx.Commit(ctx)
-	if err != nil {
-		logger.Log.WithSource.Error("Failed to commit transaction.", "guild_id", guildId, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+	// 	logger.Log.WithSource.Error("Failed to reset old member profile.", "guild_id", guildId, "member_id", info.FromID, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
 
-	// --- Migration Ends
+	// err = tx.Commit(ctx)
+	// if err != nil {
+	// 	logger.Log.WithSource.Error("Failed to commit transaction.", "guild_id", guildId, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
 
-	rankings, err := queries.GetMemberRankings(ctx, db.GetMemberRankingsParams{
-		GuildID:  guildId,
-		MemberID: info.ToID,
-	})
-	if err != nil {
-		_ = tx.Rollback(ctx)
+	// // --- Migration Ends
 
-		logger.Log.WithSource.Error("Failed to get member profile rankings.", "guild_id", guildId, "member_id", info.ToID, "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
-			Success: false,
-			Data: models.ErrorResponse{
-				Message: "internal server error.",
-			},
-		})
-	}
+	// rankings, err := queries.GetMemberRankings(ctx, db.GetMemberRankingsParams{
+	// 	GuildID:  guildId,
+	// 	MemberID: info.ToID,
+	// })
+	// if err != nil {
+	// 	_ = tx.Rollback(ctx)
 
-	roles := dbutil.MapMemberRoles(int(newProfile.ActivityPoints), settings.ChatActivityRoles)
-	grantTime := time.Unix(int64(newProfile.LastGrantEpoch), 0)
-	return c.JSON(models.APIResponse[models.MemberProfile]{
-		Success: true,
-		Data: models.MemberProfile{
-			CardStyle: models.CardStyle(newProfile.CardStyle),
-			ChatActivity: models.MemberActivity{
-				Rank:         int(rankings.ChatRank),
-				LastGrant:    grantTime,
-				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
-				Points:       int(newProfile.ActivityPoints),
-				Roles: models.MemberRoles{
-					Next:     roles.Next,
-					Obtained: roles.Obtained,
-				},
-			},
-		},
-	})
+	// 	logger.Log.WithSource.Error("Failed to get member profile rankings.", "guild_id", guildId, "member_id", info.ToID, "error", err)
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIResponse[models.ErrorResponse]{
+	// 		Success: false,
+	// 		Data: models.ErrorResponse{
+	// 			Message: "internal server error.",
+	// 		},
+	// 	})
+	// }
+
+	// roles := dbutil.MapMemberRoles(int(newProfile.ActivityPoints), settings.ChatActivityRoles)
+	// grantTime := time.Unix(int64(newProfile.LastGrantEpoch), 0)
+	// return c.JSON(models.APIResponse[models.MemberProfile]{
+	// 	Success: true,
+	// 	Data: models.MemberProfile{
+	// 		CardStyle: models.CardStyle(newProfile.CardStyle),
+	// 		ChatActivity: models.MemberActivity{
+	// 			Rank:         int(rankings.ChatRank),
+	// 			LastGrant:    grantTime,
+	// 			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+	// 			Points:       int(newProfile.ActivityPoints),
+	// 			Roles: models.MemberRoles{
+	// 				Next:     roles.Next,
+	// 				Obtained: roles.Obtained,
+	// 			},
+	// 		},
+	// 	},
+	// })
+
+	return nil
 }

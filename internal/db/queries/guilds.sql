@@ -2,14 +2,14 @@
 SELECT
     rankings.rank,
     rankings.member_id,
-    rankings.activity_points
+    rankings.chat_activity
 FROM (
     SELECT
         ROW_NUMBER() OVER (
-            ORDER BY activity_points DESC
+            ORDER BY chat_activity DESC
         ) AS rank,
         member_id,
-        activity_points
+        chat_activity
     FROM guild_profiles
     WHERE
         guild_id = @guild_id

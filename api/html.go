@@ -163,7 +163,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		})
 	}
 
-	roles := dbutil.MapMemberRoles(int(profile.ActivityPoints), settings.ChatActivityRoles)
+	roles := dbutil.MapMemberRoles(int(profile.ChatActivity), settings.ChatActivityRoles)
 
 	if roles.Next == nil {
 		roles.Next = &models.ActivityRoleProgress{}
@@ -220,7 +220,7 @@ func MemberProfileCard(c *fiber.Ctx) error {
 		AvatarURL:   avatarUrl,
 		ChatActivity: html_page.ActivityInfo{
 			Rank:               int(profile.ChatRank),
-			TotalPoints:        int(profile.ActivityPoints),
+			TotalPoints:        int(profile.ChatActivity),
 			RoleCurrentPoints:  roles.Next.Progress,
 			RoleRequiredPoints: roles.Next.RequiredPoints,
 			CurrentTitleInfo:   chatActivityRole,
@@ -323,7 +323,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 				leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
 					Rank:     int(rank.Rank),
 					Username: rank.MemberID,
-					Value:    int(rank.ActivityPoints),
+					Value:    int(rank.ChatActivity),
 				})
 				continue
 			}
@@ -331,7 +331,7 @@ func ActivityLeaderboardCard(c *fiber.Ctx) error {
 			leaderboardData = append(leaderboardData, html_page.LeaderboardDataField{
 				Rank:     int(rank.Rank),
 				Username: fmt.Sprintf("@%s", member.User.Username),
-				Value:    int(rank.ActivityPoints),
+				Value:    int(rank.ChatActivity),
 			})
 		}
 	case models.LeaderboardTypeMonthly:

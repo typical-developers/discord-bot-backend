@@ -1,6 +1,6 @@
 -- name: CreateMemberProfile :one
-INSERT INTO guild_profiles (guild_id, member_id, activity_points)
-    VALUES (@guild_id, @member_id, @activity_points)
+INSERT INTO guild_profiles (guild_id, member_id, chat_activity)
+    VALUES (@guild_id, @member_id, @chat_activity)
 RETURNING *;
 
 -- name: GetMemberRankings :one
@@ -11,7 +11,7 @@ FROM (
     SELECT
         member_id,
         ROW_NUMBER() OVER (
-            ORDER BY activity_points DESC
+            ORDER BY chat_activity DESC
         ) AS chat_rank
     FROM guild_profiles
     WHERE
@@ -23,8 +23,8 @@ WHERE
 -- name: GetMemberProfile :one
 SELECT
     card_style,
-    activity_points,
-    last_grant_epoch
+    chat_activity,
+    last_chat_activity_grant
 FROM guild_profiles
 WHERE
     guild_id = @guild_id
@@ -33,8 +33,8 @@ WHERE
 -- name: IncrememberMemberChatActivityPoints :one
 UPDATE guild_profiles
 SET
-    activity_points = activity_points + @points,
-    last_grant_epoch = EXTRACT(EPOCH FROM now() AT TIME ZONE 'utc')
+    chat_activity = chat_activity + @points,
+    last_chat_activity_grant = EXTRACT(EPOCH FROM now() AT TIME ZONE 'utc')
 WHERE
     guild_id = @guild_id
     AND member_id = @member_id
@@ -43,21 +43,21 @@ RETURNING *;
 -- name: SetMemberChatActivityPoints :one
 UPDATE guild_profiles
 SET
-    activity_points = @points,
-    last_grant_epoch = EXTRACT(EPOCH FROM now() AT TIME ZONE 'utc')
+    chat_activity = @points,
+    last_chat_activity_grant = EXTRACT(EPOCH FROM now() AT TIME ZONE 'utc')
 WHERE
     guild_id = @guild_id
     AND member_id = @member_id
 RETURNING *;
 
 -- name: MigrateMemberProfile :one
-INSERT INTO guild_profiles (guild_id, member_id, card_style, activity_points, last_grant_epoch)
+INSERT INTO guild_profiles (guild_id, member_id, card_style, chat_activity, last_chat_activity_grant)
     SELECT
         guild_id,
         @to_id,
         card_style,
-        activity_points,
-        last_grant_epoch
+        chat_activity,
+        last_chat_activity_grant
     FROM guild_profiles
     WHERE
         guild_profiles.guild_id = @guild_id AND
@@ -65,16 +65,16 @@ INSERT INTO guild_profiles (guild_id, member_id, card_style, activity_points, la
 ON CONFLICT (guild_id, member_id) DO UPDATE
 SET
     card_style = EXCLUDED.card_style,
-    activity_points = guild_profiles.activity_points + EXCLUDED.activity_points,
-    last_grant_epoch = EXCLUDED.last_grant_epoch
+    chat_activity = guild_profiles.chat_activity + EXCLUDED.chat_activity,
+    last_chat_activity_grant = EXCLUDED.last_chat_activity_grant
 RETURNING *;
 
 -- name: ResetOldMemberProfile :exec
 UPDATE guild_profiles
 SET
     card_style = 0,
-    activity_points = 0,
-    last_grant_epoch = 0
+    chat_activity = 0,
+    last_chat_activity_grant = 0
 WHERE
     guild_id = @guild_id AND
     member_id = @member_id;
