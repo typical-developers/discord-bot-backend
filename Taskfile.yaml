@@ -10,9 +10,13 @@ tasks:
     cmds:
       - swag fmt
       - swag init --parseDependency -dir ./api --output ./internal/docs
-  migrate:up: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" up
-  migrate:down: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" down
-  migrate:version: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" version
+  migrate:
+    # Some examples of how to use this:
+    # - task migrate -- force {{VERSION}}
+    # - task migrate -- up
+    # - task migrate -- down
+    # - task migrate -- version
+    cmd: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" {{ .CLI_ARGS }}
   templ:live:
     cmd: templ generate --watch --proxy="http://localhost:8080"
   dev:api:
