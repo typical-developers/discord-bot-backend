@@ -1,9 +1,9 @@
 -- name: GetGuildSettings :one
 SELECT
     insert_epoch,
-    activity_tracking,
-    activity_tracking_grant,
-    activity_tracking_cooldown
+    chat_activity_tracking,
+    chat_activity_grant,
+    chat_activity_cooldown
 FROM guild_settings
 WHERE
     guild_settings.guild_id = @guild_id
@@ -27,13 +27,28 @@ RETURNING *;
 
 -- name: UpdateActivitySettings :exec
 INSERT INTO
-    guild_settings (guild_id, activity_tracking, activity_tracking_grant, activity_tracking_cooldown)
-    VALUES (@guild_id, @activity_tracking, @activity_tracking_grant, @activity_tracking_cooldown)
+    guild_settings (
+        guild_id,
+        chat_activity_tracking, chat_activity_grant, chat_activity_cooldown,
+        voice_activity_tracking, voice_activity_grant, voice_activity_cooldown
+    )
+    VALUES (
+        @guild_id,
+        COALESCE(@chat_activity_tracking, FALSE),
+        COALESCE(@chat_activity_grant, 2),
+        COALESCE(@chat_activity_cooldown, 15),
+        COALESCE(@voice_activity_tracking, FALSE),
+        COALESCE(@voice_activity_grant, 2),
+        COALESCE(@voice_activity_cooldown, 15)
+    )
 ON CONFLICT (guild_id)
 DO UPDATE SET
-    activity_tracking = COALESCE(sqlc.narg(activity_tracking), guild_settings.activity_tracking),
-    activity_tracking_grant = COALESCE(sqlc.narg(activity_tracking_grant), guild_settings.activity_tracking_grant),
-    activity_tracking_cooldown = COALESCE(sqlc.narg(activity_tracking_cooldown), guild_settings.activity_tracking_cooldown)
+    chat_activity_tracking = COALESCE(sqlc.narg(chat_activity_tracking), guild_settings.chat_activity_tracking),
+    chat_activity_grant = COALESCE(sqlc.narg(chat_activity_grant), guild_settings.chat_activity_grant),
+    chat_activity_cooldown = COALESCE(sqlc.narg(chat_activity_cooldown), guild_settings.chat_activity_cooldown),
+    voice_activity_tracking = COALESCE(sqlc.narg(voice_activity_tracking), guild_settings.voice_activity_tracking),
+    voice_activity_grant = COALESCE(sqlc.narg(voice_activity_grant), guild_settings.voice_activity_grant),
+    voice_activity_cooldown = COALESCE(sqlc.narg(voice_activity_cooldown), guild_settings.voice_activity_cooldown)
 RETURNING *;
 
 -- name: InsertActivityRole :exec

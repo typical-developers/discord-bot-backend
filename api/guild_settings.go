@@ -60,9 +60,9 @@ func CreateGuildSettings(c *fiber.Ctx) error {
 		Success: true,
 		Data: models.GuildSettings{
 			ChatActivity: models.ActivityConfig{
-				IsEnabled:       settings.ActivityTracking.Bool,
-				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
+				IsEnabled:       settings.ChatActivityTracking.Bool,
+				GrantAmount:     int(settings.ChatActivityGrant.Int32),
+				CooldownSeconds: int(settings.ChatActivityCooldown.Int32),
 				ActivityRoles:   []models.ActivityRole{},
 			},
 			VoiceRooms: []models.VoiceRoomLobbyConfig{},
@@ -160,9 +160,9 @@ func GetGuildSettings(c *fiber.Ctx) error {
 		Success: true,
 		Data: models.GuildSettings{
 			ChatActivity: models.ActivityConfig{
-				IsEnabled:       settings.ActivityTracking.Bool,
-				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
+				IsEnabled:       settings.ChatActivityTracking.Bool,
+				GrantAmount:     int(settings.ChatActivityGrant.Int32),
+				CooldownSeconds: int(settings.ChatActivityCooldown.Int32),
 				ActivityRoles:   mappedChatRoles,
 			},
 			VoiceRooms: mappedLobbies,
@@ -204,10 +204,10 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 
 	queries := db.New(connection)
 	err := queries.UpdateActivitySettings(ctx, db.UpdateActivitySettingsParams{
-		GuildID:                  guildId,
-		ActivityTracking:         dbutil.Bool(activitySettings.ChatActivity.Enabled),
-		ActivityTrackingGrant:    dbutil.Int32(activitySettings.ChatActivity.GrantAmount),
-		ActivityTrackingCooldown: dbutil.Int32(activitySettings.ChatActivity.Cooldown),
+		GuildID:              guildId,
+		ChatActivityTracking: dbutil.Bool(activitySettings.ChatActivity.Enabled),
+		ChatActivityGrant:    dbutil.Int32(activitySettings.ChatActivity.GrantAmount),
+		ChatActivityCooldown: dbutil.Int32(activitySettings.ChatActivity.Cooldown),
 	})
 	if err != nil {
 		logger.Log.WithSource.Error("Failed to update guild settings.", "guild_id", guildId, "error", err, "settings", activitySettings)
@@ -242,9 +242,9 @@ func UpdateGuildActivitySettings(c *fiber.Ctx) error {
 		Success: true,
 		Data: models.GuildSettings{
 			ChatActivity: models.ActivityConfig{
-				IsEnabled:       settings.ActivityTracking.Bool,
-				GrantAmount:     int(settings.ActivityTrackingGrant.Int32),
-				CooldownSeconds: int(settings.ActivityTrackingCooldown.Int32),
+				IsEnabled:       settings.ChatActivityTracking.Bool,
+				GrantAmount:     int(settings.ChatActivityGrant.Int32),
+				CooldownSeconds: int(settings.ChatActivityCooldown.Int32),
 				ActivityRoles:   mappedChatRoles,
 			},
 		},

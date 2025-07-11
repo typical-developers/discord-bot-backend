@@ -129,7 +129,7 @@ func CreateMemberProfile(c *fiber.Ctx) error {
 			ChatActivity: models.MemberActivity{
 				Rank:         int(rankings.ChatRank),
 				LastGrant:    grantTime,
-				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ChatActivityCooldown.Int32)),
 				Points:       int(profile.ChatActivity),
 				Roles: models.MemberRoles{
 					Next: roles.Next,
@@ -208,7 +208,7 @@ func GetMemberProfile(c *fiber.Ctx) error {
 			ChatActivity: models.MemberActivity{
 				Rank:         int(profile.ChatRank),
 				LastGrant:    grantTime,
-				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+				IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ChatActivityCooldown.Int32)),
 				Points:       int(profile.ChatActivity),
 				Roles: models.MemberRoles{
 					Next:     roles.Next,
@@ -307,9 +307,9 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 	}
 
 	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
-	cooldown := int(settings.ActivityTrackingCooldown.Int32)
+	cooldown := int(settings.ChatActivityCooldown.Int32)
 	if activityType == models.ActivityTypeChat {
-		if !settings.ActivityTracking.Bool {
+		if !settings.ChatActivityTracking.Bool {
 			_ = tx.Rollback(ctx)
 
 			return c.Status(fiber.StatusForbidden).JSON(models.APIResponse[models.ErrorResponse]{
@@ -332,7 +332,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 		}
 
 		updatedProfile, err := queries.IncrememberMemberChatActivityPoints(ctx, db.IncrememberMemberChatActivityPointsParams{
-			Points:   settings.ActivityTrackingGrant.Int32,
+			Points:   settings.ChatActivityGrant.Int32,
 			GuildID:  guildId,
 			MemberID: memberId,
 		})
@@ -358,7 +358,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			GrantType:    string(models.ActivityTypeChat),
 			GuildID:      guildId,
 			MemberID:     memberId,
-			EarnedPoints: int32(settings.ActivityTrackingGrant.Int32),
+			EarnedPoints: int32(settings.ChatActivityGrant.Int32),
 		})
 		if err != nil {
 			_ = tx.Rollback(ctx)
@@ -376,7 +376,7 @@ func IncrementActivityPoints(c *fiber.Ctx) error {
 			GrantType:    string(models.ActivityTypeChat),
 			GuildID:      guildId,
 			MemberID:     memberId,
-			EarnedPoints: int32(settings.ActivityTrackingGrant.Int32),
+			EarnedPoints: int32(settings.ChatActivityGrant.Int32),
 		})
 		if err != nil {
 			_ = tx.Rollback(ctx)
@@ -605,7 +605,7 @@ func MigrateMemberProfile(c *fiber.Ctx) error {
 	// 		ChatActivity: models.MemberActivity{
 	// 			Rank:         int(rankings.ChatRank),
 	// 			LastGrant:    grantTime,
-	// 			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ActivityTrackingCooldown.Int32)),
+	// 			IsOnCooldown: dbutil.IsMemberOnCooldown(grantTime, int(settings.ChatActivityCooldown.Int32)),
 	// 			Points:       int(newProfile.ActivityPoints),
 	// 			Roles: models.MemberRoles{
 	// 				Next:     roles.Next,
