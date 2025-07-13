@@ -6,6 +6,7 @@ import (
 	"github.com/typical-developers/discord-bot-backend/api"
 	_ "github.com/typical-developers/discord-bot-backend/internal/db"
 	_ "github.com/typical-developers/discord-bot-backend/internal/docs"
+	_ "github.com/typical-developers/discord-bot-backend/internal/imagescan"
 )
 
 func main() {
