@@ -2,6 +2,7 @@
 .env
 /tmp
 /bin
+/assets/image-scan
 
 # Generated Code
 internal/docs
