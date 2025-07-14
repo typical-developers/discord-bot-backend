@@ -14,6 +14,12 @@ import (
 func perceptionHash(file *os.File) (*goimagehash.ImageHash, error) {
 	var hash *goimagehash.ImageHash
 
+	// Resets the pointer to the start.
+	// This is to ensure the file is being read from the beginning.
+	if _, err := file.Seek(0, 0); err != nil {
+		return nil, err
+	}
+
 	ext := filepath.Ext(file.Name())
 
 	switch ext {
