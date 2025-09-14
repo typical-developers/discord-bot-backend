@@ -1,0 +1,305 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "The API for the main Typical Developers Discord bot.",
+        "title": "Discord Bot API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/v1/guild/{guild_id}/member/{member_id}": {
+            "post": {
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/member/{member_id}/chat-activity": {
+            "post": {
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/member/{member_id}/profile-card": {
+            "get": {
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/settings": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/guild/{guild_id}/settings/activity": {
+            "patch": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The activity settings.",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildActivitySettingsUpdateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/guild/{guild_id}/settings/activity-roles": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The activity type.",
+                        "name": "activity_type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The time period.",
+                        "name": "time_period",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "handlers.APIError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handlers.GuildActivityRoleCreateBody": {
+            "type": "object",
+            "properties": {
+                "activity_type": {
+                    "type": "string"
+                },
+                "required_points": {
+                    "type": "integer"
+                },
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.GuildActivitySettingsUpdateBody": {
+            "type": "object"
+        },
+        "handlers.GuildSettingsResponse": {
+            "type": "object"
+        }
+    },
+    "securityDefinitions": {
+        "APIKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-KEY",
+            "in": "header"
+        }
+    },
+    "tags": [
+        {
+            "description": "Guild endpoints.",
+            "name": "Guilds"
+        },
+        {
+            "description": "Voice room lobby endpoints.",
+            "name": "Voice Room Lobbies"
+        },
+        {
+            "description": "Voice room endpoints.",
+            "name": "Voice Rooms"
+        },
+        {
+            "description": "Member endpoints.",
+            "name": "Members"
+        },
+        {
+            "description": "HTML generation endpoints.",
+            "name": "HTML Generation"
+        }
+    ]
+}
