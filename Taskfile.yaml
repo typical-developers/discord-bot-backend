@@ -1,1 +1,6 @@
 version: '3'
+
+tasks:
+  dev:web:
+    cmd: go run ./services/web/cmd/main.go
+    dotenv: ['./services/web/.env']
