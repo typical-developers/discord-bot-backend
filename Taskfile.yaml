@@ -1,6 +1,16 @@
 version: '3'
 
 tasks:
+  migrate:
+    # Some examples of how to use this:
+    # - task migrate -- force {{VERSION}}
+    # - task migrate -- up
+    # - task migrate -- down
+    # - task migrate -- version
+    cmd: migrate -path internal/db/migrations -database "postgres://{{ .DATABASE_USERNAME }}:{{ .DATABASE_PASSWORD }}@{{ .DATABASE_HOST }}:{{ .DATABASE_PORT }}?{{ .DATABASE_OPTIONS }}" {{ .CLI_ARGS }}
+
+  sqlc:generate: cd internal/db && sqlc generate
+
   dev:web:
     cmd: go run ./services/web/cmd/main.go
     dotenv: ['./services/web/.env']
