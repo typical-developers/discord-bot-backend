@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 	"database/sql"
+	"errors"
 
+	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 
 	u "github.com/typical-developers/discord-bot-backend/internal/usecase"
@@ -20,6 +22,11 @@ func NewGuildUsecase(q db.Querier) u.GuildsUsecase {
 func (uc *GuildUsecase) CreateGuildSettings(ctx context.Context, guildId string) (*u.GuildSettings, error) {
 	_, err := uc.q.CreateGuildSettings(ctx, guildId)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr); pqErr.Code == "23505" {
+			return nil, u.ErrGuildSettingsExist
+		}
+
 		return nil, err
 	}
 
