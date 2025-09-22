@@ -52,12 +52,12 @@ INSERT INTO
     )
     VALUES (
         @guild_id,
-        COALESCE(@chat_activity_tracking, FALSE),
-        COALESCE(@chat_activity_grant, 2),
-        COALESCE(@chat_activity_cooldown, 15),
-        COALESCE(@voice_activity_tracking, FALSE),
-        COALESCE(@voice_activity_grant, 2),
-        COALESCE(@voice_activity_cooldown, 15)
+        COALESCE(@chat_activity_tracking::BOOLEAN, FALSE),
+        COALESCE(@chat_activity_grant::INT, 2),
+        COALESCE(@chat_activity_cooldown::INT, 15),
+        COALESCE(@voice_activity_tracking::BOOLEAN, FALSE),
+        COALESCE(@voice_activity_grant::INT, 2),
+        COALESCE(@voice_activity_cooldown::INT, 15)
     )
 ON CONFLICT (guild_id)
 DO UPDATE SET

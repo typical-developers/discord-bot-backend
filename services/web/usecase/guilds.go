@@ -7,6 +7,7 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
+	"github.com/typical-developers/discord-bot-backend/pkg/sqlx"
 
 	u "github.com/typical-developers/discord-bot-backend/internal/usecase"
 )
@@ -77,12 +78,26 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 
 	return &u.GuildSettings{
 		ChatActivityTracking: u.GuildActivityTracking{
-			Enabled:    settings.ChatActivityTracking.Valid,
-			Cooldown:   settings.ChatActivityGrant.Int32,
-			Grant:      settings.ChatActivityGrant.Int32,
-			GrantRoles: chatRoles,
-			DenyRoles:  []string{},
+			IsEnabled:       settings.ChatActivityTracking.Bool,
+			CooldownSeconds: settings.ChatActivityCooldown.Int32,
+			GrantAmount:     settings.ChatActivityGrant.Int32,
+			ActivityRoles:   chatRoles,
+			DenyRoles:       []string{},
 		},
 		VoiceRoomLobbies: lobbies,
 	}, nil
+}
+
+func (uc *GuildUsecase) UpdateGuildActivitySettings(ctx context.Context, guildId string, opts u.UpdateAcitivtySettings) (*u.GuildSettings, error) {
+	err := uc.q.UpdateActivitySettings(ctx, db.UpdateActivitySettingsParams{
+		GuildID:              guildId,
+		ChatActivityTracking: sqlx.Bool(opts.ChatActivity.IsEnabled),
+		ChatActivityGrant:    sqlx.Int32(opts.ChatActivity.GrantAmount),
+		ChatActivityCooldown: sqlx.Int32(opts.ChatActivity.CooldownSeconds),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return uc.GetGuildSettings(ctx, guildId)
 }

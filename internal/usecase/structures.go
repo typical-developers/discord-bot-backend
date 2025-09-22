@@ -6,11 +6,11 @@ type GuildActivityRole struct {
 }
 
 type GuildActivityTracking struct {
-	Enabled    bool                `json:"enabled"`
-	Cooldown   int32               `json:"cooldown"`
-	Grant      int32               `json:"grant"`
-	GrantRoles []GuildActivityRole `json:"grant_roles"`
-	DenyRoles  []string            `json:"deny_roles"`
+	IsEnabled       bool                `json:"is_enabled"`
+	GrantAmount     int32               `json:"grant_amount"`
+	CooldownSeconds int32               `json:"cooldown"`
+	ActivityRoles   []GuildActivityRole `json:"activity_roles"`
+	DenyRoles       []string            `json:"deny_roles"`
 }
 
 type VoiceRoomLobby struct {
@@ -24,4 +24,14 @@ type VoiceRoomLobby struct {
 type GuildSettings struct {
 	ChatActivityTracking GuildActivityTracking `json:"chat_activity"`
 	VoiceRoomLobbies     []VoiceRoomLobby      `json:"voice_room_lobbies"`
+}
+
+type UpdateActivitySettingsOpts struct {
+	IsEnabled       *bool  `json:"is_enabled"`
+	GrantAmount     *int32 `json:"grant_amount"`
+	CooldownSeconds *int32 `json:"cooldown"`
+}
+
+type UpdateAcitivtySettings struct {
+	ChatActivity UpdateActivitySettingsOpts `json:"chat_activity"`
 }
