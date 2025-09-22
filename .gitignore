@@ -5,6 +5,7 @@
 /services/web/docs
 
 # SQLC
+/internal/db/*.sql.go
 /internal/db/db.go
 /internal/db/models.go
 /internal/db/querier.go
