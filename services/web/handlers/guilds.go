@@ -23,6 +23,7 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 		r.Post("/{guildId}/settings/create", h.CreateGuildSettings)
 		r.Get("/{guildId}/settings", h.GetGuildSettings)
 		r.Patch("/{guildId}/settings/update/activity", h.UpdateGuildActivitySettings)
+		r.Patch("/{guildId}/settings/update/add-activity-role", h.CreateActivityRole)
 	})
 }
 
@@ -53,7 +54,7 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		if errors.Is(err, u.ErrGuildSettingsExist) {
+		if errors.Is(err, u.ErrGuildSettingsExists) {
 			err := httpx.WriteJSON(w, APIError{
 				Success: false,
 				Message: err.Error(),
@@ -192,6 +193,78 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 		Success: true,
 		Data:    *settings,
 	}, http.StatusOK)
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+//	@Router		/guild/{guild_id}/settings/update/add-activity-role [patch]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id	path		string						true	"The guild ID."
+//	@Param		role		body		GuildActivityRoleCreateBody	true	"The activity settings."
+//
+//	@Success	200			{object}	GuildSettingsResponse
+//	@Failure	400			{object}	APIError
+//	@Failure	404			{object}	APIError
+//
+// nolint:staticcheck
+func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	guildId := chi.URLParam(r, "guildId")
+	var createBody *GuildActivityRoleCreateBody
+	if err := json.NewDecoder(r.Body).Decode(&createBody); err != nil {
+		err := httpx.WriteJSON(w, APIError{
+			Success: false,
+			Message: ErrInvalidRequestBody.Error(),
+		}, http.StatusBadRequest)
+
+		if err != nil {
+			log.Error(err)
+			http.Error(w, ErrInvalidRequestBody.Error(), http.StatusBadRequest)
+		}
+
+		return
+	}
+
+	_, err := h.uc.CreateActivityRole(ctx, guildId, createBody.ActivityType, createBody.RoleID, createBody.RequiredPoints)
+
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			http.Error(w, ErrGatewayTimeout.Error(), http.StatusGatewayTimeout)
+			return
+		}
+
+		if errors.Is(err, u.ErrActivityRoleExists) {
+			err := httpx.WriteJSON(w, APIError{
+				Success: false,
+				Message: err.Error(),
+			}, http.StatusConflict)
+
+			if err != nil {
+				log.Error(err)
+				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			}
+
+			return
+		}
+
+		log.Error(err)
+		http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+		Success: true,
+		Data:    struct{}{},
+	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
 	}

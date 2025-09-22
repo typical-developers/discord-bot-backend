@@ -71,5 +71,10 @@ RETURNING *;
 
 -- name: InsertActivityRole :exec
 INSERT INTO guild_activity_roles (guild_id, grant_type, role_id, required_points)
-    VALUES (@guild_id, @grant_type, @role_id, @required_points::INT)
-ON CONFLICT DO NOTHING;
+    VALUES (@guild_id, @grant_type, @role_id, @required_points::INT);
+
+-- name: DeleteActivityRole :exec
+DELETE FROM guild_activity_roles
+WHERE
+    guild_id = @guild_id
+    AND role_id = @role_id;

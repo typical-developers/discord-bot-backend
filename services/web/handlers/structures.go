@@ -17,3 +17,9 @@ type APIError struct {
 type GuildSettingsResponse APIResponse[u.GuildSettings]
 
 type GuildActivitySettingsUpdateBody u.UpdateAcitivtySettings
+
+type GuildActivityRoleCreateBody struct {
+	ActivityType   string `json:"activity_type"`
+	RoleID         string `json:"role_id"`
+	RequiredPoints int32  `json:"required_points"`
+}

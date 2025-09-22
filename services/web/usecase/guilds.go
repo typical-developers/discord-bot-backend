@@ -25,7 +25,7 @@ func (uc *GuildUsecase) CreateGuildSettings(ctx context.Context, guildId string)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr); pqErr.Code == "23505" {
-			return nil, u.ErrGuildSettingsExist
+			return nil, u.ErrGuildSettingsExists
 		}
 
 		return nil, err
@@ -100,4 +100,37 @@ func (uc *GuildUsecase) UpdateGuildActivitySettings(ctx context.Context, guildId
 	}
 
 	return uc.GetGuildSettings(ctx, guildId)
+}
+
+func (uc *GuildUsecase) CreateActivityRole(ctx context.Context, guildId string, activityType string, roleId string, requiredPoints int32) (*u.GuildActivityRole, error) {
+	err := uc.q.InsertActivityRole(ctx, db.InsertActivityRoleParams{
+		GuildID:        guildId,
+		GrantType:      activityType,
+		RoleID:         roleId,
+		RequiredPoints: requiredPoints,
+	})
+
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return nil, u.ErrActivityRoleExists
+		}
+
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func (uc *GuildUsecase) DeleteActivityRole(ctx context.Context, guildId string, roleId string) error {
+	err := uc.q.DeleteActivityRole(ctx, db.DeleteActivityRoleParams{
+		GuildID: guildId,
+		RoleID:  roleId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
