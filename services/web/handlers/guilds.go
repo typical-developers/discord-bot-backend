@@ -19,11 +19,22 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 	h := GuildHandler{uc: uc}
 
 	r.Route("/guild", func(r chi.Router) {
-		r.Post("/{guildId}/settings", h.CreateGuildSettings)
+		r.Post("/{guildId}/settings/create", h.CreateGuildSettings)
 		r.Get("/{guildId}/settings", h.GetGuildSettings)
 	})
 }
 
+//	@Router		/guild/{guild_id}/settings/create [post]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id	path		string	true	"The guild ID."
+//
+//	@Success	200			{object}	GuildSettingsResponse
+//	@Failure	400			{object}	APIError
+//
+// nolint:staticcheck
 func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -37,6 +48,20 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 
 		if errors.Is(err, context.DeadlineExceeded) {
 			http.Error(w, ErrGatewayTimeout.Error(), http.StatusGatewayTimeout)
+			return
+		}
+
+		if errors.Is(err, u.ErrGuildSettingsExist) {
+			err := httpx.WriteJSON(w, APIError{
+				Success: false,
+				Message: err.Error(),
+			}, http.StatusConflict)
+
+			if err != nil {
+				log.Error(err)
+				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			}
+
 			return
 		}
 
@@ -54,6 +79,18 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+//	@Router		/guild/{guild_id}/settings [get]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id	path		string	true	"The guild ID."
+//
+//	@Success	200			{object}	GuildSettingsResponse
+//	@Failure	400			{object}	APIError
+//	@Failure	404			{object}	APIError
+//
+// nolint:staticcheck
 func (h *GuildHandler) GetGuildSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

@@ -8,10 +8,12 @@ import (
 	"github.com/go-chi/chi"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	_ "github.com/typical-developers/discord-bot-backend/internal/logger"
 	"github.com/typical-developers/discord-bot-backend/services/web/config"
 	_ "github.com/typical-developers/discord-bot-backend/services/web/config"
+	_ "github.com/typical-developers/discord-bot-backend/services/web/docs"
 	"github.com/typical-developers/discord-bot-backend/services/web/handlers"
 	"github.com/typical-developers/discord-bot-backend/services/web/usecase"
 )
@@ -35,6 +37,30 @@ func dbConnect() (*sql.DB, error) {
 	return db, nil
 }
 
+//	@title						Discord Bot API
+//	@version					1.0
+//	@description				The API for the main Typical Developers Discord bot.
+//
+//	@tag.name					Guilds
+//	@tag.description			Guild endpoints.
+//
+//	@tag.name					Voice Room Lobbies
+//	@tag.description			Voice room lobby endpoints.
+//
+//	@tag.name					Voice Rooms
+//	@tag.description			Voice room endpoints.
+//
+//	@tag.name					Members
+//	@tag.description			Member endpoints.
+//
+//	@tag.name					HTML Generation
+//	@tag.description			HTML generation endpoints.
+//
+//	@securitydefinitions.apikey	APIKeyAuth
+//	@in							header
+//	@name						X-API-KEY
+//
+// nolint:staticcheck
 func main() {
 	if lvl, err := logrus.ParseLevel(config.C.LogLevel); err != nil {
 		logrus.SetLevel(lvl)
@@ -42,6 +68,7 @@ func main() {
 
 	router := chi.NewRouter()
 	router.Use(handlers.RequestLog)
+	router.Get("/docs/*", httpSwagger.Handler())
 
 	pqdb, err := dbConnect()
 	if err != nil {

@@ -11,6 +11,10 @@ tasks:
     dotenv: ['./services/web/.env']
 
   sqlc:generate: cd internal/db && sqlc generate
+  swagger:generate:
+    cmds:
+      - swag fmt
+      - swag init -g services/web/cmd/main.go --output services/web/docs
 
   dev:web:
     cmd: go run ./services/web/cmd/main.go
