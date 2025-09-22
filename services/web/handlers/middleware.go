@@ -26,7 +26,7 @@ func RequestLog(handler http.Handler) http.Handler {
 		end := time.Now()
 		elapsed := end.Sub(start)
 
-		fmt.Printf("%s | %d | %-6s | %-10s | %-15s | %s\n",
+		fmt.Printf("%s | %-4d | %-6s | %-10s | %-15s | %s\n",
 			start.Format(time.RFC3339), rs.StatusCode, r.Method, elapsed, r.RemoteAddr, r.URL,
 		)
 	})
