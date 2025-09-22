@@ -20,11 +20,11 @@ func RequestLog(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		end := time.Now()
-		elapsed := end.Sub(start)
-
 		rs := &ResponseStatus{ResponseWriter: w}
 		handler.ServeHTTP(rs, r)
+
+		end := time.Now()
+		elapsed := end.Sub(start)
 
 		fmt.Printf("%s | %d | %-6s | %-10s | %-15s | %s\n",
 			start.Format(time.RFC3339), rs.StatusCode, r.Method, elapsed, r.RemoteAddr, r.URL,
