@@ -18,10 +18,11 @@ type Config struct {
 	// Options are query parameters used in the connection string.
 	// They should be formatted as an array, for example: "sslmode=disable,timezone=utc".
 	Database struct {
-		Host     string   `env:"HOST,required"`
-		Password string   `env:"PASSWORD"`
-		Port     int      `env:"PORT,required"`
-		Options  []string `env:"OPTIONS"`
+		Username string `env:"USERNAME,required"`
+		Password string `env:"PASSWORD"`
+		Host     string `env:"HOST,required"`
+		Port     int    `env:"PORT,required"`
+		Options  string `env:"OPTIONS"`
 	} `envPrefix:"DATABASE_"`
 
 	// A Redis instance used to store data fetched from the PostgreSQL database instance.
