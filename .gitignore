@@ -1,2 +1,10 @@
 # Envionrmental
 .env
+
+# Swagger Docs
+/services/web/docs
+
+# SQLC
+/internal/db/db.go
+/internal/db/models.go
+/internal/db/querier.go
