@@ -7,7 +7,8 @@ tasks:
     # - task migrate -- up
     # - task migrate -- down
     # - task migrate -- version
-    cmd: migrate -path internal/db/migrations -database "postgres://{{ .DATABASE_USERNAME }}:{{ .DATABASE_PASSWORD }}@{{ .DATABASE_HOST }}:{{ .DATABASE_PORT }}?{{ .DATABASE_OPTIONS }}" {{ .CLI_ARGS }}
+    cmd: migrate -path internal/db/migrations -database "postgres://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT?$DATABASE_OPTIONS" {{ .CLI_ARGS }}
+    dotenv: ['./services/web/.env']
 
   sqlc:generate: cd internal/db && sqlc generate
 
