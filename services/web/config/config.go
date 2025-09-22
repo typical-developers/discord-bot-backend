@@ -7,6 +7,11 @@ import (
 )
 
 type Config struct {
+	// The port to run the API on.
+	Port int `env:"PORT" envDefault:"8080"`
+
+	LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+
 	// The key used to authorize access to the API.
 	AuthKey string `env:"AUTH_KEY,required"`
 
