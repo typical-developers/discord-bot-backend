@@ -19,15 +19,15 @@ type GuildHandler struct {
 func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 	h := GuildHandler{uc: uc}
 
-	r.Route("/guild", func(r chi.Router) {
-		r.Post("/{guildId}/settings/create", h.CreateGuildSettings)
+	r.Route("/v1/guild", func(r chi.Router) {
 		r.Get("/{guildId}/settings", h.GetGuildSettings)
-		r.Patch("/{guildId}/settings/update/activity", h.UpdateGuildActivitySettings)
-		r.Patch("/{guildId}/settings/update/add-activity-role", h.CreateActivityRole)
+		r.Post("/{guildId}/settings", h.CreateGuildSettings)
+		r.Patch("/{guildId}/settings/activity", h.UpdateGuildActivitySettings)
+		r.Post("/{guildId}/settings/activity-roles", h.CreateActivityRole)
 	})
 }
 
-//	@Router		/guild/{guild_id}/settings/create [post]
+//	@Router		/guild/{guild_id}/settings [POST]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -82,7 +82,7 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings [get]
+//	@Router		/guild/{guild_id}/settings [GET]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -138,7 +138,7 @@ func (h *GuildHandler) GetGuildSettings(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings/update/activity  [patch]
+//	@Router		/guild/{guild_id}/settings/activity  [PATCH]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -198,7 +198,7 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings/update/add-activity-role [patch]
+//	@Router		/guild/{guild_id}/settings/activity-roles [POST]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
