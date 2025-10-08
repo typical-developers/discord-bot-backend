@@ -41,7 +41,7 @@ func serveStatic(r *chi.Mux) {
 	assetsRoot := http.Dir("./assets")
 	fs := http.StripPrefix("/static/", http.FileServer(assetsRoot))
 
-	r.Get("/static/*", fs.ServeHTTP)
+	r.Handle("/static/*", fs)
 }
 
 //	@title						Discord Bot API
