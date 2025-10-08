@@ -1,7 +1,7 @@
 :root {
     --profile-card-background: #0E0911;
     --profile-card-border: #342c38;
-    --profile-card-image: url('/html/assets/card-style_0-background.png');
+    --profile-card-image: url('/static/images/card-style_0-background.png');
 }
 
 #root {

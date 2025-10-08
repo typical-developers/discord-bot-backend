@@ -1,7 +1,7 @@
 :root {
     --serverleaderboard-card-background: #0E0911;
     --serverleaderboard-card-border: #342c38;
-    --serverleaderboard-card-image: url('/html/assets/card-style_0-background.png');
+    --serverleaderboard-card-image: url('/static/images/card-style_0-background.png');
 }
 
 #root {
