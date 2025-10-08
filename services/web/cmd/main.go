@@ -41,7 +41,10 @@ func serveStatic(r *chi.Mux) {
 	assetsRoot := http.Dir("./assets")
 	fs := http.StripPrefix("/static/", http.FileServer(assetsRoot))
 
-	r.Handle("/static/*", fs)
+	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		fs.ServeHTTP(w, r)
+	}))
 }
 
 //	@title						Discord Bot API
