@@ -27,7 +27,7 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 	})
 }
 
-//	@Router		/guild/{guild_id}/settings [POST]
+//	@Router		/v1/guild/{guild_id}/settings [POST]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -82,7 +82,7 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings [GET]
+//	@Router		/v1/guild/{guild_id}/settings [GET]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -138,7 +138,7 @@ func (h *GuildHandler) GetGuildSettings(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings/activity  [PATCH]
+//	@Router		/v1/guild/{guild_id}/settings/activity  [PATCH]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
@@ -198,7 +198,7 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 	}
 }
 
-//	@Router		/guild/{guild_id}/settings/activity-roles [POST]
+//	@Router		/v1/guild/{guild_id}/settings/activity-roles [POST]
 //	@Tags		Guilds
 //
 //	@Security	APIKeyAuth
