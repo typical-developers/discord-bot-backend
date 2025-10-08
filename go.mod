@@ -9,6 +9,8 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.6
+	golang.org/x/text v0.21.0
+	maragu.dev/gomponents v1.2.0
 )
 
 require (
