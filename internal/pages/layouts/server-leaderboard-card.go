@@ -131,7 +131,6 @@ type LeaderboardInfo struct {
 }
 
 type SeverLeaderboardProps struct {
-	APIUrl          string
 	ServerInfo      ServerInfo
 	LeaderboardInfo LeaderboardInfo
 }
@@ -142,7 +141,6 @@ func SeverLeaderboard(props SeverLeaderboardProps) Node {
 			// If(os.Getenv("ENVIRONMENT") == "development",
 			// 	Script(Src("/html/hot-reload.js")),
 			// ),
-			Base(Href(props.APIUrl)),
 
 			Link(Rel("stylesheet"), Href("/static/css/index.css")),
 			Link(Rel("stylesheet"), Href("/static/css/server-leaderboard.css")),

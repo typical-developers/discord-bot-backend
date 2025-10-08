@@ -179,7 +179,6 @@ type ActivityInfo struct {
 }
 
 type ProfileCardProps struct {
-	APIUrl       string
 	DisplayName  string
 	Username     string
 	AvatarURL    string
@@ -192,7 +191,6 @@ func ProfileCard(props ProfileCardProps) Node {
 			// If(os.Getenv("ENVIRONMENT") == "development",
 			// 	Script(Src("/html/hot-reload.js")),
 			// ),
-			Base(Href(props.APIUrl)),
 
 			Link(Rel("stylesheet"), Href("/static/css/index.css")),
 			Link(Rel("stylesheet"), Href("/static/css/profile-card.css")),
