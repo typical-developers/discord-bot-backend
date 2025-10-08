@@ -37,6 +37,13 @@ func dbConnect() (*sql.DB, error) {
 	return db, nil
 }
 
+func serveStatic(r *chi.Mux) {
+	assetsRoot := http.Dir("./assets")
+	fs := http.StripPrefix("/static/", http.FileServer(assetsRoot))
+
+	r.Get("/static/*", fs.ServeHTTP)
+}
+
 //	@title						Discord Bot API
 //	@version					1.0
 //	@description				The API for the main Typical Developers Discord bot.
@@ -69,6 +76,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(handlers.RequestLog)
 	router.Get("/docs/*", httpSwagger.Handler())
+	serveStatic(router)
 
 	pqdb, err := dbConnect()
 	if err != nil {

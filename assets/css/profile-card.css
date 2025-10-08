@@ -1,0 +1,188 @@
+:root {
+    --profile-card-background: #0E0911;
+    --profile-card-border: #342c38;
+    --profile-card-image: url('/html/assets/card-style_0-background.png');
+}
+
+#root {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    width: 700px;
+
+    padding: 30px;
+    border-radius: 20px;
+
+    border: 1px solid var(--border-subtle);
+
+    background: var(--profile-card-background);
+    font-family: 'Fixel',  'Twemoji', sans-serif;
+}
+
+.content {
+    z-index: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.background {
+    z-index: 0;
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-image:
+        linear-gradient(0deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.25) 80%, rgba(0, 0, 0, 0) 100%),
+        var(--profile-card-image);
+    background-repeat: no-repeat;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+
+    width: 100%;
+}
+
+.tag {
+    --text-color: var(--accent);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    width: fit-content;
+    padding: 7px 10px;
+    border-radius: 50px;
+
+    border: 1px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent 90%);
+    color: var(--accent);
+    text-transform: uppercase;
+}
+
+.user .avatar {
+    box-sizing: border-box;
+    width: 90px;
+    height: 90px;
+
+    border-radius: 15px;
+    border: 1px solid var(--border-subtle);
+}
+
+.user .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-info .names {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.user-info .tags {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.progress-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 15px;
+    background-image: linear-gradient(
+        to right,
+        hsla(var(--gradient-1-hsl), 10%),
+        hsla(var(--gradient-2-hsl), 10%)
+    );
+    backdrop-filter: blur(10px);
+}
+
+.progress-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.progress-group .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    padding: 0 4px;
+    color: var(--text-color);
+}
+
+.progress-group .header .details {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 2px;
+}
+
+.progress-group .progress-bar {
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 25px;
+    border-radius: 50px;
+
+    background: transparent;
+}
+
+.progress-group .progress-bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    
+    padding: 2px;
+    border-radius: inherit;
+
+    background: linear-gradient(to right, hsla(var(--gradient-1-hsl)), hsla(var(--gradient-2-hsl)));
+    mask-composite: exclude;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+}
+
+.progress-group .progress-bar .bar {
+    position: absolute;
+    width: 100%;
+    min-width: 25px;
+    height: 100%;
+    border-radius: inherit;
+
+    background: linear-gradient(
+       to right,
+        hsla(var(--gradient-1-hsl)) var(--gradient-1-pos),
+        hsla(var(--gradient-2-hsl)) var(--gradient-2-pos)
+    );
+}
+
+.progress-group .progress-bar .progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+}
