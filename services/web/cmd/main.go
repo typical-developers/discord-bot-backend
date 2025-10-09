@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/chi"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -87,7 +88,12 @@ func main() {
 	}
 	querier := db.New(pqdb)
 
-	guildUsecase := usecase.NewGuildUsecase(querier)
+	discord, err := discordgo.New("Bot " + config.C.DiscordToken)
+	if err != nil {
+		panic(err)
+	}
+
+	guildUsecase := usecase.NewGuildUsecase(pqdb, querier, discord)
 	handlers.NewGuildHandler(router, guildUsecase)
 
 	port := fmt.Sprintf(":%d", config.C.Port)

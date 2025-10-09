@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/pkg/sqlx"
@@ -13,11 +14,13 @@ import (
 )
 
 type GuildUsecase struct {
-	q db.Querier
+	db *sql.DB
+	q  *db.Queries
+	d  *discordgo.Session
 }
 
-func NewGuildUsecase(q db.Querier) u.GuildsUsecase {
-	return &GuildUsecase{q: q}
+func NewGuildUsecase(db *sql.DB, q *db.Queries, d *discordgo.Session) u.GuildsUsecase {
+	return &GuildUsecase{db: db, q: q, d: d}
 }
 
 func (uc *GuildUsecase) CreateGuildSettings(ctx context.Context, guildId string) (*u.GuildSettings, error) {
