@@ -19,11 +19,11 @@ type GuildHandler struct {
 func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 	h := GuildHandler{uc: uc}
 
-	r.Route("/v1/guild", func(r chi.Router) {
-		r.Get("/{guildId}/settings", h.GetGuildSettings)
-		r.Post("/{guildId}/settings", h.CreateGuildSettings)
-		r.Patch("/{guildId}/settings/activity", h.UpdateGuildActivitySettings)
-		r.Post("/{guildId}/settings/activity-roles", h.CreateActivityRole)
+	r.Route("/v1/guild/{guildId}", func(r chi.Router) {
+		r.Get("/settings", h.GetGuildSettings)
+		r.Post("/settings", h.CreateGuildSettings)
+		r.Patch("/settings/activity", h.UpdateGuildActivitySettings)
+		r.Post("/settings/activity-roles", h.CreateActivityRole)
 	})
 }
 
