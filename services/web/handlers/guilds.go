@@ -279,7 +279,7 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 //
 //	@Param		guild_id		path	string	true	"The guild ID."
 //	@Param		activity_type	query	string	true	"The activity type."	Enum(chat, voice)
-//	@Param		time_period		query	string	true	"The time period."		Enum(week, month, all)
+//	@Param		time_period		query	string	true	"The time period."		Enum(weekly, monthly, all)
 //
 // nolint:staticcheck
 func (h *GuildHandler) GenerateGuildActivityLeaderboardCard(w http.ResponseWriter, r *http.Request) {

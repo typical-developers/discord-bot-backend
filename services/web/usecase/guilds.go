@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
@@ -158,7 +159,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 	limitBy := int32(15)
 	var card gomponents.Node
 	switch timePeriod {
-	case "week":
+	case "weekly":
 		leaderboard, err := uc.q.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
 			GuildID:   guildId,
 			GrantType: acitivtyType,
@@ -193,7 +194,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 
 			fields = append(fields, layouts.LeaderboardDataField{
 				Rank:     int(value.Rank),
-				Username: member.User.Username,
+				Username: fmt.Sprintf("@%s", member.User.Username),
 				Value:    int(value.EarnedPoints),
 			})
 		}
@@ -205,7 +206,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 				Data: fields,
 			},
 		})
-	case "month":
+	case "monthly":
 		leaderboard, err := uc.q.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
 			GuildID:   guildId,
 			GrantType: acitivtyType,
@@ -240,7 +241,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 
 			fields = append(fields, layouts.LeaderboardDataField{
 				Rank:     int(value.Rank),
-				Username: member.User.Username,
+				Username: fmt.Sprintf("@%s", member.User.Username),
 				Value:    int(value.EarnedPoints),
 			})
 		}
@@ -288,7 +289,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 
 			fields = append(fields, layouts.LeaderboardDataField{
 				Rank:     int(value.Rank),
-				Username: member.User.Username,
+				Username: fmt.Sprintf("@%s", member.User.Username),
 				Value:    int(value.Points),
 			})
 		}
