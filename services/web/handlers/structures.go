@@ -23,3 +23,6 @@ type GuildActivityRoleCreateBody struct {
 	RoleID         string `json:"role_id"`
 	RequiredPoints int32  `json:"required_points"`
 }
+
+// --- Member Profile
+type MemberProfileResponse APIResponse[u.MemberProfile]

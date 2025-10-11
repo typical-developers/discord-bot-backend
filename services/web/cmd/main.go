@@ -151,6 +151,9 @@ func main() {
 	guildUsecase := usecase.NewGuildUsecase(pqdb, querier, discordState)
 	handlers.NewGuildHandler(router, guildUsecase)
 
+	memberUsecase := usecase.NewMemberUsecase(pqdb, querier, discordState)
+	handlers.NewMemberHandler(router, memberUsecase)
+
 	port := fmt.Sprintf(":%d", config.C.Port)
 	panic(http.ListenAndServe(port, router))
 }

@@ -35,3 +35,34 @@ type UpdateActivitySettingsOpts struct {
 type UpdateAcitivtySettings struct {
 	ChatActivity UpdateActivitySettingsOpts `json:"chat_activity"`
 }
+
+type MemberActivityRole struct {
+	RoleID         string `json:"role_id"`
+	Accent         string `json:"accent"`
+	Name           string `json:"name"`
+	RequiredPoints int32  `json:"required_points"`
+}
+
+type MemberActivityProgress struct {
+	CurrentProgress  int32 `json:"current_progress"`
+	RequiredProgress int32 `json:"required_progress"`
+}
+
+type MemberActivity struct {
+	Rank         int32 `json:"rank"`
+	Points       int32 `json:"total_points"`
+	IsOnCooldown bool  `json:"is_on_cooldown"`
+
+	CurrentActivityRoleIds []string                `json:"current_activity_role_ids"`
+	CurrentActivityRole    *MemberActivityRole     `json:"current_activity_role"`
+	NextActivityRole       *MemberActivityProgress `json:"next_activity_role"`
+}
+
+type MemberProfile struct {
+	DisplayName string `json:"display_name"`
+	Username    string `json:"username"`
+	AvatarURL   string `json:"avatar_url"`
+
+	CardStyle    int32          `json:"card_style"`
+	ChatActivity MemberActivity `json:"chat_activity"`
+}

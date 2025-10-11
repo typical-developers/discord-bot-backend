@@ -3,6 +3,8 @@ package discord_state
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/redis/go-redis/v9"
@@ -41,4 +43,37 @@ func (s *StateManager) GuildMember(ctx context.Context, guildId, userId string) 
 	}
 
 	return result.(*discordgo.Member), nil
+}
+
+func (s *StateManager) RequestGuildMembersList(ctx context.Context, guildId string, userIds []string, limit int, nonce string, presences bool) error {
+	// This is to build the member list cache.
+	//
+	// If all the members are cached, it wont request the resources for them again.
+	// Any resource that isn't cached will be requested.
+	//
+	// I'm not 100% certain if this is the most efficient way to handle this.
+	// This relies on fetching a chunk then caching all of them separately to be used after the fact.
+
+	_, err, _ := s.sf.Do(fmt.Sprintf("%s_members_list_%s", guildId, strings.Join(userIds, ",")), func() (any, error) {
+		for _, userId := range userIds {
+			val := s.redis.Exists(ctx, fmt.Sprintf("guild:%s:member:%s", guildId, userId)).Val()
+			if val == 0 {
+				continue
+			}
+
+			i := slices.Index(userIds, userId)
+			userIds = slices.Delete(userIds, i, i+1)
+		}
+
+		if len(userIds) > 0 {
+			err := s.Session.RequestGuildMembersList(guildId, userIds, limit, nonce, presences)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+
+	return err
 }
