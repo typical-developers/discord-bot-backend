@@ -156,19 +156,52 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 		return nil, err
 	}
 
+	tx, err := uc.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	q := db.New(tx)
+
 	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	nextGrant := lastGrant.Add(time.Duration(settings.ChatActivityCooldown.Int32) * time.Second)
 	if time.Now().Before(nextGrant) {
 		return nil, u.ErrMemberOnGrantCooldown
 	}
 
-	_, err = uc.q.IncrememberMemberChatActivityPoints(ctx, db.IncrememberMemberChatActivityPointsParams{
+	_, err = q.IncrememberMemberChatActivityPoints(ctx, db.IncrememberMemberChatActivityPointsParams{
 		GuildID:  guildId,
 		MemberID: userId,
 
 		Points: settings.ChatActivityGrant.Int32,
 	})
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
+	err = q.IncrementWeeklyActivityLeaderboard(ctx, db.IncrementWeeklyActivityLeaderboardParams{
+		GrantType:    "chat",
+		GuildID:      guildId,
+		MemberID:     userId,
+		EarnedPoints: int32(settings.ChatActivityGrant.Int32),
+	})
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	err = q.IncrementMonthlyActivityLeaderboard(ctx, db.IncrementMonthlyActivityLeaderboardParams{
+		GrantType:    "chat",
+		GuildID:      guildId,
+		MemberID:     userId,
+		EarnedPoints: int32(settings.ChatActivityGrant.Int32),
+	})
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
