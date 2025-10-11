@@ -160,7 +160,7 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	q := db.New(tx)
+	q := uc.q.WithTx(tx)
 
 	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
 	nextGrant := lastGrant.Add(time.Duration(settings.ChatActivityCooldown.Int32) * time.Second)
