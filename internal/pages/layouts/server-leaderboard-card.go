@@ -130,12 +130,12 @@ type LeaderboardInfo struct {
 	Data []LeaderboardDataField
 }
 
-type SeverLeaderboardProps struct {
+type ServerLeaderboardProps struct {
 	ServerInfo      ServerInfo
 	LeaderboardInfo LeaderboardInfo
 }
 
-func SeverLeaderboard(props SeverLeaderboardProps) Node {
+func ServerLeaderboard(props ServerLeaderboardProps) Node {
 	return HTML5(HTML5Props{
 		Head: []Node{
 			// If(os.Getenv("ENVIRONMENT") == "development",
