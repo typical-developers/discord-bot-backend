@@ -7,8 +7,10 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
+	"github.com/typical-developers/discord-bot-backend/internal/pages/layouts"
 	discord_state "github.com/typical-developers/discord-bot-backend/pkg/discord-state"
 	"github.com/typical-developers/discord-bot-backend/pkg/sqlx"
+	"maragu.dev/gomponents"
 
 	u "github.com/typical-developers/discord-bot-backend/internal/usecase"
 )
@@ -140,4 +142,165 @@ func (uc *GuildUsecase) DeleteActivityRole(ctx context.Context, guildId string, 
 	}
 
 	return nil
+}
+
+func (uc *GuildUsecase) GenerateGuildActivityLeaderboard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error) {
+	guild, err := uc.d.Guild(ctx, guildId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverInfo := layouts.ServerInfo{
+		Icon: guild.IconURL("100"),
+		Name: guild.Name,
+	}
+
+	limitBy := int32(15)
+	var card gomponents.Node
+	switch timePeriod {
+	case "week":
+		leaderboard, err := uc.q.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: acitivtyType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		userIds := make([]string, 0)
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+		}
+		err = uc.d.RequestGuildMembersList(ctx, guildId, userIds, 0, "", true)
+		if err != nil {
+			return nil, err
+		}
+
+		fields := make([]layouts.LeaderboardDataField, 0)
+		for _, value := range leaderboard {
+			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
+
+			if err != nil {
+				fields = append(fields, layouts.LeaderboardDataField{
+					Rank:     int(value.Rank),
+					Username: value.MemberID,
+					Value:    int(value.EarnedPoints),
+				})
+				continue
+			}
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: member.User.Username,
+				Value:    int(value.EarnedPoints),
+			})
+		}
+
+		card = layouts.ServerLeaderboard(layouts.ServerLeaderboardProps{
+			ServerInfo: serverInfo,
+			LeaderboardInfo: layouts.LeaderboardInfo{
+				Name: "Activity Points - Weekly",
+				Data: fields,
+			},
+		})
+	case "month":
+		leaderboard, err := uc.q.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: acitivtyType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		userIds := make([]string, 0)
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+		}
+		err = uc.d.RequestGuildMembersList(ctx, guildId, userIds, 0, "", true)
+		if err != nil {
+			return nil, err
+		}
+
+		fields := make([]layouts.LeaderboardDataField, 0)
+		for _, value := range leaderboard {
+			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
+
+			if err != nil {
+				fields = append(fields, layouts.LeaderboardDataField{
+					Rank:     int(value.Rank),
+					Username: value.MemberID,
+					Value:    int(value.EarnedPoints),
+				})
+				continue
+			}
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: member.User.Username,
+				Value:    int(value.EarnedPoints),
+			})
+		}
+
+		card = layouts.ServerLeaderboard(layouts.ServerLeaderboardProps{
+			ServerInfo: serverInfo,
+			LeaderboardInfo: layouts.LeaderboardInfo{
+				Name: "Activity Points - Monthly",
+				Data: fields,
+			},
+		})
+	default:
+		leaderboard, err := uc.q.GetAllTimeActivityLeaderboard(ctx, db.GetAllTimeActivityLeaderboardParams{
+			ActivityType: acitivtyType,
+			GuildID:      guildId,
+			LimitBy:      limitBy,
+			OffsetBy:     int32(page-1) * limitBy,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		userIds := make([]string, 0)
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+		}
+		err = uc.d.RequestGuildMembersList(ctx, guildId, userIds, 0, "", true)
+		if err != nil {
+			return nil, err
+		}
+
+		fields := make([]layouts.LeaderboardDataField, 0)
+		for _, value := range leaderboard {
+			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
+
+			if err != nil {
+				fields = append(fields, layouts.LeaderboardDataField{
+					Rank:     int(value.Rank),
+					Username: value.MemberID,
+					Value:    int(value.Points),
+				})
+				continue
+			}
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: member.User.Username,
+				Value:    int(value.Points),
+			})
+		}
+
+		card = layouts.ServerLeaderboard(layouts.ServerLeaderboardProps{
+			ServerInfo: serverInfo,
+			LeaderboardInfo: layouts.LeaderboardInfo{
+				Name: "Activity Points - All Time",
+				Data: fields,
+			},
+		})
+	}
+
+	return card, nil
 }

@@ -1,6 +1,10 @@
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"maragu.dev/gomponents"
+)
 
 type GuildsUsecase interface {
 	CreateGuildSettings(ctx context.Context, guildId string) (*GuildSettings, error)
@@ -10,4 +14,6 @@ type GuildsUsecase interface {
 
 	CreateActivityRole(ctx context.Context, guildId string, activityType string, roleId string, requiredPoints int32) (*GuildActivityRole, error)
 	DeleteActivityRole(ctx context.Context, guildId string, roleId string) error
+
+	GenerateGuildActivityLeaderboard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error)
 }

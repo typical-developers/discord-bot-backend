@@ -24,6 +24,8 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 		r.Post("/settings", h.CreateGuildSettings)
 		r.Patch("/settings/activity", h.UpdateGuildActivitySettings)
 		r.Post("/settings/activity-roles", h.CreateActivityRole)
+
+		r.Get("/activity-leaderboard-card", h.GenerateGuildActivityLeaderboard)
 	})
 }
 
@@ -267,5 +269,36 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
+	}
+}
+
+//	@Router		/v1/guild/{guild_id}/activity-leaderboard-card [GET]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id		path	string	true	"The guild ID."
+//	@Param		activity_type	query	string	true	"The activity type."	Enum(chat, voice)
+//	@Param		time_period		query	string	true	"The time period."		Enum(week, month, all)
+//
+// nolint:staticcheck
+func (h *GuildHandler) GenerateGuildActivityLeaderboard(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	guildId := chi.URLParam(r, "guildId")
+	activityType := httpx.GetQueryParam(r, "activity_type", "chat")
+	timePeriod := httpx.GetQueryParam(r, "time_period", "all")
+
+	card, err := h.uc.GenerateGuildActivityLeaderboard(ctx, guildId, activityType, timePeriod, 1)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := card.Render(w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

@@ -30,6 +30,46 @@ FROM (
 LIMIT @limit_by
 OFFSET @offset_by;
 
+-- name: GetWeeklyActivityLeaderboard :many
+SELECT
+    rankings.rank,
+    rankings.member_id,
+    rankings.earned_points
+FROM (
+    SELECT
+        ROW_NUMBER() OVER (
+            ORDER BY earned_points DESC
+        ) AS rank,
+        member_id,
+        earned_points
+    FROM guild_activity_tracking_weekly_current
+    WHERE
+        guild_id = @guild_id
+        AND grant_type = @grant_type
+) AS rankings
+LIMIT 15
+OFFSET @offset_by;
+
+-- name: GetMonthlyActivityLeaderboard :many
+SELECT
+    rankings.rank,
+    rankings.member_id,
+    rankings.earned_points
+FROM (
+    SELECT
+        ROW_NUMBER() OVER (
+            ORDER BY earned_points DESC
+        ) AS rank,
+        member_id,
+        earned_points
+    FROM guild_activity_tracking_monthly_current
+    WHERE
+        guild_id = @guild_id
+        AND grant_type = @grant_type
+) AS rankings
+LIMIT 15
+OFFSET @offset_by;
+
 -- name: IncrementWeeklyActivityLeaderboard :exec
 INSERT INTO guild_activity_tracking_weekly_current (
     grant_type, guild_id, member_id, earned_points
