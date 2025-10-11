@@ -51,7 +51,11 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 		GuildID:      guildId,
 		ActivityType: "chat",
 	})
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, u.ErrGuildNotFound
+		}
+
 		return nil, err
 	}
 
