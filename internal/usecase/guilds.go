@@ -15,5 +15,5 @@ type GuildsUsecase interface {
 	CreateActivityRole(ctx context.Context, guildId string, activityType string, roleId string, requiredPoints int32) (*GuildActivityRole, error)
 	DeleteActivityRole(ctx context.Context, guildId string, roleId string) error
 
-	GenerateGuildActivityLeaderboard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error)
+	GenerateGuildActivityLeaderboardCard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error)
 }

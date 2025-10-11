@@ -144,7 +144,7 @@ func (uc *GuildUsecase) DeleteActivityRole(ctx context.Context, guildId string, 
 	return nil
 }
 
-func (uc *GuildUsecase) GenerateGuildActivityLeaderboard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error) {
+func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error) {
 	guild, err := uc.d.Guild(ctx, guildId)
 	if err != nil {
 		return nil, err

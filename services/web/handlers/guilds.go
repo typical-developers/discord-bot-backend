@@ -25,7 +25,7 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 		r.Patch("/settings/activity", h.UpdateGuildActivitySettings)
 		r.Post("/settings/activity-roles", h.CreateActivityRole)
 
-		r.Get("/activity-leaderboard-card", h.GenerateGuildActivityLeaderboard)
+		r.Get("/activity-leaderboard-card", h.GenerateGuildActivityLeaderboardCard)
 	})
 }
 
@@ -282,14 +282,14 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 //	@Param		time_period		query	string	true	"The time period."		Enum(week, month, all)
 //
 // nolint:staticcheck
-func (h *GuildHandler) GenerateGuildActivityLeaderboard(w http.ResponseWriter, r *http.Request) {
+func (h *GuildHandler) GenerateGuildActivityLeaderboardCard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	guildId := chi.URLParam(r, "guildId")
 	activityType := httpx.GetQueryParam(r, "activity_type", "chat")
 	timePeriod := httpx.GetQueryParam(r, "time_period", "all")
 
-	card, err := h.uc.GenerateGuildActivityLeaderboard(ctx, guildId, activityType, timePeriod, 1)
+	card, err := h.uc.GenerateGuildActivityLeaderboardCard(ctx, guildId, activityType, timePeriod, 1)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
