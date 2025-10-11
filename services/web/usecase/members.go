@@ -115,15 +115,15 @@ func (uc *MemberUsecase) GetMemberProfile(ctx context.Context, guildId string, u
 				RoleID:         role.ID,
 				Name:           role.Name,
 				Accent:         fmt.Sprintf("#%06X", role.Color),
-				RequiredPoints: int32(activityInfo.CurrentRoleRequiredPoints.Int64),
+				RequiredPoints: int32(activityInfo.CurrentRoleRequiredPoints.Int32),
 			}
 		}
 	}
 
 	if activityInfo.NextRoleID.Valid {
 		profileInfo.ChatActivity.NextActivityRole = &u.MemberActivityProgress{
-			CurrentProgress:  profile.ChatActivity - int32(activityInfo.CurrentRoleRequiredPoints.Int64),
-			RequiredProgress: int32(activityInfo.NextRoleRequiredPoints.Int64) - int32(activityInfo.CurrentRoleRequiredPoints.Int64),
+			CurrentProgress:  profile.ChatActivity - activityInfo.CurrentRoleRequiredPoints.Int32,
+			RequiredProgress: activityInfo.NextRoleRequiredPoints.Int32 - activityInfo.CurrentRoleRequiredPoints.Int32,
 		}
 	}
 

@@ -44,9 +44,7 @@ WITH
     activity_roles AS (
         SELECT
             role_id,
-            SUM(required_points) OVER (
-                ORDER BY required_points ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-            ) AS required_points
+            required_points
         FROM guild_activity_roles
         WHERE guild_activity_roles.guild_id = $1
     ),
@@ -75,8 +73,10 @@ WITH
     )
 SELECT
     all_role_ids.role_ids AS current_roles_ids,
+
     current_role_info.role_id AS current_role_id,
     current_role_info.required_points AS current_role_required_points,
+
     next_role_info.role_id AS next_role_id,
     next_role_info.required_points AS next_role_required_points
 FROM current_role_info
@@ -92,9 +92,9 @@ type GetMemberChatActivityRoleInfoParams struct {
 type GetMemberChatActivityRoleInfoRow struct {
 	CurrentRolesIds           []string
 	CurrentRoleID             sql.NullString
-	CurrentRoleRequiredPoints sql.NullInt64
+	CurrentRoleRequiredPoints sql.NullInt32
 	NextRoleID                sql.NullString
-	NextRoleRequiredPoints    sql.NullInt64
+	NextRoleRequiredPoints    sql.NullInt32
 }
 
 func (q *Queries) GetMemberChatActivityRoleInfo(ctx context.Context, arg GetMemberChatActivityRoleInfoParams) (GetMemberChatActivityRoleInfoRow, error) {
