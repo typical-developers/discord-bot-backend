@@ -36,6 +36,10 @@ func NewStateManager(opts *StateManagerOptions) *StateManager {
 		ctx := context.Background()
 
 		switch e := e.(type) {
+		case *discordgo.GuildUpdate:
+			state.redis.JSONSet(ctx, fmt.Sprintf("guild:%s", e.ID), "$", e.Guild)
+		case *discordgo.GuildDelete:
+			state.redis.JSONDel(ctx, fmt.Sprintf("guild:%s", e.ID), "$")
 		case *discordgo.GuildMemberUpdate:
 			state.redis.JSONSet(ctx, fmt.Sprintf("guild:%s:member:%s", e.GuildID, e.User.ID), "$", e.Member)
 		case *discordgo.GuildMembersChunk:
