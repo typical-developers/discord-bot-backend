@@ -2,9 +2,11 @@ package discord_state
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/redis/go-redis/v9"
@@ -25,11 +27,21 @@ func (s *StateManager) GuildMember(ctx context.Context, guildId, userId string) 
 
 			member, err := s.Session.GuildMember(guildId, userId, discordgo.WithContext(ctx), discordgo.WithRetryOnRatelimit(true))
 			if err != nil {
+				var dgError *discordgo.RESTError
+				if errors.As(err, &dgError) && dgError.Message.Code == discordgo.ErrCodeUnknownMember {
+					// cache the value as nil, if they ever rejoin the guild it will automatically fetch their information.
+					pipeline := s.redis.Pipeline()
+					pipeline.JSONSet(ctx, key, "$", nil)
+					pipeline.Expire(ctx, key, time.Hour*24)
+					_, _ = pipeline.Exec(ctx)
+				}
+
 				return nil, err
 			}
 
 			pipeline := s.redis.Pipeline()
 			pipeline.JSONSet(ctx, key, "$", member)
+			pipeline.Expire(ctx, key, time.Hour*24)
 			_, _ = pipeline.Exec(ctx)
 
 			return member, nil
@@ -55,9 +67,18 @@ func (s *StateManager) RequestGuildMembersList(ctx context.Context, guildId stri
 	// This relies on fetching a chunk then caching all of them separately to be used after the fact.
 
 	_, err, _ := s.sf.Do(fmt.Sprintf("%s_members_list_%s", guildId, strings.Join(userIds, ",")), func() (any, error) {
+		pipeline := s.redis.Pipeline()
+
+		pipelineCmds := map[string]*redis.IntCmd{}
 		for _, userId := range userIds {
-			val := s.redis.Exists(ctx, fmt.Sprintf("guild:%s:member:%s", guildId, userId)).Val()
-			if val == 0 {
+			pipelineCmds[userId] = pipeline.Exists(ctx, fmt.Sprintf("guild:%s:member:%s", guildId, userId))
+		}
+		if _, err := pipeline.Exec(ctx); err != nil {
+			return nil, err
+		}
+
+		for userId, cmd := range pipelineCmds {
+			if cmd.Val() == 0 {
 				continue
 			}
 

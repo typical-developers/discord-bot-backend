@@ -182,7 +182,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 		for _, value := range leaderboard {
 			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
 
-			if err != nil {
+			if member == nil || err != nil {
 				fields = append(fields, layouts.LeaderboardDataField{
 					Rank:     int(value.Rank),
 					Username: value.MemberID,
@@ -229,7 +229,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 		for _, value := range leaderboard {
 			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
 
-			if err != nil {
+			if member == nil || err != nil {
 				fields = append(fields, layouts.LeaderboardDataField{
 					Rank:     int(value.Rank),
 					Username: value.MemberID,
@@ -277,7 +277,7 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 		for _, value := range leaderboard {
 			member, err := uc.d.GuildMember(ctx, guildId, value.MemberID)
 
-			if err != nil {
+			if member == nil || err != nil {
 				fields = append(fields, layouts.LeaderboardDataField{
 					Rank:     int(value.Rank),
 					Username: value.MemberID,
