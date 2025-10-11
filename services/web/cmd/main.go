@@ -1,17 +1,22 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/chi"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	_ "github.com/typical-developers/discord-bot-backend/internal/logger"
+	discord_state "github.com/typical-developers/discord-bot-backend/pkg/discord-state"
 	"github.com/typical-developers/discord-bot-backend/services/web/config"
 	_ "github.com/typical-developers/discord-bot-backend/services/web/config"
 	_ "github.com/typical-developers/discord-bot-backend/services/web/docs"
@@ -36,6 +41,43 @@ func dbConnect() (*sql.DB, error) {
 	db.SetMaxOpenConns(50)
 
 	return db, nil
+}
+
+func discordRedisConnect() (*redis.Client, error) {
+	var opts = &redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.C.DiscordCache.Host, config.C.DiscordCache.Port),
+		Password: config.C.DiscordCache.Password,
+		DB:       config.C.DiscordCache.DB,
+	}
+
+	client := redis.NewClient(opts)
+
+	ticker := time.NewTicker(time.Second * 10)
+	go func() {
+		ctx := context.Background()
+		defer ticker.Stop()
+
+		healthy := true
+		for range ticker.C {
+			_, err := client.Ping(ctx).Result()
+
+			if err != nil {
+				healthy = false
+				log.Warn("Redis client connection is not healthy.")
+				continue
+			}
+
+			if !healthy {
+				healthy = true
+				log.Info("Redis client connection has been restored.")
+				continue
+			}
+
+			log.Debug("Redis client connection is healthy.")
+		}
+	}()
+
+	return client, nil
 }
 
 func serveStatic(r *chi.Mux) {
@@ -92,8 +134,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = discord.Open()
+	if err != nil {
+		panic(err)
+	}
 
-	guildUsecase := usecase.NewGuildUsecase(pqdb, querier, discord)
+	discordCache, err := discordRedisConnect()
+	if err != nil {
+		panic(err)
+	}
+	discordState := discord_state.NewStateManager(&discord_state.StateManagerOptions{
+		DiscordSession: discord,
+		RedisClient:    discordCache,
+	})
+
+	guildUsecase := usecase.NewGuildUsecase(pqdb, querier, discordState)
 	handlers.NewGuildHandler(router, guildUsecase)
 
 	port := fmt.Sprintf(":%d", config.C.Port)

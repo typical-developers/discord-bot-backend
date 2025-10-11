@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
+	discord_state "github.com/typical-developers/discord-bot-backend/pkg/discord-state"
 	"github.com/typical-developers/discord-bot-backend/pkg/sqlx"
 
 	u "github.com/typical-developers/discord-bot-backend/internal/usecase"
@@ -16,10 +16,10 @@ import (
 type GuildUsecase struct {
 	db *sql.DB
 	q  *db.Queries
-	d  *discordgo.Session
+	d  *discord_state.StateManager
 }
 
-func NewGuildUsecase(db *sql.DB, q *db.Queries, d *discordgo.Session) u.GuildsUsecase {
+func NewGuildUsecase(db *sql.DB, q *db.Queries, d *discord_state.StateManager) u.GuildsUsecase {
 	return &GuildUsecase{db: db, q: q, d: d}
 }
 
