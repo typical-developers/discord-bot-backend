@@ -7,7 +7,65 @@
         "version": "1.0"
     },
     "paths": {
+        "/v1/guild/{guild_id}/activity-leaderboard-card": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The activity type.",
+                        "name": "activity_type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The time period.",
+                        "name": "time_period",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/v1/guild/{guild_id}/member/{member_id}": {
+            "get": {
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
             "post": {
                 "tags": [
                     "Members"
@@ -32,6 +90,30 @@
             }
         },
         "/v1/guild/{guild_id}/member/{member_id}/chat-activity": {
+            "patch": {
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The member ID.",
+                        "name": "member_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/member/{member_id}/migrate": {
             "post": {
                 "tags": [
                     "Members"
@@ -50,6 +132,15 @@
                         "name": "member_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "The migration body.",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.MigrateMemberProfileBody"
+                        }
                     }
                 ],
                 "responses": {}
@@ -222,21 +313,35 @@
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "The activity type.",
-                        "name": "activity_type",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The time period.",
-                        "name": "time_period",
-                        "in": "query",
-                        "required": true
+                        "description": "The activity settings.",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildActivityRoleCreateBody"
+                        }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GuildSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.APIError"
+                        }
+                    }
+                }
             }
         }
     },
@@ -270,6 +375,9 @@
             "type": "object"
         },
         "handlers.GuildSettingsResponse": {
+            "type": "object"
+        },
+        "handlers.MigrateMemberProfileBody": {
             "type": "object"
         }
     },

@@ -239,3 +239,63 @@ func (uc *MemberUsecase) GenerateMemberProfileCard(ctx context.Context, guildId 
 
 	return layouts.ProfileCard(layout), nil
 }
+
+func (uc *MemberUsecase) MigrateMemberProfile(ctx context.Context, guildId string, userId string, toUserId string) error {
+	tx, err := uc.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	q := uc.q.WithTx(tx)
+
+	// Fetch the existing profile to migrate from.
+	profile, err := q.GetMemberProfile(ctx, db.GetMemberProfileParams{
+		GuildID:  guildId,
+		MemberID: userId,
+	})
+	if err != nil {
+		_ = tx.Rollback()
+
+		if err == sql.ErrNoRows {
+			return u.ErrMemberProfileNotFound
+		}
+
+		return err
+	}
+
+	// Use the existing profile to mgirate values to the new user.
+	// If the member doesn't exist, it will create a new profile with the values.
+	// If the member exists, it will update and merge values where necessary (i.e. points).
+	err = q.MigrateMemberProfile(ctx, db.MigrateMemberProfileParams{
+		GuildID:    guildId,
+		ToMemberID: toUserId,
+		CardStyle:  profile.CardStyle,
+
+		ChatActivity:          profile.ChatActivity,
+		LastChatActivityGrant: profile.LastChatActivityGrant,
+
+		VoiceActivity:          profile.VoiceActivity,
+		LastVoiceActivityGrant: profile.LastVoiceActivityGrant,
+	})
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// Reset the old profile to default values.
+	err = q.ResetMemberProfile(ctx, db.ResetMemberProfileParams{
+		GuildID:  guildId,
+		MemberID: userId,
+	})
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

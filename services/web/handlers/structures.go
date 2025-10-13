@@ -25,4 +25,14 @@ type GuildActivityRoleCreateBody struct {
 }
 
 // --- Member Profile
+type MigrateMemberProfileBody u.MigrateMemberProfile
+
+func (m MigrateMemberProfileBody) Validate() error {
+	if m.ToMemberId == "" {
+		return ErrInvalidRequestBody
+	}
+
+	return nil
+}
+
 type MemberProfileResponse APIResponse[u.MemberProfile]

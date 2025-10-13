@@ -11,4 +11,5 @@ type MemberUsecase interface {
 	GetMemberProfile(ctx context.Context, guildId string, userId string) (*MemberProfile, error)
 	IncrementMemberChatActivityPoints(ctx context.Context, guildId string, userId string) (*MemberProfile, error)
 	GenerateMemberProfileCard(ctx context.Context, guildId string, userId string) (gomponents.Node, error)
+	MigrateMemberProfile(ctx context.Context, guildId string, userId string, toUserId string) error
 }

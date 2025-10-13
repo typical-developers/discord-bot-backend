@@ -26,6 +26,8 @@ type Querier interface {
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
+	MigrateMemberProfile(ctx context.Context, arg MigrateMemberProfileParams) error
+	ResetMemberProfile(ctx context.Context, arg ResetMemberProfileParams) error
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
 }
 

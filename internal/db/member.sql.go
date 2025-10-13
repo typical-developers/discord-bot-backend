@@ -199,3 +199,69 @@ func (q *Queries) IncrememberMemberChatActivityPoints(ctx context.Context, arg I
 	)
 	return i, err
 }
+
+const migrateMemberProfile = `-- name: MigrateMemberProfile :exec
+INSERT INTO guild_profiles (
+    guild_id, member_id,
+    card_style, chat_activity, last_chat_activity_grant,
+    voice_activity, last_voice_activity_grant
+)
+VALUES (
+    $1, $2, $3,
+    $4, $5,
+    $6, $7
+)
+ON CONFLICT (guild_id, member_id)
+DO UPDATE SET
+    card_style = EXCLUDED.card_style,
+    chat_activity = EXCLUDED.chat_activity + guild_profiles.chat_activity,
+    last_chat_activity_grant = EXCLUDED.last_chat_activity_grant,
+    voice_activity = EXCLUDED.voice_activity + guild_profiles.voice_activity,
+    last_voice_activity_grant = EXCLUDED.last_voice_activity_grant
+`
+
+type MigrateMemberProfileParams struct {
+	GuildID                string
+	ToMemberID             string
+	CardStyle              int32
+	ChatActivity           int32
+	LastChatActivityGrant  int32
+	VoiceActivity          int32
+	LastVoiceActivityGrant int32
+}
+
+func (q *Queries) MigrateMemberProfile(ctx context.Context, arg MigrateMemberProfileParams) error {
+	_, err := q.db.ExecContext(ctx, migrateMemberProfile,
+		arg.GuildID,
+		arg.ToMemberID,
+		arg.CardStyle,
+		arg.ChatActivity,
+		arg.LastChatActivityGrant,
+		arg.VoiceActivity,
+		arg.LastVoiceActivityGrant,
+	)
+	return err
+}
+
+const resetMemberProfile = `-- name: ResetMemberProfile :exec
+UPDATE guild_profiles
+SET
+    card_style = DEFAULT,
+    chat_activity = DEFAULT,
+    last_chat_activity_grant = DEFAULT,
+    voice_activity = DEFAULT,
+    last_voice_activity_grant = DEFAULT
+WHERE
+    guild_id = $1
+    AND member_id = $2
+`
+
+type ResetMemberProfileParams struct {
+	GuildID  string
+	MemberID string
+}
+
+func (q *Queries) ResetMemberProfile(ctx context.Context, arg ResetMemberProfileParams) error {
+	_, err := q.db.ExecContext(ctx, resetMemberProfile, arg.GuildID, arg.MemberID)
+	return err
+}

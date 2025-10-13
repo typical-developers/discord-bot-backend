@@ -80,3 +80,34 @@ SELECT
 FROM current_role_info
 FULL OUTER JOIN next_role_info ON TRUE
 CROSS JOIN all_role_ids;
+
+-- name: MigrateMemberProfile :exec
+INSERT INTO guild_profiles (
+    guild_id, member_id,
+    card_style, chat_activity, last_chat_activity_grant,
+    voice_activity, last_voice_activity_grant
+)
+VALUES (
+    @guild_id, @to_member_id, @card_style,
+    @chat_activity, @last_chat_activity_grant,
+    @voice_activity, @last_voice_activity_grant
+)
+ON CONFLICT (guild_id, member_id)
+DO UPDATE SET
+    card_style = EXCLUDED.card_style,
+    chat_activity = EXCLUDED.chat_activity + guild_profiles.chat_activity,
+    last_chat_activity_grant = EXCLUDED.last_chat_activity_grant,
+    voice_activity = EXCLUDED.voice_activity + guild_profiles.voice_activity,
+    last_voice_activity_grant = EXCLUDED.last_voice_activity_grant;
+
+-- name: ResetMemberProfile :exec
+UPDATE guild_profiles
+SET
+    card_style = DEFAULT,
+    chat_activity = DEFAULT,
+    last_chat_activity_grant = DEFAULT,
+    voice_activity = DEFAULT,
+    last_voice_activity_grant = DEFAULT
+WHERE
+    guild_id = @guild_id
+    AND member_id = @member_id;

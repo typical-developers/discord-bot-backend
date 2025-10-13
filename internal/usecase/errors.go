@@ -3,6 +3,8 @@ package usecase
 import "errors"
 
 var (
+	ErrInvalidRequestBody = errors.New("invalid request body")
+
 	ErrGuildNotFound = errors.New("guild does not exist")
 
 	ErrMemberNotInGuild             = errors.New("member is not in guild")

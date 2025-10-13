@@ -19,13 +19,53 @@ definitions:
     type: object
   handlers.GuildSettingsResponse:
     type: object
+  handlers.MigrateMemberProfileBody:
+    type: object
 info:
   contact: {}
   description: The API for the main Typical Developers Discord bot.
   title: Discord Bot API
   version: "1.0"
 paths:
+  /v1/guild/{guild_id}/activity-leaderboard-card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity type.
+        in: query
+        name: activity_type
+        required: true
+        type: string
+      - description: The time period.
+        in: query
+        name: time_period
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
   /v1/guild/{guild_id}/member/{member_id}:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
     post:
       parameters:
       - description: The guild ID.
@@ -42,6 +82,22 @@ paths:
       tags:
       - Members
   /v1/guild/{guild_id}/member/{member_id}/chat-activity:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
+  /v1/guild/{guild_id}/member/{member_id}/migrate:
     post:
       parameters:
       - description: The guild ID.
@@ -54,6 +110,12 @@ paths:
         name: member_id
         required: true
         type: string
+      - description: The migration body.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.MigrateMemberProfileBody'
       responses: {}
       tags:
       - Members
@@ -157,17 +219,25 @@ paths:
         name: guild_id
         required: true
         type: string
-      - description: The activity type.
-        in: query
-        name: activity_type
+      - description: The activity settings.
+        in: body
+        name: role
         required: true
-        type: string
-      - description: The time period.
-        in: query
-        name: time_period
-        required: true
-        type: string
-      responses: {}
+        schema:
+          $ref: '#/definitions/handlers.GuildActivityRoleCreateBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuildSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.APIError'
       security:
       - APIKeyAuth: []
       tags:

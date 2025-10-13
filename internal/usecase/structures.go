@@ -66,3 +66,7 @@ type MemberProfile struct {
 	CardStyle    int32          `json:"card_style"`
 	ChatActivity MemberActivity `json:"chat_activity"`
 }
+
+type MigrateMemberProfile struct {
+	ToMemberId string `json:"to_member_id"`
+}
