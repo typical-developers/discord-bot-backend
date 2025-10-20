@@ -14,21 +14,29 @@ type Querier interface {
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
 	CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	DeleteActivityRole(ctx context.Context, arg DeleteActivityRoleParams) error
+	DeleteVoiceRoom(ctx context.Context, arg DeleteVoiceRoomParams) error
+	DeleteVoiceRoomLobby(ctx context.Context, arg DeleteVoiceRoomLobbyParams) error
 	GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllTimeActivityLeaderboardParams) ([]GetAllTimeActivityLeaderboardRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
 	GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error)
 	GetMemberChatActivityRoleInfo(ctx context.Context, arg GetMemberChatActivityRoleInfoParams) (GetMemberChatActivityRoleInfoRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
+	GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error)
+	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
+	GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error)
 	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
 	IncrememberMemberChatActivityPoints(ctx context.Context, arg IncrememberMemberChatActivityPointsParams) (GuildProfile, error)
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
 	MigrateMemberProfile(ctx context.Context, arg MigrateMemberProfileParams) error
+	RegisterVoiceRoom(ctx context.Context, arg RegisterVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	ResetMemberProfile(ctx context.Context, arg ResetMemberProfileParams) error
 	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
+	UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error)
+	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -37,49 +37,6 @@ func (q *Queries) CreateGuildSettings(ctx context.Context, guildID string) (Guil
 	return i, err
 }
 
-const createVoiceRoomLobby = `-- name: CreateVoiceRoomLobby :one
-INSERT INTO guild_voice_rooms_settings (
-    guild_id, voice_channel_id,
-    user_limit, can_rename, can_lock, can_adjust_limit
-)
-VALUES (
-    $1, $2,
-    $3, $4, $5, $6
-)
-RETURNING insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_lock, can_adjust_limit
-`
-
-type CreateVoiceRoomLobbyParams struct {
-	GuildID        string
-	VoiceChannelID string
-	UserLimit      int32
-	CanRename      bool
-	CanLock        bool
-	CanAdjustLimit bool
-}
-
-func (q *Queries) CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error) {
-	row := q.db.QueryRowContext(ctx, createVoiceRoomLobby,
-		arg.GuildID,
-		arg.VoiceChannelID,
-		arg.UserLimit,
-		arg.CanRename,
-		arg.CanLock,
-		arg.CanAdjustLimit,
-	)
-	var i GuildVoiceRoomsSetting
-	err := row.Scan(
-		&i.InsertEpoch,
-		&i.GuildID,
-		&i.VoiceChannelID,
-		&i.UserLimit,
-		&i.CanRename,
-		&i.CanLock,
-		&i.CanAdjustLimit,
-	)
-	return i, err
-}
-
 const deleteActivityRole = `-- name: DeleteActivityRole :exec
 DELETE FROM guild_activity_roles
 WHERE
@@ -171,44 +128,6 @@ func (q *Queries) GetGuildSettings(ctx context.Context, guildID string) (GetGuil
 		&i.ChatActivityCooldown,
 	)
 	return i, err
-}
-
-const getVoiceRoomLobbies = `-- name: GetVoiceRoomLobbies :many
-SELECT insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_lock, can_adjust_limit
-FROM guild_voice_rooms_settings
-WHERE
-    guild_voice_rooms_settings.guild_id = $1
-`
-
-func (q *Queries) GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error) {
-	rows, err := q.db.QueryContext(ctx, getVoiceRoomLobbies, guildID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GuildVoiceRoomsSetting
-	for rows.Next() {
-		var i GuildVoiceRoomsSetting
-		if err := rows.Scan(
-			&i.InsertEpoch,
-			&i.GuildID,
-			&i.VoiceChannelID,
-			&i.UserLimit,
-			&i.CanRename,
-			&i.CanLock,
-			&i.CanAdjustLimit,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const insertActivityRole = `-- name: InsertActivityRole :exec

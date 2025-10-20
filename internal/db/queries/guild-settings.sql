@@ -26,23 +26,6 @@ WHERE
 GROUP BY grant_type, role_id, required_points
 ORDER BY required_points ASC;
 
--- name: GetVoiceRoomLobbies :many
-SELECT *
-FROM guild_voice_rooms_settings
-WHERE
-    guild_voice_rooms_settings.guild_id = @guild_id;
-
--- name: CreateVoiceRoomLobby :one
-INSERT INTO guild_voice_rooms_settings (
-    guild_id, voice_channel_id,
-    user_limit, can_rename, can_lock, can_adjust_limit
-)
-VALUES (
-    @guild_id, @voice_channel_id,
-    @user_limit, @can_rename, @can_lock, @can_adjust_limit
-)
-RETURNING *;
-
 -- name: UpdateActivitySettings :exec
 INSERT INTO
     guild_settings (

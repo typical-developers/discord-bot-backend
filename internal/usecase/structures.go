@@ -19,6 +19,8 @@ type VoiceRoomLobby struct {
 	CanRename      bool   `json:"can_rename"`
 	CanLock        bool   `json:"can_lock"`
 	CanAdjustLimit bool   `json:"can_adjust_limit"`
+
+	VoiceRooms []VoiceRoom `json:"voice_rooms"`
 }
 
 type GuildSettings struct {
@@ -34,6 +36,32 @@ type UpdateActivitySettingsOpts struct {
 
 type UpdateAcitivtySettings struct {
 	ChatActivity UpdateActivitySettingsOpts `json:"chat_activity"`
+}
+
+type VoiceRoomRegister struct {
+	CreatorId string `json:"creator_id"`
+	ChannelId string `json:"channel_id"`
+}
+
+type VoiceRoomModify struct {
+	CurrentOwnerId *string `json:"current_owner_id"`
+	IsLocked       *bool   `json:"is_locked"`
+}
+
+type VoiceRoomLobbySettings struct {
+	UserLimit      *int32 `json:"user_limit"`
+	CanRename      *bool  `json:"can_rename"`
+	CanLock        *bool  `json:"can_lock"`
+	CanAdjustLimit *bool  `json:"can_adjust_limit"`
+}
+
+type VoiceRoom struct {
+	OriginChannelId string `json:"origin_channel_id"`
+	CreatorId       string `json:"creator_id"`
+	CurrentOwnerId  string `json:"current_owner_id"`
+	IsLocked        bool   `json:"is_locked"`
+
+	Settings VoiceRoomLobbySettings `json:"settings"`
 }
 
 type MemberActivityRole struct {

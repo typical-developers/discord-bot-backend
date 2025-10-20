@@ -2,6 +2,19 @@ package sqlx
 
 import "database/sql"
 
+func String(s *string) sql.NullString {
+	if s == nil {
+		return sql.NullString{
+			Valid: false,
+		}
+	}
+
+	return sql.NullString{
+		String: *s,
+		Valid:  true,
+	}
+}
+
 func Bool(b *bool) sql.NullBool {
 	if b == nil {
 		return sql.NullBool{

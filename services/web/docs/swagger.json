@@ -343,6 +343,201 @@
                     }
                 }
             }
+        },
+        "/v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id}": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID for the lobby origin.",
+                        "name": "origin_channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID for the lobby origin.",
+                        "name": "origin_channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID for the lobby origin.",
+                        "name": "origin_channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id}/register": {
+            "post": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The channel ID for the lobby origin.",
+                        "name": "origin_channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/guild/{guild_id}/voice-room/{channel_id}": {
+            "get": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "APIKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Guilds"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "guild_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The guild ID.",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
         }
     },
     "definitions": {

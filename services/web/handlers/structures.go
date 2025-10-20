@@ -24,6 +24,13 @@ type GuildActivityRoleCreateBody struct {
 	RequiredPoints int32  `json:"required_points"`
 }
 
+// --- Voice Rooms
+type VoiceRoomLobbySettings u.VoiceRoomLobbySettings
+
+type VoiceRoomRegisterBody u.VoiceRoomRegister
+
+type VoiceRoomModifyBody u.VoiceRoomModify
+
 // --- Member Profile
 type MigrateMemberProfileBody u.MigrateMemberProfile
 

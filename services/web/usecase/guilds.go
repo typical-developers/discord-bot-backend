@@ -77,12 +77,33 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 
 	lobbies := make([]u.VoiceRoomLobby, 0)
 	for _, lobby := range creationLobbies {
+		currentRooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+			GuildID:         guildId,
+			OriginChannelID: lobby.VoiceChannelID,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		rooms := make([]u.VoiceRoom, 0)
+		for _, room := range currentRooms {
+			rooms = append(rooms, u.VoiceRoom{
+				OriginChannelId: room.OriginChannelID,
+				CreatorId:       room.CreatedByUserID,
+				CurrentOwnerId:  room.CurrentOwnerID,
+				IsLocked:        room.IsLocked.Valid && room.IsLocked.Bool,
+			})
+		}
+
 		lobbies = append(lobbies, u.VoiceRoomLobby{
 			ChannelID:      lobby.VoiceChannelID,
 			UserLimit:      lobby.UserLimit,
 			CanRename:      lobby.CanRename,
 			CanLock:        lobby.CanLock,
 			CanAdjustLimit: lobby.CanAdjustLimit,
+
+			VoiceRooms: rooms,
 		})
 	}
 
@@ -304,4 +325,183 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 	}
 
 	return card, nil
+}
+
+func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) error {
+	_, err := uc.q.CreateVoiceRoomLobby(ctx, db.CreateVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: originChannelId,
+
+		UserLimit:      sqlx.Int32(settings.UserLimit),
+		CanRename:      sqlx.Bool(settings.CanRename),
+		CanLock:        sqlx.Bool(settings.CanLock),
+		CanAdjustLimit: sqlx.Bool(settings.CanAdjustLimit),
+	})
+
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return u.ErrVoiceRoomLobbyExists
+		}
+
+		return err
+	}
+
+	return err
+}
+
+func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) error {
+	err := uc.q.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: originChannelId,
+
+		UserLimit:      sqlx.Int32(settings.UserLimit),
+		CanRename:      sqlx.Bool(settings.CanRename),
+		CanLock:        sqlx.Bool(settings.CanLock),
+		CanAdjustLimit: sqlx.Bool(settings.CanAdjustLimit),
+	})
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u.ErrVoiceRoomLobbyNotFound
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (uc *GuildUsecase) DeleteVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) error {
+	_, err := uc.q.GetVoiceRoomLobby(ctx, db.GetVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: originChannelId,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u.ErrVoiceRoomLobbyNotFound
+		}
+
+		return err
+	}
+
+	err = uc.q.DeleteVoiceRoomLobby(ctx, db.DeleteVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: originChannelId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uc *GuildUsecase) RegisterVoiceRoom(ctx context.Context, guildId string, originChannelId string, channelId string, creatorUserId string) (*u.VoiceRoom, error) {
+	room, err := uc.q.RegisterVoiceRoom(ctx, db.RegisterVoiceRoomParams{
+		GuildID:         guildId,
+		OriginChannelID: originChannelId,
+		ChannelID:       channelId,
+		CreatedByUserID: creatorUserId,
+		CurrentOwnerID:  creatorUserId,
+	})
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return nil, u.ErrVoiceRoomExists
+		}
+
+		return nil, err
+	}
+
+	settings, err := uc.q.GetVoiceRoomLobby(ctx, db.GetVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: room.OriginChannelID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &u.VoiceRoom{
+		OriginChannelId: room.OriginChannelID,
+		CreatorId:       room.CreatedByUserID,
+		CurrentOwnerId:  room.CurrentOwnerID,
+		IsLocked:        room.IsLocked.Valid && room.IsLocked.Bool,
+
+		Settings: u.VoiceRoomLobbySettings{
+			UserLimit:      &settings.UserLimit,
+			CanRename:      &settings.CanRename,
+			CanLock:        &settings.CanLock,
+			CanAdjustLimit: &settings.CanAdjustLimit,
+		},
+	}, nil
+}
+
+func (uc *GuildUsecase) GetVoiceRoom(ctx context.Context, guildId string, channelId string) (*u.VoiceRoom, error) {
+	room, err := uc.q.GetVoiceRoom(ctx, db.GetVoiceRoomParams{
+		GuildID:   guildId,
+		ChannelID: channelId,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, u.ErrVoiceRoomNotFound
+		}
+
+		return nil, err
+	}
+
+	settings, err := uc.q.GetVoiceRoomLobby(ctx, db.GetVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: room.OriginChannelID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &u.VoiceRoom{
+		OriginChannelId: room.OriginChannelID,
+		CreatorId:       room.CreatedByUserID,
+		CurrentOwnerId:  room.CurrentOwnerID,
+		IsLocked:        room.IsLocked.Valid && room.IsLocked.Bool,
+
+		Settings: u.VoiceRoomLobbySettings{
+			UserLimit:      &settings.UserLimit,
+			CanRename:      &settings.CanRename,
+			CanLock:        &settings.CanLock,
+			CanAdjustLimit: &settings.CanAdjustLimit,
+		},
+	}, nil
+}
+
+func (uc *GuildUsecase) UpdateVoiceRoom(ctx context.Context, guildId string, channelId string, opts u.VoiceRoomModify) error {
+	_, err := uc.q.UpdateVoiceRoom(ctx, db.UpdateVoiceRoomParams{
+		GuildID:   guildId,
+		ChannelID: channelId,
+
+		CurrentOwnerID: sqlx.String(opts.CurrentOwnerId),
+		IsLocked:       sqlx.Bool(opts.IsLocked),
+	})
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u.ErrVoiceRoomNotFound
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (uc *GuildUsecase) DeleteVoiceRoom(ctx context.Context, guildId string, channelId string) error {
+	err := uc.q.DeleteVoiceRoom(ctx, db.DeleteVoiceRoomParams{
+		GuildID:   guildId,
+		ChannelID: channelId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
