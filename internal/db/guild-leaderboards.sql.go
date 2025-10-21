@@ -9,6 +9,92 @@ import (
 	"context"
 )
 
+const archiveMonthlyActivityLeaderboard = `-- name: ArchiveMonthlyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_monthly AS archive
+USING (
+    SELECT
+        EXTRACT (EPOCH FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT AS month_start,
+        *
+    FROM guild_activity_tracking_monthly_current
+) AS current_leaderboard
+ON
+    archive.month_start = current_leaderboard.month_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+    AND archive.grant_type = current_leaderboard.grant_type
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (
+        month_start, guild_id, member_id, grant_type, earned_points
+    )
+    VALUES (
+        current_leaderboard.month_start,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.grant_type,
+        current_leaderboard.earned_points
+    )
+`
+
+func (q *Queries) ArchiveMonthlyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, archiveMonthlyActivityLeaderboard)
+	return err
+}
+
+const archiveWeeklyActivityLeaderboard = `-- name: ArchiveWeeklyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_weekly AS archive
+USING (
+    SELECT
+        EXTRACT (EPOCH FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT AS week_start,
+        *
+    FROM guild_activity_tracking_weekly_current
+) AS current_leaderboard
+ON
+    archive.week_start = current_leaderboard.week_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+    AND archive.grant_type = current_leaderboard.grant_type
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (
+        week_start, guild_id, member_id, grant_type, earned_points
+    )
+    VALUES (
+        current_leaderboard.week_start,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.grant_type,
+        current_leaderboard.earned_points
+    )
+`
+
+func (q *Queries) ArchiveWeeklyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, archiveWeeklyActivityLeaderboard)
+	return err
+}
+
+const flushOudatedMonthlyActivityLeaderboard = `-- name: FlushOudatedMonthlyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_monthly_current
+`
+
+func (q *Queries) FlushOudatedMonthlyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, flushOudatedMonthlyActivityLeaderboard)
+	return err
+}
+
+const flushOudatedWeeklyActivityLeaderboard = `-- name: FlushOudatedWeeklyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_weekly_current
+`
+
+func (q *Queries) FlushOudatedWeeklyActivityLeaderboard(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, flushOudatedWeeklyActivityLeaderboard)
+	return err
+}
+
 const getAllTimeActivityLeaderboard = `-- name: GetAllTimeActivityLeaderboard :many
 SELECT
     rankings.member_id,
@@ -139,6 +225,29 @@ func (q *Queries) GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMont
 	return items, nil
 }
 
+const getMonthlyActivityLeaderboardResetDetails = `-- name: GetMonthlyActivityLeaderboardResetDetails :one
+SELECT
+    (SELECT COUNT(*) FROM guild_activity_tracking_monthly_current) AS row_total,
+    COALESCE(
+        (SELECT month_start FROM guild_activity_tracking_monthly ORDER BY month_start DESC LIMIT 1),
+        0
+    )::INT AS last_reset,
+    EXTRACT(epoch FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT AS expected_reset
+`
+
+type GetMonthlyActivityLeaderboardResetDetailsRow struct {
+	RowTotal      int64
+	LastReset     int32
+	ExpectedReset int32
+}
+
+func (q *Queries) GetMonthlyActivityLeaderboardResetDetails(ctx context.Context) (GetMonthlyActivityLeaderboardResetDetailsRow, error) {
+	row := q.db.QueryRowContext(ctx, getMonthlyActivityLeaderboardResetDetails)
+	var i GetMonthlyActivityLeaderboardResetDetailsRow
+	err := row.Scan(&i.RowTotal, &i.LastReset, &i.ExpectedReset)
+	return i, err
+}
+
 const getWeeklyActivityLeaderboard = `-- name: GetWeeklyActivityLeaderboard :many
 SELECT
     rankings.rank,
@@ -193,6 +302,29 @@ func (q *Queries) GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeekl
 		return nil, err
 	}
 	return items, nil
+}
+
+const getWeeklyActivityLeaderboardResetDetails = `-- name: GetWeeklyActivityLeaderboardResetDetails :one
+SELECT
+    (SELECT COUNT(*) FROM guild_activity_tracking_weekly_current) AS row_total,
+    COALESCE(
+        (SELECT week_start FROM guild_activity_tracking_weekly ORDER BY week_start DESC LIMIT 1),
+        0
+    )::INT AS last_reset,
+    EXTRACT(epoch FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT AS expected_reset
+`
+
+type GetWeeklyActivityLeaderboardResetDetailsRow struct {
+	RowTotal      int64
+	LastReset     int32
+	ExpectedReset int32
+}
+
+func (q *Queries) GetWeeklyActivityLeaderboardResetDetails(ctx context.Context) (GetWeeklyActivityLeaderboardResetDetailsRow, error) {
+	row := q.db.QueryRowContext(ctx, getWeeklyActivityLeaderboardResetDetails)
+	var i GetWeeklyActivityLeaderboardResetDetailsRow
+	err := row.Scan(&i.RowTotal, &i.LastReset, &i.ExpectedReset)
+	return i, err
 }
 
 const incrementMonthlyActivityLeaderboard = `-- name: IncrementMonthlyActivityLeaderboard :exec

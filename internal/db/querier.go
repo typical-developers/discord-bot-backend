@@ -9,6 +9,8 @@ import (
 )
 
 type Querier interface {
+	ArchiveMonthlyActivityLeaderboard(ctx context.Context) error
+	ArchiveWeeklyActivityLeaderboard(ctx context.Context) error
 	// Creates new generic guild settings.
 	CreateGuildSettings(ctx context.Context, guildID string) (GuildSetting, error)
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
@@ -16,17 +18,21 @@ type Querier interface {
 	DeleteActivityRole(ctx context.Context, arg DeleteActivityRoleParams) error
 	DeleteVoiceRoom(ctx context.Context, arg DeleteVoiceRoomParams) error
 	DeleteVoiceRoomLobby(ctx context.Context, arg DeleteVoiceRoomLobbyParams) error
+	FlushOudatedMonthlyActivityLeaderboard(ctx context.Context) error
+	FlushOudatedWeeklyActivityLeaderboard(ctx context.Context) error
 	GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllTimeActivityLeaderboardParams) ([]GetAllTimeActivityLeaderboardRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
 	GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error)
 	GetMemberChatActivityRoleInfo(ctx context.Context, arg GetMemberChatActivityRoleInfoParams) (GetMemberChatActivityRoleInfoRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
+	GetMonthlyActivityLeaderboardResetDetails(ctx context.Context) (GetMonthlyActivityLeaderboardResetDetailsRow, error)
 	GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error)
 	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error)
 	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
+	GetWeeklyActivityLeaderboardResetDetails(ctx context.Context) (GetWeeklyActivityLeaderboardResetDetailsRow, error)
 	IncrememberMemberChatActivityPoints(ctx context.Context, arg IncrememberMemberChatActivityPointsParams) (GuildProfile, error)
 	IncrementMonthlyActivityLeaderboard(ctx context.Context, arg IncrementMonthlyActivityLeaderboardParams) error
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error

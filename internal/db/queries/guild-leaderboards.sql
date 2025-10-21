@@ -95,3 +95,83 @@ DO UPDATE SET
     earned_points = guild_activity_tracking_monthly_current.earned_points + @earned_points
 WHERE
     guild_activity_tracking_monthly_current.grant_type = @grant_type;
+
+-- name: GetWeeklyActivityLeaderboardResetDetails :one
+SELECT
+    (SELECT COUNT(*) FROM guild_activity_tracking_weekly_current) AS row_total,
+    COALESCE(
+        (SELECT week_start FROM guild_activity_tracking_weekly ORDER BY week_start DESC LIMIT 1),
+        0
+    )::INT AS last_reset,
+    EXTRACT(epoch FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT AS expected_reset;
+
+-- name: ArchiveWeeklyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_weekly AS archive
+USING (
+    SELECT
+        EXTRACT (EPOCH FROM date_trunc('week', now() AT TIME ZONE 'utc') - INTERVAL '1 week')::INT AS week_start,
+        *
+    FROM guild_activity_tracking_weekly_current
+) AS current_leaderboard
+ON
+    archive.week_start = current_leaderboard.week_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+    AND archive.grant_type = current_leaderboard.grant_type
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (
+        week_start, guild_id, member_id, grant_type, earned_points
+    )
+    VALUES (
+        current_leaderboard.week_start,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.grant_type,
+        current_leaderboard.earned_points
+    );
+
+-- name: FlushOudatedWeeklyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_weekly_current;
+
+-- name: GetMonthlyActivityLeaderboardResetDetails :one
+SELECT
+    (SELECT COUNT(*) FROM guild_activity_tracking_monthly_current) AS row_total,
+    COALESCE(
+        (SELECT month_start FROM guild_activity_tracking_monthly ORDER BY month_start DESC LIMIT 1),
+        0
+    )::INT AS last_reset,
+    EXTRACT(epoch FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT AS expected_reset;
+
+-- name: ArchiveMonthlyActivityLeaderboard :exec
+MERGE INTO guild_activity_tracking_monthly AS archive
+USING (
+    SELECT
+        EXTRACT (EPOCH FROM date_trunc('month', now() AT TIME ZONE 'utc') - INTERVAL '1 month')::INT AS month_start,
+        *
+    FROM guild_activity_tracking_monthly_current
+) AS current_leaderboard
+ON
+    archive.month_start = current_leaderboard.month_start
+    AND archive.guild_id = current_leaderboard.guild_id
+    AND archive.member_id = current_leaderboard.member_id
+    AND archive.grant_type = current_leaderboard.grant_type
+WHEN MATCHED THEN
+    UPDATE SET
+        earned_points = current_leaderboard.earned_points
+WHEN NOT MATCHED THEN
+    INSERT (
+        month_start, guild_id, member_id, grant_type, earned_points
+    )
+    VALUES (
+        current_leaderboard.month_start,
+        current_leaderboard.guild_id,
+        current_leaderboard.member_id,
+        current_leaderboard.grant_type,
+        current_leaderboard.earned_points
+    );
+
+-- name: FlushOudatedMonthlyActivityLeaderboard :exec
+TRUNCATE TABLE guild_activity_tracking_monthly_current;

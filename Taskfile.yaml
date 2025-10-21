@@ -19,3 +19,7 @@ tasks:
   dev:web:
     cmd: go run ./services/web/cmd/main.go
     dotenv: ['./services/web/.env']
+
+  dev:cron:
+    cmd: go run ./services/cron/cmd/main.go
+    dotenv: ['./services/cron/.env']
