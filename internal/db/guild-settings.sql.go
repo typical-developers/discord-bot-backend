@@ -12,31 +12,6 @@ import (
 	"github.com/lib/pq"
 )
 
-const createGuildSettings = `-- name: CreateGuildSettings :one
-INSERT INTO guild_settings (guild_id)
-VALUES ($1)
-RETURNING insert_epoch, guild_id, chat_activity_tracking, chat_activity_grant, chat_activity_cooldown, chat_activity_deny_roles, voice_activity_tracking, voice_activity_grant, voice_activity_cooldown, voice_grant_deny
-`
-
-// Creates new generic guild settings.
-func (q *Queries) CreateGuildSettings(ctx context.Context, guildID string) (GuildSetting, error) {
-	row := q.db.QueryRowContext(ctx, createGuildSettings, guildID)
-	var i GuildSetting
-	err := row.Scan(
-		&i.InsertEpoch,
-		&i.GuildID,
-		&i.ChatActivityTracking,
-		&i.ChatActivityGrant,
-		&i.ChatActivityCooldown,
-		pq.Array(&i.ChatActivityDenyRoles),
-		&i.VoiceActivityTracking,
-		&i.VoiceActivityGrant,
-		&i.VoiceActivityCooldown,
-		pq.Array(&i.VoiceGrantDeny),
-	)
-	return i, err
-}
-
 const deleteActivityRole = `-- name: DeleteActivityRole :exec
 DELETE FROM guild_activity_roles
 WHERE
@@ -99,33 +74,64 @@ func (q *Queries) GetGuildActivityRoles(ctx context.Context, arg GetGuildActivit
 	return items, nil
 }
 
-const getGuildSettings = `-- name: GetGuildSettings :one
+const getGuildChatActivitySettings = `-- name: GetGuildChatActivitySettings :one
 SELECT
-    insert_epoch,
-    chat_activity_tracking,
-    chat_activity_grant,
-    chat_activity_cooldown
-FROM guild_settings
+    is_enabled,
+    grant_amount,
+    grant_cooldown,
+    deny_roles
+FROM guild_chat_activity_settings
 WHERE
-    guild_settings.guild_id = $1
+    guild_chat_activity_settings.guild_id = $1
 LIMIT 1
 `
 
-type GetGuildSettingsRow struct {
-	InsertEpoch          sql.NullInt32
-	ChatActivityTracking sql.NullBool
-	ChatActivityGrant    sql.NullInt32
-	ChatActivityCooldown sql.NullInt32
+type GetGuildChatActivitySettingsRow struct {
+	IsEnabled     bool
+	GrantAmount   int32
+	GrantCooldown int32
+	DenyRoles     []string
 }
 
-func (q *Queries) GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error) {
-	row := q.db.QueryRowContext(ctx, getGuildSettings, guildID)
-	var i GetGuildSettingsRow
+func (q *Queries) GetGuildChatActivitySettings(ctx context.Context, guildID string) (GetGuildChatActivitySettingsRow, error) {
+	row := q.db.QueryRowContext(ctx, getGuildChatActivitySettings, guildID)
+	var i GetGuildChatActivitySettingsRow
 	err := row.Scan(
-		&i.InsertEpoch,
-		&i.ChatActivityTracking,
-		&i.ChatActivityGrant,
-		&i.ChatActivityCooldown,
+		&i.IsEnabled,
+		&i.GrantAmount,
+		&i.GrantCooldown,
+		pq.Array(&i.DenyRoles),
+	)
+	return i, err
+}
+
+const getGuildVoiceActivitySettings = `-- name: GetGuildVoiceActivitySettings :one
+SELECT
+    is_enabled,
+    grant_amount,
+    grant_cooldown,
+    deny_roles
+FROM guild_voice_activity_settings
+WHERE
+    guild_voice_activity_settings.guild_id = $1
+LIMIT 1
+`
+
+type GetGuildVoiceActivitySettingsRow struct {
+	IsEnabled     bool
+	GrantAmount   int32
+	GrantCooldown int32
+	DenyRoles     []string
+}
+
+func (q *Queries) GetGuildVoiceActivitySettings(ctx context.Context, guildID string) (GetGuildVoiceActivitySettingsRow, error) {
+	row := q.db.QueryRowContext(ctx, getGuildVoiceActivitySettings, guildID)
+	var i GetGuildVoiceActivitySettingsRow
+	err := row.Scan(
+		&i.IsEnabled,
+		&i.GrantAmount,
+		&i.GrantCooldown,
+		pq.Array(&i.DenyRoles),
 	)
 	return i, err
 }
@@ -152,52 +158,67 @@ func (q *Queries) InsertActivityRole(ctx context.Context, arg InsertActivityRole
 	return err
 }
 
-const updateActivitySettings = `-- name: UpdateActivitySettings :exec
-INSERT INTO
-    guild_settings (
-        guild_id,
-        chat_activity_tracking, chat_activity_grant, chat_activity_cooldown,
-        voice_activity_tracking, voice_activity_grant, voice_activity_cooldown
-    )
-    VALUES (
-        $1,
-        COALESCE($2::BOOLEAN, FALSE),
-        COALESCE($3::INT, 2),
-        COALESCE($4::INT, 15),
-        COALESCE($5::BOOLEAN, FALSE),
-        COALESCE($6::INT, 2),
-        COALESCE($7::INT, 15)
-    )
-ON CONFLICT (guild_id)
-DO UPDATE SET
-    chat_activity_tracking = COALESCE($2, guild_settings.chat_activity_tracking),
-    chat_activity_grant = COALESCE($3, guild_settings.chat_activity_grant),
-    chat_activity_cooldown = COALESCE($4, guild_settings.chat_activity_cooldown),
-    voice_activity_tracking = COALESCE($5, guild_settings.voice_activity_tracking),
-    voice_activity_grant = COALESCE($6, guild_settings.voice_activity_grant),
-    voice_activity_cooldown = COALESCE($7, guild_settings.voice_activity_cooldown)
-RETURNING insert_epoch, guild_id, chat_activity_tracking, chat_activity_grant, chat_activity_cooldown, chat_activity_deny_roles, voice_activity_tracking, voice_activity_grant, voice_activity_cooldown, voice_grant_deny
+const registerGuild = `-- name: RegisterGuild :one
+INSERT INTO guilds (guild_id)
+VALUES ($1)
+RETURNING insert_epoch, guild_id
 `
 
-type UpdateActivitySettingsParams struct {
-	GuildID               string
-	ChatActivityTracking  sql.NullBool
-	ChatActivityGrant     sql.NullInt32
-	ChatActivityCooldown  sql.NullInt32
-	VoiceActivityTracking sql.NullBool
-	VoiceActivityGrant    sql.NullInt32
-	VoiceActivityCooldown sql.NullInt32
+func (q *Queries) RegisterGuild(ctx context.Context, guildID string) (Guild, error) {
+	row := q.db.QueryRowContext(ctx, registerGuild, guildID)
+	var i Guild
+	err := row.Scan(&i.InsertEpoch, &i.GuildID)
+	return i, err
 }
 
-func (q *Queries) UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error {
-	_, err := q.db.ExecContext(ctx, updateActivitySettings,
+const updateGuildChatActivitySettings = `-- name: UpdateGuildChatActivitySettings :exec
+UPDATE guild_chat_activity_settings SET
+    is_enabled = COALESCE($1, guild_chat_activity_settings.is_enabled),
+    grant_amount = COALESCE($2, guild_chat_activity_settings.grant_amount),
+    grant_cooldown = COALESCE($3, guild_chat_activity_settings.grant_cooldown)
+WHERE
+    guild_id = $4
+`
+
+type UpdateGuildChatActivitySettingsParams struct {
+	IsEnabled     sql.NullBool
+	GrantAmount   sql.NullInt32
+	GrantCooldown sql.NullInt32
+	GuildID       string
+}
+
+func (q *Queries) UpdateGuildChatActivitySettings(ctx context.Context, arg UpdateGuildChatActivitySettingsParams) error {
+	_, err := q.db.ExecContext(ctx, updateGuildChatActivitySettings,
+		arg.IsEnabled,
+		arg.GrantAmount,
+		arg.GrantCooldown,
 		arg.GuildID,
-		arg.ChatActivityTracking,
-		arg.ChatActivityGrant,
-		arg.ChatActivityCooldown,
-		arg.VoiceActivityTracking,
-		arg.VoiceActivityGrant,
-		arg.VoiceActivityCooldown,
+	)
+	return err
+}
+
+const updateGuildVoiceActivitySettings = `-- name: UpdateGuildVoiceActivitySettings :exec
+UPDATE guild_voice_activity_settings SET
+    is_enabled = COALESCE($1, guild_voice_activity_settings.is_enabled),
+    grant_amount = COALESCE($2, guild_voice_activity_settings.grant_amount),
+    grant_cooldown = COALESCE($3, guild_voice_activity_settings.grant_cooldown)
+WHERE
+    guild_id = $4
+`
+
+type UpdateGuildVoiceActivitySettingsParams struct {
+	IsEnabled     sql.NullBool
+	GrantAmount   sql.NullInt32
+	GrantCooldown sql.NullInt32
+	GuildID       string
+}
+
+func (q *Queries) UpdateGuildVoiceActivitySettings(ctx context.Context, arg UpdateGuildVoiceActivitySettingsParams) error {
+	_, err := q.db.ExecContext(ctx, updateGuildVoiceActivitySettings,
+		arg.IsEnabled,
+		arg.GrantAmount,
+		arg.GrantCooldown,
+		arg.GuildID,
 	)
 	return err
 }

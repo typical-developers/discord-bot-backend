@@ -1,18 +1,28 @@
--- name: CreateGuildSettings :one
--- Creates new generic guild settings.
-INSERT INTO guild_settings (guild_id)
+-- name: RegisterGuild :one
+INSERT INTO guilds (guild_id)
 VALUES (@guild_id)
 RETURNING *;
 
--- name: GetGuildSettings :one
+-- name: GetGuildChatActivitySettings :one
 SELECT
-    insert_epoch,
-    chat_activity_tracking,
-    chat_activity_grant,
-    chat_activity_cooldown
-FROM guild_settings
+    is_enabled,
+    grant_amount,
+    grant_cooldown,
+    deny_roles
+FROM guild_chat_activity_settings
 WHERE
-    guild_settings.guild_id = @guild_id
+    guild_chat_activity_settings.guild_id = @guild_id
+LIMIT 1;
+
+-- name: GetGuildVoiceActivitySettings :one
+SELECT
+    is_enabled,
+    grant_amount,
+    grant_cooldown,
+    deny_roles
+FROM guild_voice_activity_settings
+WHERE
+    guild_voice_activity_settings.guild_id = @guild_id
 LIMIT 1;
 
 -- name: GetGuildActivityRoles :many
@@ -26,31 +36,21 @@ WHERE
 GROUP BY grant_type, role_id, required_points
 ORDER BY required_points ASC;
 
--- name: UpdateActivitySettings :exec
-INSERT INTO
-    guild_settings (
-        guild_id,
-        chat_activity_tracking, chat_activity_grant, chat_activity_cooldown,
-        voice_activity_tracking, voice_activity_grant, voice_activity_cooldown
-    )
-    VALUES (
-        @guild_id,
-        COALESCE(@chat_activity_tracking::BOOLEAN, FALSE),
-        COALESCE(@chat_activity_grant::INT, 2),
-        COALESCE(@chat_activity_cooldown::INT, 15),
-        COALESCE(@voice_activity_tracking::BOOLEAN, FALSE),
-        COALESCE(@voice_activity_grant::INT, 2),
-        COALESCE(@voice_activity_cooldown::INT, 15)
-    )
-ON CONFLICT (guild_id)
-DO UPDATE SET
-    chat_activity_tracking = COALESCE(sqlc.narg(chat_activity_tracking), guild_settings.chat_activity_tracking),
-    chat_activity_grant = COALESCE(sqlc.narg(chat_activity_grant), guild_settings.chat_activity_grant),
-    chat_activity_cooldown = COALESCE(sqlc.narg(chat_activity_cooldown), guild_settings.chat_activity_cooldown),
-    voice_activity_tracking = COALESCE(sqlc.narg(voice_activity_tracking), guild_settings.voice_activity_tracking),
-    voice_activity_grant = COALESCE(sqlc.narg(voice_activity_grant), guild_settings.voice_activity_grant),
-    voice_activity_cooldown = COALESCE(sqlc.narg(voice_activity_cooldown), guild_settings.voice_activity_cooldown)
-RETURNING *;
+-- name: UpdateGuildChatActivitySettings :exec
+UPDATE guild_chat_activity_settings SET
+    is_enabled = COALESCE(sqlc.narg(is_enabled), guild_chat_activity_settings.is_enabled),
+    grant_amount = COALESCE(sqlc.narg(grant_amount), guild_chat_activity_settings.grant_amount),
+    grant_cooldown = COALESCE(sqlc.narg(grant_cooldown), guild_chat_activity_settings.grant_cooldown)
+WHERE
+    guild_id = @guild_id;
+
+-- name: UpdateGuildVoiceActivitySettings :exec
+UPDATE guild_voice_activity_settings SET
+    is_enabled = COALESCE(sqlc.narg(is_enabled), guild_voice_activity_settings.is_enabled),
+    grant_amount = COALESCE(sqlc.narg(grant_amount), guild_voice_activity_settings.grant_amount),
+    grant_cooldown = COALESCE(sqlc.narg(grant_cooldown), guild_voice_activity_settings.grant_cooldown)
+WHERE
+    guild_id = @guild_id;
 
 -- name: InsertActivityRole :exec
 INSERT INTO guild_activity_roles (guild_id, grant_type, role_id, required_points)

@@ -8,6 +8,11 @@ import (
 	"database/sql"
 )
 
+type Guild struct {
+	InsertEpoch sql.NullInt32
+	GuildID     string
+}
+
 type GuildActiveVoiceRoom struct {
 	InsertEpoch     sql.NullInt32
 	GuildID         string
@@ -56,6 +61,14 @@ type GuildActivityTrackingWeeklyCurrent struct {
 	EarnedPoints int32
 }
 
+type GuildChatActivitySetting struct {
+	GuildID       string
+	IsEnabled     bool
+	GrantAmount   int32
+	GrantCooldown int32
+	DenyRoles     []string
+}
+
 type GuildProfile struct {
 	InsertEpoch            sql.NullInt32
 	GuildID                string
@@ -67,17 +80,12 @@ type GuildProfile struct {
 	LastVoiceActivityGrant int32
 }
 
-type GuildSetting struct {
-	InsertEpoch           sql.NullInt32
-	GuildID               string
-	ChatActivityTracking  sql.NullBool
-	ChatActivityGrant     sql.NullInt32
-	ChatActivityCooldown  sql.NullInt32
-	ChatActivityDenyRoles []string
-	VoiceActivityTracking sql.NullBool
-	VoiceActivityGrant    sql.NullInt32
-	VoiceActivityCooldown sql.NullInt32
-	VoiceGrantDeny        []string
+type GuildVoiceActivitySetting struct {
+	GuildID       string
+	IsEnabled     bool
+	GrantAmount   int32
+	GrantCooldown int32
+	DenyRoles     []string
 }
 
 type GuildVoiceRoomsSetting struct {

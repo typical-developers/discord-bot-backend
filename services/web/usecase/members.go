@@ -65,7 +65,7 @@ func (uc *MemberUsecase) GetMemberProfile(ctx context.Context, guildId string, u
 		return nil, err
 	}
 
-	settings, err := uc.q.GetGuildSettings(ctx, guildId)
+	chatActivitySettings, err := uc.q.GetGuildChatActivitySettings(ctx, guildId)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (uc *MemberUsecase) GetMemberProfile(ctx context.Context, guildId string, u
 	}
 
 	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
-	nextGrant := lastGrant.Add(time.Duration(settings.ChatActivityCooldown.Int32) * time.Second)
+	nextGrant := lastGrant.Add(time.Duration(chatActivitySettings.GrantCooldown) * time.Second)
 
 	profileInfo := &u.MemberProfile{
 		DisplayName: guildMember.DisplayName(),
@@ -135,12 +135,12 @@ func (uc *MemberUsecase) GetMemberProfile(ctx context.Context, guildId string, u
 }
 
 func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, guildId string, userId string) (*u.MemberProfile, error) {
-	settings, err := uc.q.GetGuildSettings(ctx, guildId)
+	chatActivitySettings, err := uc.q.GetGuildChatActivitySettings(ctx, guildId)
 	if err != nil {
 		return nil, err
 	}
 
-	if !settings.ChatActivityTracking.Bool {
+	if !chatActivitySettings.IsEnabled {
 		return nil, u.ErrChatActivityTrackingDisabled
 	}
 
@@ -163,7 +163,7 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 	q := uc.q.WithTx(tx)
 
 	lastGrant := time.Unix(int64(profile.LastChatActivityGrant), 0)
-	nextGrant := lastGrant.Add(time.Duration(settings.ChatActivityCooldown.Int32) * time.Second)
+	nextGrant := lastGrant.Add(time.Duration(chatActivitySettings.GrantCooldown) * time.Second)
 	if time.Now().Before(nextGrant) {
 		return nil, u.ErrMemberOnGrantCooldown
 	}
@@ -172,7 +172,7 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 		GuildID:  guildId,
 		MemberID: userId,
 
-		Points: settings.ChatActivityGrant.Int32,
+		Points: chatActivitySettings.GrantAmount,
 	})
 	if err != nil {
 		_ = tx.Rollback()
@@ -183,7 +183,7 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 		GrantType:    "chat",
 		GuildID:      guildId,
 		MemberID:     userId,
-		EarnedPoints: int32(settings.ChatActivityGrant.Int32),
+		EarnedPoints: chatActivitySettings.GrantAmount,
 	})
 	if err != nil {
 		_ = tx.Rollback()
@@ -194,7 +194,7 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 		GrantType:    "chat",
 		GuildID:      guildId,
 		MemberID:     userId,
-		EarnedPoints: int32(settings.ChatActivityGrant.Int32),
+		EarnedPoints: chatActivitySettings.GrantAmount,
 	})
 	if err != nil {
 		_ = tx.Rollback()

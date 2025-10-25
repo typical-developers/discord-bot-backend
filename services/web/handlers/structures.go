@@ -18,6 +18,14 @@ type GuildSettingsResponse APIResponse[u.GuildSettings]
 
 type GuildActivitySettingsUpdateBody u.UpdateAcitivtySettings
 
+func (u GuildActivitySettingsUpdateBody) Validate() error {
+	if u.ChatActivity == nil {
+		return ErrInvalidRequestBody
+	}
+
+	return nil
+}
+
 type GuildActivityRoleCreateBody struct {
 	ActivityType   string `json:"activity_type"`
 	RoleID         string `json:"role_id"`

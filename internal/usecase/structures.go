@@ -20,7 +20,7 @@ type VoiceRoomLobby struct {
 	CanLock        bool   `json:"can_lock"`
 	CanAdjustLimit bool   `json:"can_adjust_limit"`
 
-	VoiceRooms []VoiceRoom `json:"voice_rooms"`
+	OpenedRooms []string `json:"opened_rooms"`
 }
 
 type GuildSettings struct {
@@ -35,7 +35,7 @@ type UpdateActivitySettingsOpts struct {
 }
 
 type UpdateAcitivtySettings struct {
-	ChatActivity UpdateActivitySettingsOpts `json:"chat_activity"`
+	ChatActivity *UpdateActivitySettingsOpts `json:"chat_activity"`
 }
 
 type VoiceRoomRegister struct {

@@ -57,7 +57,7 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 
 	guildId := chi.URLParam(r, "guildId")
-	settings, err := h.uc.CreateGuildSettings(ctx, guildId)
+	settings, err := h.uc.RegisterGuild(ctx, guildId)
 
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -175,6 +175,19 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 		err := httpx.WriteJSON(w, APIError{
 			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
+		}, http.StatusBadRequest)
+
+		if err != nil {
+			log.Error(err)
+			http.Error(w, ErrInvalidRequestBody.Error(), http.StatusBadRequest)
+		}
+
+		return
+	}
+	if err := updateBody.Validate(); err != nil {
+		err := httpx.WriteJSON(w, APIError{
+			Success: false,
+			Message: err.Error(),
 		}, http.StatusBadRequest)
 
 		if err != nil {

@@ -12,8 +12,25 @@ SELECT
 RETURNING *;
 
 -- name: GetVoiceRoomLobbies :many
-SELECT * FROM guild_voice_rooms_settings
-WHERE guild_id = @guild_id;
+SELECT
+    guild_voice_rooms_settings.guild_id,
+    guild_voice_rooms_settings.voice_channel_id,
+    guild_voice_rooms_settings.user_limit,
+    guild_voice_rooms_settings.can_rename,
+    guild_voice_rooms_settings.can_lock,
+    guild_voice_rooms_settings.can_adjust_limit,
+
+    COALESCE(
+        ARRAY_AGG(COALESCE(guild_active_voice_rooms.channel_id, '')),
+        '{}'
+    )::TEXT[] AS opened_rooms
+FROM guild_voice_rooms_settings
+LEFT JOIN guild_active_voice_rooms ON
+    guild_voice_rooms_settings.guild_id = guild_active_voice_rooms.guild_id
+WHERE guild_voice_rooms_settings.guild_id = @guild_id
+GROUP BY
+    guild_voice_rooms_settings.guild_id,
+    guild_voice_rooms_settings.voice_channel_id;
 
 -- name: GetVoiceRoomLobby :one
 SELECT * FROM guild_voice_rooms_settings

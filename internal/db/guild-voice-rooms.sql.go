@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 const createVoiceRoomLobby = `-- name: CreateVoiceRoomLobby :one
@@ -117,27 +119,54 @@ func (q *Queries) GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (Gui
 }
 
 const getVoiceRoomLobbies = `-- name: GetVoiceRoomLobbies :many
-SELECT insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_lock, can_adjust_limit FROM guild_voice_rooms_settings
-WHERE guild_id = $1
+SELECT
+    guild_voice_rooms_settings.guild_id,
+    guild_voice_rooms_settings.voice_channel_id,
+    guild_voice_rooms_settings.user_limit,
+    guild_voice_rooms_settings.can_rename,
+    guild_voice_rooms_settings.can_lock,
+    guild_voice_rooms_settings.can_adjust_limit,
+
+    COALESCE(
+        ARRAY_AGG(COALESCE(guild_active_voice_rooms.channel_id, '')),
+        '{}'
+    )::TEXT[] AS opened_rooms
+FROM guild_voice_rooms_settings
+LEFT JOIN guild_active_voice_rooms ON
+    guild_voice_rooms_settings.guild_id = guild_active_voice_rooms.guild_id
+WHERE guild_voice_rooms_settings.guild_id = $1
+GROUP BY
+    guild_voice_rooms_settings.guild_id,
+    guild_voice_rooms_settings.voice_channel_id
 `
 
-func (q *Queries) GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error) {
+type GetVoiceRoomLobbiesRow struct {
+	GuildID        string
+	VoiceChannelID string
+	UserLimit      int32
+	CanRename      bool
+	CanLock        bool
+	CanAdjustLimit bool
+	OpenedRooms    []string
+}
+
+func (q *Queries) GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GetVoiceRoomLobbiesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getVoiceRoomLobbies, guildID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GuildVoiceRoomsSetting
+	var items []GetVoiceRoomLobbiesRow
 	for rows.Next() {
-		var i GuildVoiceRoomsSetting
+		var i GetVoiceRoomLobbiesRow
 		if err := rows.Scan(
-			&i.InsertEpoch,
 			&i.GuildID,
 			&i.VoiceChannelID,
 			&i.UserLimit,
 			&i.CanRename,
 			&i.CanLock,
 			&i.CanAdjustLimit,
+			pq.Array(&i.OpenedRooms),
 		); err != nil {
 			return nil, err
 		}

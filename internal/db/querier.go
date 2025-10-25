@@ -11,8 +11,6 @@ import (
 type Querier interface {
 	ArchiveMonthlyActivityLeaderboard(ctx context.Context) error
 	ArchiveWeeklyActivityLeaderboard(ctx context.Context) error
-	// Creates new generic guild settings.
-	CreateGuildSettings(ctx context.Context, guildID string) (GuildSetting, error)
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
 	CreateVoiceRoomLobby(ctx context.Context, arg CreateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	DeleteActivityRole(ctx context.Context, arg DeleteActivityRoleParams) error
@@ -22,13 +20,14 @@ type Querier interface {
 	FlushOudatedWeeklyActivityLeaderboard(ctx context.Context) error
 	GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllTimeActivityLeaderboardParams) ([]GetAllTimeActivityLeaderboardRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
-	GetGuildSettings(ctx context.Context, guildID string) (GetGuildSettingsRow, error)
+	GetGuildChatActivitySettings(ctx context.Context, guildID string) (GetGuildChatActivitySettingsRow, error)
+	GetGuildVoiceActivitySettings(ctx context.Context, guildID string) (GetGuildVoiceActivitySettingsRow, error)
 	GetMemberChatActivityRoleInfo(ctx context.Context, arg GetMemberChatActivityRoleInfoParams) (GetMemberChatActivityRoleInfoRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
 	GetMonthlyActivityLeaderboardResetDetails(ctx context.Context) (GetMonthlyActivityLeaderboardResetDetailsRow, error)
 	GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (GuildActiveVoiceRoom, error)
-	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GuildVoiceRoomsSetting, error)
+	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GetVoiceRoomLobbiesRow, error)
 	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error)
 	GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeeklyActivityLeaderboardParams) ([]GetWeeklyActivityLeaderboardRow, error)
@@ -38,9 +37,11 @@ type Querier interface {
 	IncrementWeeklyActivityLeaderboard(ctx context.Context, arg IncrementWeeklyActivityLeaderboardParams) error
 	InsertActivityRole(ctx context.Context, arg InsertActivityRoleParams) error
 	MigrateMemberProfile(ctx context.Context, arg MigrateMemberProfileParams) error
+	RegisterGuild(ctx context.Context, guildID string) (Guild, error)
 	RegisterVoiceRoom(ctx context.Context, arg RegisterVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	ResetMemberProfile(ctx context.Context, arg ResetMemberProfileParams) error
-	UpdateActivitySettings(ctx context.Context, arg UpdateActivitySettingsParams) error
+	UpdateGuildChatActivitySettings(ctx context.Context, arg UpdateGuildChatActivitySettingsParams) error
+	UpdateGuildVoiceActivitySettings(ctx context.Context, arg UpdateGuildVoiceActivitySettingsParams) error
 	UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) error
 }

@@ -26,8 +26,8 @@ func NewGuildUsecase(db *sql.DB, q *db.Queries, d *discord_state.StateManager) u
 	return &GuildUsecase{db: db, q: q, d: d}
 }
 
-func (uc *GuildUsecase) CreateGuildSettings(ctx context.Context, guildId string) (*u.GuildSettings, error) {
-	_, err := uc.q.CreateGuildSettings(ctx, guildId)
+func (uc *GuildUsecase) RegisterGuild(ctx context.Context, guildId string) (*u.GuildSettings, error) {
+	_, err := uc.q.RegisterGuild(ctx, guildId)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr); pqErr.Code == "23505" {
@@ -41,9 +41,9 @@ func (uc *GuildUsecase) CreateGuildSettings(ctx context.Context, guildId string)
 }
 
 func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*u.GuildSettings, error) {
-	settings, err := uc.q.GetGuildSettings(ctx, guildId)
+	chatActivitySettings, err := uc.q.GetGuildChatActivitySettings(ctx, guildId)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, u.ErrGuildNotFound
 		}
 
@@ -77,25 +77,6 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 
 	lobbies := make([]u.VoiceRoomLobby, 0)
 	for _, lobby := range creationLobbies {
-		currentRooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
-			GuildID:         guildId,
-			OriginChannelID: lobby.VoiceChannelID,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		rooms := make([]u.VoiceRoom, 0)
-		for _, room := range currentRooms {
-			rooms = append(rooms, u.VoiceRoom{
-				OriginChannelId: room.OriginChannelID,
-				CreatorId:       room.CreatedByUserID,
-				CurrentOwnerId:  room.CurrentOwnerID,
-				IsLocked:        room.IsLocked.Valid && room.IsLocked.Bool,
-			})
-		}
-
 		lobbies = append(lobbies, u.VoiceRoomLobby{
 			ChannelID:      lobby.VoiceChannelID,
 			UserLimit:      lobby.UserLimit,
@@ -103,15 +84,15 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 			CanLock:        lobby.CanLock,
 			CanAdjustLimit: lobby.CanAdjustLimit,
 
-			VoiceRooms: rooms,
+			OpenedRooms: lobby.OpenedRooms,
 		})
 	}
 
 	return &u.GuildSettings{
 		ChatActivityTracking: u.GuildActivityTracking{
-			IsEnabled:       settings.ChatActivityTracking.Bool,
-			CooldownSeconds: settings.ChatActivityCooldown.Int32,
-			GrantAmount:     settings.ChatActivityGrant.Int32,
+			IsEnabled:       chatActivitySettings.IsEnabled,
+			CooldownSeconds: chatActivitySettings.GrantCooldown,
+			GrantAmount:     chatActivitySettings.GrantAmount,
 			ActivityRoles:   chatRoles,
 			DenyRoles:       []string{},
 		},
@@ -120,13 +101,27 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 }
 
 func (uc *GuildUsecase) UpdateGuildActivitySettings(ctx context.Context, guildId string, opts u.UpdateAcitivtySettings) (*u.GuildSettings, error) {
-	err := uc.q.UpdateActivitySettings(ctx, db.UpdateActivitySettingsParams{
-		GuildID:              guildId,
-		ChatActivityTracking: sqlx.Bool(opts.ChatActivity.IsEnabled),
-		ChatActivityGrant:    sqlx.Int32(opts.ChatActivity.GrantAmount),
-		ChatActivityCooldown: sqlx.Int32(opts.ChatActivity.CooldownSeconds),
-	})
+	tx, err := uc.db.BeginTx(ctx, nil)
 	if err != nil {
+		return nil, err
+	}
+	q := uc.q.WithTx(tx)
+
+	if opts.ChatActivity != nil {
+		err := q.UpdateGuildChatActivitySettings(ctx, db.UpdateGuildChatActivitySettingsParams{
+			GuildID:       guildId,
+			IsEnabled:     sqlx.Bool(opts.ChatActivity.IsEnabled),
+			GrantAmount:   sqlx.Int32(opts.ChatActivity.GrantAmount),
+			GrantCooldown: sqlx.Int32(opts.ChatActivity.CooldownSeconds),
+		})
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
