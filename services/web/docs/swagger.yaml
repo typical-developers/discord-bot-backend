@@ -1,0 +1,383 @@
+definitions:
+  handlers.APIError:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.GuildActivityRoleCreateBody:
+    properties:
+      activity_type:
+        type: string
+      required_points:
+        type: integer
+      role_id:
+        type: string
+    type: object
+  handlers.GuildActivitySettingsUpdateBody:
+    type: object
+  handlers.GuildSettingsResponse:
+    type: object
+  handlers.MigrateMemberProfileBody:
+    type: object
+info:
+  contact: {}
+  description: The API for the main Typical Developers Discord bot.
+  title: Discord Bot API
+  version: "1.0"
+paths:
+  /v1/guild/{guild_id}/activity-leaderboard-card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity type.
+        in: query
+        name: activity_type
+        required: true
+        type: string
+      - description: The time period.
+        in: query
+        name: time_period
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/member/{member_id}:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
+  /v1/guild/{guild_id}/member/{member_id}/chat-activity:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
+  /v1/guild/{guild_id}/member/{member_id}/migrate:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: The migration body.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.MigrateMemberProfileBody'
+      responses: {}
+      tags:
+      - Members
+  /v1/guild/{guild_id}/member/{member_id}/profile-card:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The member ID.
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - Members
+  /v1/guild/{guild_id}/settings:
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuildSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuildSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/settings/activity:
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GuildActivitySettingsUpdateBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuildSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/settings/activity-roles:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The activity settings.
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GuildActivityRoleCreateBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GuildSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.APIError'
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id}:
+    delete:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID for the lobby origin.
+        in: path
+        name: origin_channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID for the lobby origin.
+        in: path
+        name: origin_channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID for the lobby origin.
+        in: path
+        name: origin_channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id}/register:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID for the lobby origin.
+        in: path
+        name: origin_channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+  /v1/guild/{guild_id}/voice-room/{channel_id}:
+    delete:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The guild ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    get:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The guild ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    patch:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The guild ID.
+        in: path
+        name: channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+securityDefinitions:
+  APIKeyAuth:
+    in: header
+    name: X-API-KEY
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Guild endpoints.
+  name: Guilds
+- description: Voice room lobby endpoints.
+  name: Voice Room Lobbies
+- description: Voice room endpoints.
+  name: Voice Rooms
+- description: Member endpoints.
+  name: Members
+- description: HTML generation endpoints.
+  name: HTML Generation

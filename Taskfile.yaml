@@ -1,33 +1,25 @@
 version: '3'
 
-dotenv: ['.env']
-
 tasks:
-  build:api: go build -ldflags "-w -s" -o bin/api-backend.exe ./cmd/api
-  build:tasks: go build -ldflags "-w -s" -o bin/scheduled-tasks.exe ./cmd/tasks
-  sqlc: sqlc generate --file internal/db/sqlc.yaml
-  swag:
-    cmds:
-      - swag fmt
-      - swag init --parseDependency -dir ./api --output ./internal/docs
   migrate:
     # Some examples of how to use this:
     # - task migrate -- force {{VERSION}}
     # - task migrate -- up
     # - task migrate -- down
     # - task migrate -- version
-    cmd: migrate -path internal/db/migrations -database "{{ .POSTGRES_URL }}" {{ .CLI_ARGS }}
-  templ:live:
-    cmd: templ generate --watch --proxy="http://localhost:8080"
-  dev:api:
-    cmd: air --build.cmd "task sqlc && task swag && task build:api" --build.bin "bin\\api-backend.exe"
-    env:
-      ENVIRONMENT: development
-  dev:tasks:
-    cmd: air --build.cmd "task build:tasks" --build.bin "bin\\scheduled-tasks.exe" --build.exclude_dir "assets,tmp,vendor,testdata,bin,internal\\db,internal\\docs,api,handlers"
-    env:
-      ENVIRONMENT: development
-  dev:compile-api-only:
-    cmd: air --build.cmd "task build:api"
-    env:
-      ENVIRONMENT: development
+    cmd: migrate -path internal/db/migrations -database "postgres://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT?$DATABASE_OPTIONS" {{ .CLI_ARGS }}
+    dotenv: ['./services/web/.env']
+
+  sqlc:generate: cd internal/db && sqlc generate
+  swagger:generate:
+    cmds:
+      - swag fmt
+      - swag init -g services/web/cmd/main.go --output services/web/docs
+
+  dev:web:
+    cmd: go run ./services/web/cmd/main.go
+    dotenv: ['./services/web/.env']
+
+  dev:cron:
+    cmd: go run ./services/cron/cmd/main.go
+    dotenv: ['./services/cron/.env']

@@ -1,19 +1,12 @@
 version: "2"
+
 sql:
   - engine: "postgresql"
-    queries:
-      - queries/members.sql
-      - queries/settings.sql
-      - queries/guilds.sql
-      - queries/voice-rooms.sql
-    schema: migrations
+    queries: "queries"
+    schema: "migrations"
     gen:
       go:
         package: "db"
         out: "."
-        sql_package: "pgx/v5"
+        sql_package: "database/sql"
         emit_interface: true 
-        # overrides:
-        #   - db_type: "pg_catalog.bool"
-        #     go_type: "bool"
-        #     nullable: true
