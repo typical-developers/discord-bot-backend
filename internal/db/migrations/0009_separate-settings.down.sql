@@ -1,3 +1,4 @@
+-- Creates the old table.
 CREATE TABLE IF NOT EXISTS guild_settings (
     insert_epoch INT DEFAULT EXTRACT (EPOCH FROM now() AT TIME ZONE 'utc'),
     guild_id TEXT NOT NULL,
@@ -14,7 +15,9 @@ CREATE TABLE IF NOT EXISTS guild_settings (
 
     PRIMARY KEY (guild_id)
 );
+--------------------------------------------------------------------------------
 
+-- Migrates everything back to the old table.
 WITH
     chat_settings AS (
         SELECT *
@@ -26,6 +29,7 @@ WITH
     )
 INSERT INTO guild_settings
     (
+        insert_epoch,
         guild_id,
         chat_activity_tracking,
         chat_activity_grant,
@@ -37,7 +41,8 @@ INSERT INTO guild_settings
         voice_grant_deny
     )
 SELECT
-    chat_settings.guild_id,
+    guilds.insert_epoch,
+    guilds.guild_id,
 
     chat_settings.is_enabled,
     chat_settings.grant_amount,
@@ -48,12 +53,15 @@ SELECT
     voice_settings.grant_amount,
     voice_settings.grant_cooldown,
     voice_settings.deny_roles
-FROM chat_settings
+FROM guilds
+FULL OUTER JOIN chat_settings
+    ON guilds.guild_id = chat_settings.guild_id
 FULL OUTER JOIN voice_settings
-ON chat_settings.guild_id = voice_settings.guild_id;
+    ON guilds.guild_id = voice_settings.guild_id;
 
 ALTER TABLE guild_activity_roles
 DROP CONSTRAINT IF EXISTS guild_activity_roles_guild_id_fkey;
+--------------------------------------------------------------------------------
 
 DROP TRIGGER IF EXISTS insert_guild_settings ON guilds;
 DROP FUNCTION IF EXISTS insert_guild_settings;

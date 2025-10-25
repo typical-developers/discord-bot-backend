@@ -33,9 +33,9 @@ CREATE TABLE IF NOT EXISTS guild_voice_activity_settings (
 );
 --------------------------------------------------------------------------------
 
--- Migrates the tables to the new schema..
-INSERT INTO guilds (guild_id)
-SELECT guild_id
+-- Migrates the tables to the new schema.
+INSERT INTO guilds (insert_epoch, guild_id)
+SELECT insert_epoch, guild_id
 FROM guild_settings
 ON CONFLICT (guild_id) DO NOTHING;
 
