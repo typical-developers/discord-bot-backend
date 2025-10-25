@@ -678,7 +678,7 @@ func (h *GuildHandler) UpdateVoiceRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.uc.UpdateVoiceRoom(ctx, guildId, channelId, u.VoiceRoomModify{
+	room, err := h.uc.UpdateVoiceRoom(ctx, guildId, channelId, u.VoiceRoomModify{
 		CurrentOwnerId: body.CurrentOwnerId,
 		IsLocked:       body.IsLocked,
 	})
@@ -712,9 +712,9 @@ func (h *GuildHandler) UpdateVoiceRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoom]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    *room,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)

@@ -22,6 +22,6 @@ type GuildsUsecase interface {
 	DeleteVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) error
 	RegisterVoiceRoom(ctx context.Context, guildId string, originChannelId string, channelId string, creatorUserId string) (*VoiceRoom, error)
 	GetVoiceRoom(ctx context.Context, guildId string, channelId string) (*VoiceRoom, error)
-	UpdateVoiceRoom(ctx context.Context, guildId string, channelId string, opts VoiceRoomModify) error
+	UpdateVoiceRoom(ctx context.Context, guildId string, channelId string, opts VoiceRoomModify) (*VoiceRoom, error)
 	DeleteVoiceRoom(ctx context.Context, guildId string, channelId string) error
 }
