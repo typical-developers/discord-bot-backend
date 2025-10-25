@@ -50,6 +50,12 @@ func (t *Tasks) FlushWeeklyActivityLeaderboard(ctx context.Context) error {
 		return err
 	}
 
+	log.WithFields(log.Fields{
+		"row_total":      details.RowTotal,
+		"last_reset":     details.LastReset,
+		"expected_reset": details.ExpectedReset,
+	}).Info("The weekly activity leaderboard has been reset.")
+
 	return nil
 }
 
@@ -96,6 +102,12 @@ func (t *Tasks) FlushMonthlyActivityLeaderboard(ctx context.Context) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+
+	log.WithFields(log.Fields{
+		"row_total":      details.RowTotal,
+		"last_reset":     details.LastReset,
+		"expected_reset": details.ExpectedReset,
+	}).Info("The monthly activity leaderboard has been reset")
 
 	return nil
 }
