@@ -7,7 +7,7 @@ require (
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-chi/chi v1.5.5
 	github.com/lib/pq v1.10.9
-	github.com/luckfire-go/cron-scheduler v0.0.0-20250717005514-ba0cee70c7c8
+	github.com/luckfire-go/cron-scheduler v0.0.0-20251020015613-5685da5c6234
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
@@ -17,8 +17,6 @@ require (
 	golang.org/x/text v0.21.0
 	maragu.dev/gomponents v1.2.0
 )
-
-replace github.com/luckfire-go/cron-scheduler => W:\Colt\Projects\luckfire-go\cron-scheduler
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
