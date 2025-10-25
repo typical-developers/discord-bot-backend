@@ -9,6 +9,9 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/chi"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
@@ -90,6 +93,35 @@ func serveStatic(r *chi.Mux) {
 	}))
 }
 
+func runMigrations(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://internal/db/migrations",
+		"postgres", driver,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	if err == migrate.ErrNoChange {
+		log.Info("No database migrations to run.")
+	} else {
+		log.Info("Successfully ran database migrations.")
+	}
+
+	return nil
+}
+
 //	@title						Discord Bot API
 //	@version					1.0
 //	@description				The API for the main Typical Developers Discord bot.
@@ -128,6 +160,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = runMigrations(pqdb)
+	if err != nil {
+		panic(err)
+	}
+
 	querier := db.New(pqdb)
 
 	discord, err := discordgo.New("Bot " + config.C.DiscordToken)
