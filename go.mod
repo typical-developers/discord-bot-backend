@@ -8,7 +8,7 @@ require (
 	github.com/go-chi/chi v1.5.5
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/lib/pq v1.10.9
-	github.com/luckfire-go/cron-scheduler v0.0.0-20251020015613-5685da5c6234
+	github.com/luckfire-go/cron-scheduler v0.0.0-20251021215922-753115f64148
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
