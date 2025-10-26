@@ -32,6 +32,16 @@ type GuildActivityRoleCreateBody struct {
 	RequiredPoints int32  `json:"required_points"`
 }
 
+type GuildMessageEmbedSettingsUpdateBody u.UpdateMessageEmbedSettingsOpts
+
+func (u GuildMessageEmbedSettingsUpdateBody) Validate() error {
+	if u.IsEnabled == nil && u.AddDisabledChannel == nil && u.AddIgnoredChannel == nil && u.AddIgnoredRole == nil && u.RemoveDisabledChannel == nil && u.RemoveIgnoredChannel == nil && u.RemoveIgnoredRole == nil {
+		return ErrInvalidRequestBody
+	}
+
+	return nil
+}
+
 // --- Voice Rooms
 type VoiceRoomLobbySettings u.VoiceRoomLobbySettings
 

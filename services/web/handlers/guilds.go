@@ -25,6 +25,8 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 		r.Patch("/settings/activity", h.UpdateGuildActivitySettings)
 		r.Post("/settings/activity-roles", h.CreateActivityRole)
 
+		r.Patch("/settings/message-embeds", h.UpdateGuildMessageEmbedSettings)
+
 		r.Get("/activity-leaderboard-card", h.GenerateGuildActivityLeaderboardCard)
 
 		r.Route("/voice-room-lobby/{originChannelId}", func(r chi.Router) {
@@ -293,6 +295,81 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 		Success: true,
 		Data:    struct{}{},
 	}, http.StatusCreated)
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+//	@Router		/v1/guild/{guild_id}/settings/message-embeds [POST]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id		path	string	true	"The guild ID."
+//
+// nolint:staticcheck
+func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	guildId := chi.URLParam(r, "guildId")
+	var body *GuildMessageEmbedSettingsUpdateBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		err := httpx.WriteJSON(w, APIError{
+			Success: false,
+			Message: ErrInvalidRequestBody.Error(),
+		}, http.StatusBadRequest)
+
+		if err != nil {
+			log.Error(err)
+			http.Error(w, ErrInvalidRequestBody.Error(), http.StatusBadRequest)
+		}
+
+		return
+	}
+
+	if err := body.Validate(); err != nil {
+		err := httpx.WriteJSON(w, APIError{
+			Success: false,
+			Message: err.Error(),
+		}, http.StatusBadRequest)
+
+		if err != nil {
+			log.Error(err)
+			http.Error(w, ErrInvalidRequestBody.Error(), http.StatusBadRequest)
+		}
+
+		return
+	}
+
+	settings, err := h.uc.UpdateMessageEmbedSettings(ctx, guildId, u.UpdateMessageEmbedSettingsOpts{
+		IsEnabled:             body.IsEnabled,
+		AddDisabledChannel:    body.AddDisabledChannel,
+		RemoveDisabledChannel: body.RemoveDisabledChannel,
+		AddIgnoredChannel:     body.AddIgnoredChannel,
+		RemoveIgnoredChannel:  body.RemoveIgnoredChannel,
+		AddIgnoredRole:        body.AddIgnoredRole,
+		RemoveIgnoredRole:     body.RemoveIgnoredRole,
+	})
+
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			http.Error(w, ErrGatewayTimeout.Error(), http.StatusGatewayTimeout)
+			return
+		}
+
+		log.Error(err)
+		http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = httpx.WriteJSON(w, GuildSettingsResponse{
+		Success: true,
+		Data:    *settings,
+	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
 	}

@@ -12,6 +12,58 @@ import (
 	"github.com/lib/pq"
 )
 
+const appendGuildMessageEmbedSettingsArrays = `-- name: AppendGuildMessageEmbedSettingsArrays :exec
+UPDATE guild_message_embeds_settings SET
+    disabled_channels = CASE
+        WHEN $1::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.disabled_channels, $1)) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.disabled_channels
+    END,
+
+    ignored_channels = CASE
+        WHEN $2::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.ignored_channels, $2)) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.ignored_channels
+    END,
+
+    ignored_roles = CASE
+        WHEN $3::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.ignored_roles, $3)) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.ignored_roles
+    END
+WHERE
+    guild_id = $4
+`
+
+type AppendGuildMessageEmbedSettingsArraysParams struct {
+	DisabledChannelID sql.NullString
+	IgnoredChannelID  sql.NullString
+	IgnoredRoleID     sql.NullString
+	GuildID           string
+}
+
+func (q *Queries) AppendGuildMessageEmbedSettingsArrays(ctx context.Context, arg AppendGuildMessageEmbedSettingsArraysParams) error {
+	_, err := q.db.ExecContext(ctx, appendGuildMessageEmbedSettingsArrays,
+		arg.DisabledChannelID,
+		arg.IgnoredChannelID,
+		arg.IgnoredRoleID,
+		arg.GuildID,
+	)
+	return err
+}
+
 const deleteActivityRole = `-- name: DeleteActivityRole :exec
 DELETE FROM guild_activity_roles
 WHERE
@@ -105,6 +157,37 @@ func (q *Queries) GetGuildChatActivitySettings(ctx context.Context, guildID stri
 	return i, err
 }
 
+const getGuildMessageEmbedSettings = `-- name: GetGuildMessageEmbedSettings :one
+SELECT
+    is_enabled,
+    disabled_channels,
+    ignored_channels,
+    ignored_roles
+FROM guild_message_embeds_settings
+WHERE
+    guild_message_embeds_settings.guild_id = $1
+LIMIT 1
+`
+
+type GetGuildMessageEmbedSettingsRow struct {
+	IsEnabled        bool
+	DisabledChannels []string
+	IgnoredChannels  []string
+	IgnoredRoles     []string
+}
+
+func (q *Queries) GetGuildMessageEmbedSettings(ctx context.Context, guildID string) (GetGuildMessageEmbedSettingsRow, error) {
+	row := q.db.QueryRowContext(ctx, getGuildMessageEmbedSettings, guildID)
+	var i GetGuildMessageEmbedSettingsRow
+	err := row.Scan(
+		&i.IsEnabled,
+		pq.Array(&i.DisabledChannels),
+		pq.Array(&i.IgnoredChannels),
+		pq.Array(&i.IgnoredRoles),
+	)
+	return i, err
+}
+
 const getGuildVoiceActivitySettings = `-- name: GetGuildVoiceActivitySettings :one
 SELECT
     is_enabled,
@@ -171,6 +254,49 @@ func (q *Queries) RegisterGuild(ctx context.Context, guildID string) (Guild, err
 	return i, err
 }
 
+const removeGuildMessageEmbedSettingsArrays = `-- name: RemoveGuildMessageEmbedSettingsArrays :exec
+UPDATE guild_message_embeds_settings SET
+    disabled_channels = CASE
+        WHEN $1::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.disabled_channels, $1)
+        ELSE
+            guild_message_embeds_settings.disabled_channels
+    END,
+
+    ignored_channels = CASE
+        WHEN $2::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.ignored_channels, $2)
+        ELSE
+            guild_message_embeds_settings.ignored_channels
+    END,
+
+    ignored_roles = CASE
+        WHEN $3::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.ignored_roles, $3)
+        ELSE
+            guild_message_embeds_settings.ignored_roles
+    END
+WHERE
+    guild_id = $4
+`
+
+type RemoveGuildMessageEmbedSettingsArraysParams struct {
+	DisabledChannelID sql.NullString
+	IgnoredChannelID  sql.NullString
+	IgnoredRoleID     sql.NullString
+	GuildID           string
+}
+
+func (q *Queries) RemoveGuildMessageEmbedSettingsArrays(ctx context.Context, arg RemoveGuildMessageEmbedSettingsArraysParams) error {
+	_, err := q.db.ExecContext(ctx, removeGuildMessageEmbedSettingsArrays,
+		arg.DisabledChannelID,
+		arg.IgnoredChannelID,
+		arg.IgnoredRoleID,
+		arg.GuildID,
+	)
+	return err
+}
+
 const updateGuildChatActivitySettings = `-- name: UpdateGuildChatActivitySettings :exec
 UPDATE guild_chat_activity_settings SET
     is_enabled = COALESCE($1, guild_chat_activity_settings.is_enabled),
@@ -194,6 +320,23 @@ func (q *Queries) UpdateGuildChatActivitySettings(ctx context.Context, arg Updat
 		arg.GrantCooldown,
 		arg.GuildID,
 	)
+	return err
+}
+
+const updateGuildMessageEmbedSettings = `-- name: UpdateGuildMessageEmbedSettings :exec
+UPDATE guild_message_embeds_settings SET
+    is_enabled = COALESCE($1, guild_message_embeds_settings.is_enabled)
+WHERE
+    guild_id = $2
+`
+
+type UpdateGuildMessageEmbedSettingsParams struct {
+	IsEnabled sql.NullBool
+	GuildID   string
+}
+
+func (q *Queries) UpdateGuildMessageEmbedSettings(ctx context.Context, arg UpdateGuildMessageEmbedSettingsParams) error {
+	_, err := q.db.ExecContext(ctx, updateGuildMessageEmbedSettings, arg.IsEnabled, arg.GuildID)
 	return err
 }
 

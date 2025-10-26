@@ -69,6 +69,14 @@ type GuildChatActivitySetting struct {
 	DenyRoles     []string
 }
 
+type GuildMessageEmbedsSetting struct {
+	GuildID          string
+	IsEnabled        bool
+	DisabledChannels []string
+	IgnoredChannels  []string
+	IgnoredRoles     []string
+}
+
 type GuildProfile struct {
 	InsertEpoch            sql.NullInt32
 	GuildID                string

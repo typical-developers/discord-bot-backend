@@ -23,8 +23,16 @@ type VoiceRoomLobby struct {
 	OpenedRooms []string `json:"opened_rooms"`
 }
 
+type MessageEmbeds struct {
+	IsEnabled        bool     `json:"is_enabled"`
+	DisabledChannels []string `json:"disabled_channels"`
+	IgnoredChannels  []string `json:"ignored_channels"`
+	IgnoredRoles     []string `json:"ignored_roles"`
+}
+
 type GuildSettings struct {
 	ChatActivityTracking GuildActivityTracking `json:"chat_activity"`
+	MessageEmbeds        MessageEmbeds         `json:"message_embeds"`
 	VoiceRoomLobbies     []VoiceRoomLobby      `json:"voice_room_lobbies"`
 }
 
@@ -32,6 +40,16 @@ type UpdateActivitySettingsOpts struct {
 	IsEnabled       *bool  `json:"is_enabled"`
 	GrantAmount     *int32 `json:"grant_amount"`
 	CooldownSeconds *int32 `json:"cooldown"`
+}
+
+type UpdateMessageEmbedSettingsOpts struct {
+	IsEnabled             *bool   `json:"is_enabled"`
+	AddDisabledChannel    *string `json:"add_disabled_channel"`
+	RemoveDisabledChannel *string `json:"remove_disabled_channel"`
+	AddIgnoredChannel     *string `json:"add_ignored_channel"`
+	RemoveIgnoredChannel  *string `json:"remove_ignored_channel"`
+	AddIgnoredRole        *string `json:"add_ignored_role"`
+	RemoveIgnoredRole     *string `json:"remove_ignored_role"`
 }
 
 type UpdateAcitivtySettings struct {

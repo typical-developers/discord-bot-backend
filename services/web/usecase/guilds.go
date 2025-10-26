@@ -88,6 +88,11 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 		})
 	}
 
+	messageEmbeds, err := uc.q.GetGuildMessageEmbedSettings(ctx, guildId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &u.GuildSettings{
 		ChatActivityTracking: u.GuildActivityTracking{
 			IsEnabled:       chatActivitySettings.IsEnabled,
@@ -96,6 +101,14 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 			ActivityRoles:   chatRoles,
 			DenyRoles:       []string{},
 		},
+
+		MessageEmbeds: u.MessageEmbeds{
+			IsEnabled:        messageEmbeds.IsEnabled,
+			DisabledChannels: messageEmbeds.DisabledChannels,
+			IgnoredChannels:  messageEmbeds.IgnoredChannels,
+			IgnoredRoles:     messageEmbeds.IgnoredRoles,
+		},
+
 		VoiceRoomLobbies: lobbies,
 	}, nil
 }
@@ -159,6 +172,62 @@ func (uc *GuildUsecase) DeleteActivityRole(ctx context.Context, guildId string, 
 	}
 
 	return nil
+}
+
+func (uc *GuildUsecase) UpdateMessageEmbedSettings(ctx context.Context, guildId string, opts u.UpdateMessageEmbedSettingsOpts) (*u.GuildSettings, error) {
+	tx, err := uc.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	q := uc.q.WithTx(tx)
+
+	if opts.IsEnabled != nil {
+		err := q.UpdateGuildMessageEmbedSettings(ctx, db.UpdateGuildMessageEmbedSettingsParams{
+			GuildID:   guildId,
+			IsEnabled: sqlx.Bool(opts.IsEnabled),
+		})
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if opts.AddDisabledChannel != nil || opts.AddIgnoredChannel != nil || opts.AddIgnoredRole != nil {
+		err := q.AppendGuildMessageEmbedSettingsArrays(ctx, db.AppendGuildMessageEmbedSettingsArraysParams{
+			GuildID: guildId,
+
+			DisabledChannelID: sqlx.String(opts.AddDisabledChannel),
+			IgnoredChannelID:  sqlx.String(opts.AddIgnoredChannel),
+			IgnoredRoleID:     sqlx.String(opts.AddIgnoredRole),
+		})
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if opts.RemoveDisabledChannel != nil || opts.RemoveIgnoredChannel != nil || opts.RemoveIgnoredRole != nil {
+		err := q.RemoveGuildMessageEmbedSettingsArrays(ctx, db.RemoveGuildMessageEmbedSettingsArraysParams{
+			GuildID: guildId,
+
+			DisabledChannelID: sqlx.String(opts.RemoveDisabledChannel),
+			IgnoredChannelID:  sqlx.String(opts.RemoveIgnoredChannel),
+			IgnoredRoleID:     sqlx.String(opts.RemoveIgnoredRole),
+		})
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return uc.GetGuildSettings(ctx, guildId)
 }
 
 func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error) {

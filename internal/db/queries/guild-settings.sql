@@ -36,6 +36,82 @@ WHERE
 GROUP BY grant_type, role_id, required_points
 ORDER BY required_points ASC;
 
+-- name: GetGuildMessageEmbedSettings :one
+SELECT
+    is_enabled,
+    disabled_channels,
+    ignored_channels,
+    ignored_roles
+FROM guild_message_embeds_settings
+WHERE
+    guild_message_embeds_settings.guild_id = @guild_id
+LIMIT 1;
+
+-- name: UpdateGuildMessageEmbedSettings :exec
+UPDATE guild_message_embeds_settings SET
+    is_enabled = COALESCE(sqlc.narg(is_enabled), guild_message_embeds_settings.is_enabled)
+WHERE
+    guild_id = @guild_id;
+
+-- name: AppendGuildMessageEmbedSettingsArrays :exec
+UPDATE guild_message_embeds_settings SET
+    disabled_channels = CASE
+        WHEN sqlc.narg(disabled_channel_id)::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.disabled_channels, sqlc.narg(disabled_channel_id))) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.disabled_channels
+    END,
+
+    ignored_channels = CASE
+        WHEN sqlc.narg(ignored_channel_id)::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.ignored_channels, sqlc.narg(ignored_channel_id))) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.ignored_channels
+    END,
+
+    ignored_roles = CASE
+        WHEN sqlc.narg(ignored_role_id)::TEXT IS NOT NULL THEN
+            ARRAY(
+                SELECT DISTINCT v
+                FROM UNNEST(ARRAY_APPEND(guild_message_embeds_settings.ignored_roles, sqlc.narg(ignored_role_id))) AS v
+            )
+        ELSE
+            guild_message_embeds_settings.ignored_roles
+    END
+WHERE
+    guild_id = @guild_id;
+
+-- name: RemoveGuildMessageEmbedSettingsArrays :exec
+UPDATE guild_message_embeds_settings SET
+    disabled_channels = CASE
+        WHEN sqlc.narg(disabled_channel_id)::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.disabled_channels, sqlc.narg(disabled_channel_id))
+        ELSE
+            guild_message_embeds_settings.disabled_channels
+    END,
+
+    ignored_channels = CASE
+        WHEN sqlc.narg(ignored_channel_id)::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.ignored_channels, sqlc.narg(ignored_channel_id))
+        ELSE
+            guild_message_embeds_settings.ignored_channels
+    END,
+
+    ignored_roles = CASE
+        WHEN sqlc.narg(ignored_role_id)::TEXT IS NOT NULL THEN
+            ARRAY_REMOVE(guild_message_embeds_settings.ignored_roles, sqlc.narg(ignored_role_id))
+        ELSE
+            guild_message_embeds_settings.ignored_roles
+    END
+WHERE
+    guild_id = @guild_id;
+
 -- name: UpdateGuildChatActivitySettings :exec
 UPDATE guild_chat_activity_settings SET
     is_enabled = COALESCE(sqlc.narg(is_enabled), guild_chat_activity_settings.is_enabled),

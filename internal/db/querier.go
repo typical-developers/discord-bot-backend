@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	AppendGuildMessageEmbedSettingsArrays(ctx context.Context, arg AppendGuildMessageEmbedSettingsArraysParams) error
 	ArchiveMonthlyActivityLeaderboard(ctx context.Context) error
 	ArchiveWeeklyActivityLeaderboard(ctx context.Context) error
 	CreateMemberProfile(ctx context.Context, arg CreateMemberProfileParams) (GuildProfile, error)
@@ -21,6 +22,7 @@ type Querier interface {
 	GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllTimeActivityLeaderboardParams) ([]GetAllTimeActivityLeaderboardRow, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)
 	GetGuildChatActivitySettings(ctx context.Context, guildID string) (GetGuildChatActivitySettingsRow, error)
+	GetGuildMessageEmbedSettings(ctx context.Context, guildID string) (GetGuildMessageEmbedSettingsRow, error)
 	GetGuildVoiceActivitySettings(ctx context.Context, guildID string) (GetGuildVoiceActivitySettingsRow, error)
 	GetMemberChatActivityRoleInfo(ctx context.Context, arg GetMemberChatActivityRoleInfoParams) (GetMemberChatActivityRoleInfoRow, error)
 	GetMemberProfile(ctx context.Context, arg GetMemberProfileParams) (GetMemberProfileRow, error)
@@ -39,8 +41,10 @@ type Querier interface {
 	MigrateMemberProfile(ctx context.Context, arg MigrateMemberProfileParams) error
 	RegisterGuild(ctx context.Context, guildID string) (Guild, error)
 	RegisterVoiceRoom(ctx context.Context, arg RegisterVoiceRoomParams) (GuildActiveVoiceRoom, error)
+	RemoveGuildMessageEmbedSettingsArrays(ctx context.Context, arg RemoveGuildMessageEmbedSettingsArraysParams) error
 	ResetMemberProfile(ctx context.Context, arg ResetMemberProfileParams) error
 	UpdateGuildChatActivitySettings(ctx context.Context, arg UpdateGuildChatActivitySettingsParams) error
+	UpdateGuildMessageEmbedSettings(ctx context.Context, arg UpdateGuildMessageEmbedSettingsParams) error
 	UpdateGuildVoiceActivitySettings(ctx context.Context, arg UpdateGuildVoiceActivitySettingsParams) error
 	UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error)
 	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) error
