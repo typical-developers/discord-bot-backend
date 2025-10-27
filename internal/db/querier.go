@@ -29,6 +29,7 @@ type Querier interface {
 	GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMonthlyActivityLeaderboardParams) ([]GetMonthlyActivityLeaderboardRow, error)
 	GetMonthlyActivityLeaderboardResetDetails(ctx context.Context) (GetMonthlyActivityLeaderboardResetDetailsRow, error)
 	GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (GuildActiveVoiceRoom, error)
+	GetVoiceRoomIds(ctx context.Context, arg GetVoiceRoomIdsParams) ([]string, error)
 	GetVoiceRoomLobbies(ctx context.Context, guildID string) ([]GetVoiceRoomLobbiesRow, error)
 	GetVoiceRoomLobby(ctx context.Context, arg GetVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 	GetVoiceRooms(ctx context.Context, arg GetVoiceRoomsParams) ([]GuildActiveVoiceRoom, error)

@@ -118,6 +118,30 @@ func (q *Queries) GetVoiceRoom(ctx context.Context, arg GetVoiceRoomParams) (Gui
 	return i, err
 }
 
+const getVoiceRoomIds = `-- name: GetVoiceRoomIds :one
+SELECT
+    COALESCE(
+        ARRAY_AGG(COALESCE(guild_active_voice_rooms.channel_id, '')),
+        '{}'
+    )::TEXT[] AS opened_rooms
+FROM guild_active_voice_rooms
+WHERE
+    guild_id = $1
+    AND origin_channel_id = $2
+`
+
+type GetVoiceRoomIdsParams struct {
+	GuildID         string
+	OriginChannelID string
+}
+
+func (q *Queries) GetVoiceRoomIds(ctx context.Context, arg GetVoiceRoomIdsParams) ([]string, error) {
+	row := q.db.QueryRowContext(ctx, getVoiceRoomIds, arg.GuildID, arg.OriginChannelID)
+	var opened_rooms []string
+	err := row.Scan(pq.Array(&opened_rooms))
+	return opened_rooms, err
+}
+
 const getVoiceRoomLobbies = `-- name: GetVoiceRoomLobbies :many
 SELECT
     guild_voice_rooms_settings.guild_id,

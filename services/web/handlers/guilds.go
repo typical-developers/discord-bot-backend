@@ -31,6 +31,7 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 
 		r.Route("/voice-room-lobby/{originChannelId}", func(r chi.Router) {
 			r.Post("/", h.CreateVoiceRoomLobby)
+			r.Get("/", h.GetVoiceRoomLobby)
 			r.Patch("/", h.UpdateVoiceRoomLobby)
 			r.Delete("/", h.DeleteVoiceRoomLobby)
 			r.Post("/register", h.RegisterVoiceRoom)
@@ -474,6 +475,60 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		Success: true,
 		Data:    *lobby,
 	}, http.StatusCreated)
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+//	@Router		/v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id} [GET]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id			path	string	true	"The guild ID."
+//	@Param		origin_channel_id	path	string	true	"The channel ID for the lobby origin."
+//
+// nolint:staticcheck
+func (h *GuildHandler) GetVoiceRoomLobby(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	guildId := chi.URLParam(r, "guildId")
+	originChannelId := chi.URLParam(r, "originChannelId")
+
+	lobby, err := h.uc.GetVoiceRoomLobby(ctx, guildId, originChannelId)
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			http.Error(w, ErrGatewayTimeout.Error(), http.StatusGatewayTimeout)
+			return
+		}
+
+		if errors.Is(err, u.ErrVoiceRoomLobbyNotFound) {
+			err := httpx.WriteJSON(w, APIError{
+				Success: false,
+				Message: err.Error(),
+			}, http.StatusNotFound)
+
+			if err != nil {
+				log.Error(err)
+				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			}
+
+			return
+		}
+
+		log.Error(err)
+		http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
+		Success: true,
+		Data:    *lobby,
+	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
 	}

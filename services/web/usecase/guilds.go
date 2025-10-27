@@ -411,17 +411,12 @@ func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string
 		return nil, err
 	}
 
-	// TODO: change this to use a query that just returns the room ids.
-	rooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+	rooms, err := uc.q.GetVoiceRoomIds(ctx, db.GetVoiceRoomIdsParams{
 		GuildID:         guildId,
 		OriginChannelID: originChannelId,
 	})
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
-	}
-	roomIds := make([]string, len(rooms))
-	for i, room := range rooms {
-		roomIds[i] = room.ChannelID
 	}
 
 	return &u.VoiceRoomLobby{
@@ -431,7 +426,40 @@ func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string
 		CanLock:        lobby.CanLock,
 		CanAdjustLimit: lobby.CanAdjustLimit,
 
-		OpenedRooms: roomIds,
+		OpenedRooms: rooms,
+	}, nil
+}
+
+func (uc *GuildUsecase) GetVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) (*u.VoiceRoomLobby, error) {
+	lobby, err := uc.q.GetVoiceRoomLobby(ctx, db.GetVoiceRoomLobbyParams{
+		GuildID:        guildId,
+		VoiceChannelID: originChannelId,
+	})
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, u.ErrVoiceRoomLobbyNotFound
+		}
+
+		return nil, err
+	}
+
+	rooms, err := uc.q.GetVoiceRoomIds(ctx, db.GetVoiceRoomIdsParams{
+		GuildID:         guildId,
+		OriginChannelID: originChannelId,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	return &u.VoiceRoomLobby{
+		ChannelID:      lobby.VoiceChannelID,
+		UserLimit:      lobby.UserLimit,
+		CanRename:      lobby.CanRename,
+		CanLock:        lobby.CanLock,
+		CanAdjustLimit: lobby.CanAdjustLimit,
+
+		OpenedRooms: rooms,
 	}, nil
 }
 
@@ -454,17 +482,12 @@ func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string
 		return nil, err
 	}
 
-	// TODO: change this to use a query that just returns the room ids.
-	rooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+	rooms, err := uc.q.GetVoiceRoomIds(ctx, db.GetVoiceRoomIdsParams{
 		GuildID:         guildId,
 		OriginChannelID: originChannelId,
 	})
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
-	}
-	roomIds := make([]string, len(rooms))
-	for i, room := range rooms {
-		roomIds[i] = room.ChannelID
 	}
 
 	return &u.VoiceRoomLobby{
@@ -474,7 +497,7 @@ func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string
 		CanLock:        lobby.CanLock,
 		CanAdjustLimit: lobby.CanAdjustLimit,
 
-		OpenedRooms: roomIds,
+		OpenedRooms: rooms,
 	}, nil
 }
 

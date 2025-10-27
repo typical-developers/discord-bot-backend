@@ -79,6 +79,17 @@ WHERE
     guild_id = @guild_id
     AND origin_channel_id = @origin_channel_id;
 
+-- name: GetVoiceRoomIds :one
+SELECT
+    COALESCE(
+        ARRAY_AGG(COALESCE(guild_active_voice_rooms.channel_id, '')),
+        '{}'
+    )::TEXT[] AS opened_rooms
+FROM guild_active_voice_rooms
+WHERE
+    guild_id = @guild_id
+    AND origin_channel_id = @origin_channel_id;
+
 -- name: UpdateVoiceRoom :one
 UPDATE guild_active_voice_rooms
 SET
