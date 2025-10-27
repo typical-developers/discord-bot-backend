@@ -47,7 +47,7 @@ type Querier interface {
 	UpdateGuildMessageEmbedSettings(ctx context.Context, arg UpdateGuildMessageEmbedSettingsParams) error
 	UpdateGuildVoiceActivitySettings(ctx context.Context, arg UpdateGuildVoiceActivitySettingsParams) error
 	UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams) (GuildActiveVoiceRoom, error)
-	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) error
+	UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error)
 }
 
 var _ Querier = (*Queries)(nil)

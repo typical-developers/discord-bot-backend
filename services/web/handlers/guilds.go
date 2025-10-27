@@ -435,7 +435,7 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err := h.uc.CreateVoiceRoomLobby(ctx, guildId, originChannelId, u.VoiceRoomLobbySettings{
+	lobby, err := h.uc.CreateVoiceRoomLobby(ctx, guildId, originChannelId, u.VoiceRoomLobbySettings{
 		UserLimit:      body.UserLimit,
 		CanRename:      body.CanRename,
 		CanLock:        body.CanLock,
@@ -470,9 +470,9 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    *lobby,
 	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
@@ -508,7 +508,7 @@ func (h *GuildHandler) UpdateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err := h.uc.UpdateVoiceRoomLobby(ctx, guildId, originChannelId, u.VoiceRoomLobbySettings{
+	lobby, err := h.uc.UpdateVoiceRoomLobby(ctx, guildId, originChannelId, u.VoiceRoomLobbySettings{
 		UserLimit:      body.UserLimit,
 		CanRename:      body.CanRename,
 		CanLock:        body.CanLock,
@@ -544,9 +544,9 @@ func (h *GuildHandler) UpdateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    *lobby,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)

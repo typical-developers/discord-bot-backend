@@ -38,7 +38,7 @@ WHERE
     guild_id = @guild_id
     AND voice_channel_id = @voice_channel_id;
 
--- name: UpdateVoiceRoomLobby :exec
+-- name: UpdateVoiceRoomLobby :one
 UPDATE guild_voice_rooms_settings
 SET
     user_limit = COALESCE(sqlc.narg('user_limit'), user_limit)::INT,
@@ -47,7 +47,8 @@ SET
     can_adjust_limit = COALESCE(sqlc.narg('can_adjust_limit'), can_adjust_limit)::BOOLEAN
 WHERE
     guild_id = @guild_id
-    AND voice_channel_id = @voice_channel_id;
+    AND voice_channel_id = @voice_channel_id
+RETURNING *;
 
 -- name: DeleteVoiceRoomLobby :exec
 DELETE FROM guild_voice_rooms_settings

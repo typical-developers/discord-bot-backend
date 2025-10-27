@@ -391,8 +391,8 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 	return card, nil
 }
 
-func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) error {
-	_, err := uc.q.CreateVoiceRoomLobby(ctx, db.CreateVoiceRoomLobbyParams{
+func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) (*u.VoiceRoomLobby, error) {
+	lobby, err := uc.q.CreateVoiceRoomLobby(ctx, db.CreateVoiceRoomLobbyParams{
 		GuildID:        guildId,
 		VoiceChannelID: originChannelId,
 
@@ -405,17 +405,38 @@ func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-			return u.ErrVoiceRoomLobbyExists
+			return nil, u.ErrVoiceRoomLobbyExists
 		}
 
-		return err
+		return nil, err
 	}
 
-	return err
+	// TODO: change this to use a query that just returns the room ids.
+	rooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+		GuildID:         guildId,
+		OriginChannelID: originChannelId,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	roomIds := make([]string, len(rooms))
+	for i, room := range rooms {
+		roomIds[i] = room.ChannelID
+	}
+
+	return &u.VoiceRoomLobby{
+		ChannelID:      lobby.VoiceChannelID,
+		UserLimit:      lobby.UserLimit,
+		CanRename:      lobby.CanRename,
+		CanLock:        lobby.CanLock,
+		CanAdjustLimit: lobby.CanAdjustLimit,
+
+		OpenedRooms: roomIds,
+	}, nil
 }
 
-func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) error {
-	err := uc.q.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
+func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) (*u.VoiceRoomLobby, error) {
+	lobby, err := uc.q.UpdateVoiceRoomLobby(ctx, db.UpdateVoiceRoomLobbyParams{
 		GuildID:        guildId,
 		VoiceChannelID: originChannelId,
 
@@ -427,13 +448,34 @@ func (uc *GuildUsecase) UpdateVoiceRoomLobby(ctx context.Context, guildId string
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return u.ErrVoiceRoomLobbyNotFound
+			return nil, u.ErrVoiceRoomLobbyNotFound
 		}
 
-		return err
+		return nil, err
 	}
 
-	return nil
+	// TODO: change this to use a query that just returns the room ids.
+	rooms, err := uc.q.GetVoiceRooms(ctx, db.GetVoiceRoomsParams{
+		GuildID:         guildId,
+		OriginChannelID: originChannelId,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	roomIds := make([]string, len(rooms))
+	for i, room := range rooms {
+		roomIds[i] = room.ChannelID
+	}
+
+	return &u.VoiceRoomLobby{
+		ChannelID:      lobby.VoiceChannelID,
+		UserLimit:      lobby.UserLimit,
+		CanRename:      lobby.CanRename,
+		CanLock:        lobby.CanLock,
+		CanAdjustLimit: lobby.CanAdjustLimit,
+
+		OpenedRooms: roomIds,
+	}, nil
 }
 
 func (uc *GuildUsecase) DeleteVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) error {

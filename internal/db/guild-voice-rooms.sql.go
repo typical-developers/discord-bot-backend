@@ -330,7 +330,7 @@ func (q *Queries) UpdateVoiceRoom(ctx context.Context, arg UpdateVoiceRoomParams
 	return i, err
 }
 
-const updateVoiceRoomLobby = `-- name: UpdateVoiceRoomLobby :exec
+const updateVoiceRoomLobby = `-- name: UpdateVoiceRoomLobby :one
 UPDATE guild_voice_rooms_settings
 SET
     user_limit = COALESCE($1, user_limit)::INT,
@@ -340,6 +340,7 @@ SET
 WHERE
     guild_id = $5
     AND voice_channel_id = $6
+RETURNING insert_epoch, guild_id, voice_channel_id, user_limit, can_rename, can_lock, can_adjust_limit
 `
 
 type UpdateVoiceRoomLobbyParams struct {
@@ -351,8 +352,8 @@ type UpdateVoiceRoomLobbyParams struct {
 	VoiceChannelID string
 }
 
-func (q *Queries) UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) error {
-	_, err := q.db.ExecContext(ctx, updateVoiceRoomLobby,
+func (q *Queries) UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomLobbyParams) (GuildVoiceRoomsSetting, error) {
+	row := q.db.QueryRowContext(ctx, updateVoiceRoomLobby,
 		arg.UserLimit,
 		arg.CanRename,
 		arg.CanLock,
@@ -360,5 +361,15 @@ func (q *Queries) UpdateVoiceRoomLobby(ctx context.Context, arg UpdateVoiceRoomL
 		arg.GuildID,
 		arg.VoiceChannelID,
 	)
-	return err
+	var i GuildVoiceRoomsSetting
+	err := row.Scan(
+		&i.InsertEpoch,
+		&i.GuildID,
+		&i.VoiceChannelID,
+		&i.UserLimit,
+		&i.CanRename,
+		&i.CanLock,
+		&i.CanAdjustLimit,
+	)
+	return i, err
 }

@@ -18,8 +18,8 @@ type GuildsUsecase interface {
 
 	GenerateGuildActivityLeaderboardCard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error)
 
-	CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings VoiceRoomLobbySettings) error
-	UpdateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings VoiceRoomLobbySettings) error
+	CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings VoiceRoomLobbySettings) (*VoiceRoomLobby, error)
+	UpdateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings VoiceRoomLobbySettings) (*VoiceRoomLobby, error)
 	DeleteVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) error
 
 	RegisterVoiceRoom(ctx context.Context, guildId string, originChannelId string, channelId string, creatorUserId string) (*VoiceRoom, error)
