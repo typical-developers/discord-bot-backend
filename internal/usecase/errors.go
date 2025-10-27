@@ -3,20 +3,21 @@ package usecase
 import "errors"
 
 var (
-	ErrInvalidRequestBody = errors.New("invalid request body")
+	ErrInvalidRequestBody = errors.New("INVALID_REQUEST")
 
-	ErrGuildSettingsExists = errors.New("guild settings already exists")
-	ErrGuildNotFound       = errors.New("guild does not exist")
+	ErrGuildSettingsExists = errors.New("GUILD_ALREADY_EXISTS")
+	ErrGuildNotFound       = errors.New("GUILD_NOT_FOUND")
 
-	ErrMemberNotInGuild             = errors.New("member is not in guild")
-	ErrMemberProfileNotFound        = errors.New("member profile not found")
-	ErrMemberProfileExists          = errors.New("member profile already exists")
-	ErrMemberOnGrantCooldown        = errors.New("member on grant cooldown")
-	ErrChatActivityTrackingDisabled = errors.New("chat activity tracking is disabled")
-	ErrActivityRoleExists           = errors.New("activity role already exists")
+	ErrMemberNotInGuild             = errors.New("MEMBER_NOT_IN_GUILD")
+	ErrMemberProfileNotFound        = errors.New("MEMBER_NOT_FOUND")
+	ErrMemberProfileExists          = errors.New("MEMBER_ALREADY_EXISTS")
+	ErrMemberOnGrantCooldown        = errors.New("MEMBER_ON_COOLDOWN")
+	ErrChatActivityTrackingDisabled = errors.New("CHAT_ACTIVITY_TRACKING_DISABLED")
+	ErrActivityRoleExists           = errors.New("ACTIVITY_ROLE_ALREADY_EXISTS")
 
-	ErrVoiceRoomLobbyExists   = errors.New("voice room lobby already exists")
-	ErrVoiceRoomLobbyNotFound = errors.New("voice room lobby does not exist")
-	ErrVoiceRoomExists        = errors.New("voice room already exists")
-	ErrVoiceRoomNotFound      = errors.New("voice room does not exist")
+	ErrVoiceRoomLobbyExists      = errors.New("VOICE_ROOM_LOBBY_ALREADY_EXISTS")
+	ErrVoiceRoomLobbyNotFound    = errors.New("VOICE_ROOM_LOBBY_NOT_FOUND")
+	ErrVoiceRoomLobbyIsVoiceRoom = errors.New("VOICE_ROOM_LOBBY_IS_ACTIVE_VOICE_ROOM")
+	ErrVoiceRoomExists           = errors.New("VOICE_ROOM_EXISTS")
+	ErrVoiceRoomNotFound         = errors.New("VOICE_ROOM_NOT_FOUND")
 )
