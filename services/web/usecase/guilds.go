@@ -392,6 +392,18 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 }
 
 func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) (*u.VoiceRoomLobby, error) {
+	// this checks if the origin channel that is attempted to be created is already an active voice room.
+	room, err := uc.q.GetVoiceRoom(ctx, db.GetVoiceRoomParams{
+		GuildID:   guildId,
+		ChannelID: originChannelId,
+	})
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+	if room.ChannelID == originChannelId {
+		return nil, u.ErrVoiceRoomLobbyIsVoiceRoom
+	}
+
 	lobby, err := uc.q.CreateVoiceRoomLobby(ctx, db.CreateVoiceRoomLobbyParams{
 		GuildID:        guildId,
 		VoiceChannelID: originChannelId,

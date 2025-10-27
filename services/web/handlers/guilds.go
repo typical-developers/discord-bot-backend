@@ -466,6 +466,20 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
+		if errors.Is(err, u.ErrVoiceRoomLobbyIsVoiceRoom) {
+			err := httpx.WriteJSON(w, APIError{
+				Success: false,
+				Message: err.Error(),
+			}, http.StatusConflict)
+
+			if err != nil {
+				log.Error(err)
+				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			}
+
+			return
+		}
+
 		log.Error(err)
 		http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
 		return
