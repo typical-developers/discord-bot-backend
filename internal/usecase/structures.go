@@ -95,9 +95,10 @@ type MemberActivityProgress struct {
 }
 
 type MemberActivity struct {
-	Rank         int32 `json:"rank"`
-	Points       int32 `json:"total_points"`
-	IsOnCooldown bool  `json:"is_on_cooldown"`
+	Rank           int32 `json:"rank"`
+	Points         int32 `json:"total_points"`
+	LastGrantEpoch int64 `json:"last_grant_epoch"`
+	IsOnCooldown   bool  `json:"is_on_cooldown"`
 
 	CurrentActivityRoleIds []string                `json:"current_activity_role_ids"`
 	CurrentActivityRole    *MemberActivityRole     `json:"current_activity_role"`

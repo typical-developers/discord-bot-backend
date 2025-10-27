@@ -100,9 +100,10 @@ func (uc *MemberUsecase) GetMemberProfile(ctx context.Context, guildId string, u
 
 		CardStyle: int32(profile.CardStyle),
 		ChatActivity: u.MemberActivity{
-			Rank:         int32(profile.ChatActivityRank),
-			Points:       int32(profile.ChatActivity),
-			IsOnCooldown: time.Now().Before(nextGrant),
+			Rank:           int32(profile.ChatActivityRank),
+			Points:         int32(profile.ChatActivity),
+			LastGrantEpoch: int64(profile.LastChatActivityGrant),
+			IsOnCooldown:   time.Now().Before(nextGrant),
 
 			CurrentActivityRoleIds: make([]string, 0),
 		},
