@@ -402,9 +402,9 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[any]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)

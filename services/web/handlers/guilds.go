@@ -291,9 +291,9 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[any]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    nil,
 	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
@@ -598,9 +598,9 @@ func (h *GuildHandler) DeleteVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[any]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -843,9 +843,9 @@ func (h *GuildHandler) DeleteVoiceRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = httpx.WriteJSON(w, APIResponse[struct{}]{
+	err = httpx.WriteJSON(w, APIResponse[any]{
 		Success: true,
-		Data:    struct{}{},
+		Data:    nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
