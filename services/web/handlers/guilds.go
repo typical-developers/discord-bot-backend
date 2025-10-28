@@ -425,6 +425,21 @@ func (h *GuildHandler) GenerateGuildActivityLeaderboardCard(w http.ResponseWrite
 func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	referer := r.Header.Get("Referer")
+	if referer == "" {
+		err := httpx.WriteJSON(w, APIError{
+			Success: false,
+			Message: "Referer header is required.",
+		}, http.StatusBadRequest)
+
+		if err != nil {
+			log.Error(err)
+			http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+		}
+
+		return
+	}
+
 	guildId := chi.URLParam(r, "guildId")
 	activityType := httpx.GetQueryParam(r, "activity_type", "chat")
 	timePeriod := httpx.GetQueryParam(r, "time_period", "all")
@@ -434,7 +449,7 @@ func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *htt
 		page = 1
 	}
 
-	leaderboard, err := h.uc.GetGuildActivityLeaderboard(ctx, r.Header.Get("Referer"), guildId, activityType, timePeriod, page)
+	leaderboard, err := h.uc.GetGuildActivityLeaderboard(ctx, referer, guildId, activityType, timePeriod, page)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
 			return
