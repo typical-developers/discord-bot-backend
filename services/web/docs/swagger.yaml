@@ -242,8 +242,38 @@ paths:
       - APIKeyAuth: []
       tags:
       - Guilds
+  /v1/guild/{guild_id}/settings/message-embeds:
+    post:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
   /v1/guild/{guild_id}/voice-room-lobby/{origin_channel_id}:
     delete:
+      parameters:
+      - description: The guild ID.
+        in: path
+        name: guild_id
+        required: true
+        type: string
+      - description: The channel ID for the lobby origin.
+        in: path
+        name: origin_channel_id
+        required: true
+        type: string
+      responses: {}
+      security:
+      - APIKeyAuth: []
+      tags:
+      - Guilds
+    get:
       parameters:
       - description: The guild ID.
         in: path

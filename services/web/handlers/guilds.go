@@ -306,7 +306,7 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 //
 //	@Security	APIKeyAuth
 //
-//	@Param		guild_id		path	string	true	"The guild ID."
+//	@Param		guild_id	path	string	true	"The guild ID."
 //
 // nolint:staticcheck
 func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r *http.Request) {
