@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi"
 	log "github.com/sirupsen/logrus"
@@ -42,6 +43,10 @@ func NewGuildHandler(r *chi.Mux, uc u.GuildsUsecase) {
 			r.Patch("/", h.UpdateVoiceRoom)
 			r.Delete("/", h.DeleteVoiceRoom)
 		})
+	})
+
+	r.Route("/v2/guild/{guildId}", func(r chi.Router) {
+		r.Get("/activity-leaderboard", h.GetGuildActivityLeaderboard)
 	})
 }
 
@@ -404,6 +409,67 @@ func (h *GuildHandler) GenerateGuildActivityLeaderboardCard(w http.ResponseWrite
 	if err := card.Render(w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+}
+
+//	@Router		/v2/guild/{guild_id}/activity-leaderboard-card [GET]
+//	@Tags		Guilds
+//
+//	@Security	APIKeyAuth
+//
+//	@Param		guild_id		path	string	true	"The guild ID."
+//	@Param		activity_type	query	string	true	"The activity type."	Enum(chat, voice)
+//	@Param		time_period		query	string	true	"The time period."		Enum(weekly, monthly, all)
+//
+// nolint:staticcheck
+func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	guildId := chi.URLParam(r, "guildId")
+	activityType := httpx.GetQueryParam(r, "activity_type", "chat")
+	timePeriod := httpx.GetQueryParam(r, "time_period", "all")
+	pageStr := httpx.GetQueryParam(r, "page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 1
+	}
+
+	leaderboard, err := h.uc.GetGuildActivityLeaderboard(ctx, r.Header.Get("Referer"), guildId, activityType, timePeriod, page)
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			http.Error(w, ErrGatewayTimeout.Error(), http.StatusGatewayTimeout)
+			return
+		}
+
+		if errors.Is(err, u.ErrGuildNotFound) {
+			err := httpx.WriteJSON(w, APIError{
+				Success: false,
+				Message: err.Error(),
+			}, http.StatusNotFound)
+
+			if err != nil {
+				log.Error(err)
+				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			}
+
+			return
+		}
+
+		log.Error(err)
+		http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = httpx.WriteJSON(w, APIResponse[u.GuildLeaderboard]{
+		Success: true,
+		Data:    *leaderboard,
+	}, http.StatusOK)
+	if err != nil {
+		log.Error(err)
 	}
 }
 

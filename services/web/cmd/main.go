@@ -89,6 +89,9 @@ func serveStatic(r *chi.Mux) {
 
 	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+
 		fs.ServeHTTP(w, r)
 	}))
 }

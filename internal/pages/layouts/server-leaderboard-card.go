@@ -131,6 +131,8 @@ type LeaderboardInfo struct {
 }
 
 type ServerLeaderboardProps struct {
+	Referer string
+
 	ServerInfo      ServerInfo
 	LeaderboardInfo LeaderboardInfo
 }
@@ -138,9 +140,9 @@ type ServerLeaderboardProps struct {
 func ServerLeaderboard(props ServerLeaderboardProps) Node {
 	return HTML5(HTML5Props{
 		Head: []Node{
-			// If(os.Getenv("ENVIRONMENT") == "development",
-			// 	Script(Src("/html/hot-reload.js")),
-			// ),
+			If(props.Referer != "",
+				Base(Href(props.Referer)),
+			),
 
 			Link(Rel("stylesheet"), Href("/static/css/index.css")),
 			Link(Rel("stylesheet"), Href("/static/css/server-leaderboard.css")),

@@ -169,6 +169,26 @@ func (q *Queries) GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllT
 	return items, nil
 }
 
+const getAllTimeActivityLeaderboardPages = `-- name: GetAllTimeActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / $1) AS INT) AS total_pages
+FROM guild_profiles
+WHERE
+    guild_id = $2
+`
+
+type GetAllTimeActivityLeaderboardPagesParams struct {
+	LimitBy interface{}
+	GuildID string
+}
+
+func (q *Queries) GetAllTimeActivityLeaderboardPages(ctx context.Context, arg GetAllTimeActivityLeaderboardPagesParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getAllTimeActivityLeaderboardPages, arg.LimitBy, arg.GuildID)
+	var total_pages int32
+	err := row.Scan(&total_pages)
+	return total_pages, err
+}
+
 const getMonthlyActivityLeaderboard = `-- name: GetMonthlyActivityLeaderboard :many
 SELECT
     rankings.rank,
@@ -223,6 +243,28 @@ func (q *Queries) GetMonthlyActivityLeaderboard(ctx context.Context, arg GetMont
 		return nil, err
 	}
 	return items, nil
+}
+
+const getMonthlyActivityLeaderboardPages = `-- name: GetMonthlyActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / $1) AS INT) AS total_pages
+FROM guild_activity_tracking_monthly_current
+WHERE
+    guild_id = $2
+    AND grant_type = $3
+`
+
+type GetMonthlyActivityLeaderboardPagesParams struct {
+	LimitBy   interface{}
+	GuildID   string
+	GrantType string
+}
+
+func (q *Queries) GetMonthlyActivityLeaderboardPages(ctx context.Context, arg GetMonthlyActivityLeaderboardPagesParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getMonthlyActivityLeaderboardPages, arg.LimitBy, arg.GuildID, arg.GrantType)
+	var total_pages int32
+	err := row.Scan(&total_pages)
+	return total_pages, err
 }
 
 const getMonthlyActivityLeaderboardResetDetails = `-- name: GetMonthlyActivityLeaderboardResetDetails :one
@@ -302,6 +344,28 @@ func (q *Queries) GetWeeklyActivityLeaderboard(ctx context.Context, arg GetWeekl
 		return nil, err
 	}
 	return items, nil
+}
+
+const getWeeklyActivityLeaderboardPages = `-- name: GetWeeklyActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / $1) AS INT) AS total_pages
+FROM guild_activity_tracking_weekly_current
+WHERE
+    guild_id = $2
+    AND grant_type = $3
+`
+
+type GetWeeklyActivityLeaderboardPagesParams struct {
+	LimitBy   interface{}
+	GuildID   string
+	GrantType string
+}
+
+func (q *Queries) GetWeeklyActivityLeaderboardPages(ctx context.Context, arg GetWeeklyActivityLeaderboardPagesParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getWeeklyActivityLeaderboardPages, arg.LimitBy, arg.GuildID, arg.GrantType)
+	var total_pages int32
+	err := row.Scan(&total_pages)
+	return total_pages, err
 }
 
 const getWeeklyActivityLeaderboardResetDetails = `-- name: GetWeeklyActivityLeaderboardResetDetails :one

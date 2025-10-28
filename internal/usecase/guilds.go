@@ -17,6 +17,7 @@ type GuildsUsecase interface {
 	UpdateMessageEmbedSettings(ctx context.Context, guildId string, opts UpdateMessageEmbedSettingsOpts) (*GuildSettings, error)
 
 	GenerateGuildActivityLeaderboardCard(ctx context.Context, guildId string, acitivtyType, timePeriod string, page int) (gomponents.Node, error)
+	GetGuildActivityLeaderboard(ctx context.Context, referer string, guildId string, activityType, timePeriod string, page int) (*GuildLeaderboard, error)
 
 	CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings VoiceRoomLobbySettings) (*VoiceRoomLobby, error)
 	GetVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string) (*VoiceRoomLobby, error)

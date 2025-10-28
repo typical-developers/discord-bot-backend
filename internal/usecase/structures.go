@@ -117,3 +117,11 @@ type MemberProfile struct {
 type MigrateMemberProfile struct {
 	ToMemberId string `json:"to_member_id"`
 }
+
+type GuildLeaderboard struct {
+	CurrentPage int32 `json:"current_page"`
+	TotalPages  int32 `json:"total_pages"`
+	HasNextPage bool  `json:"has_next_page"`
+
+	HTML string `json:"html"`
+}

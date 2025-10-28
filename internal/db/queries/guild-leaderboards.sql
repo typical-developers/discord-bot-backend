@@ -30,6 +30,13 @@ FROM (
 LIMIT @limit_by
 OFFSET @offset_by;
 
+-- name: GetAllTimeActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / @limit_by) AS INT) AS total_pages
+FROM guild_profiles
+WHERE
+    guild_id = @guild_id;
+
 -- name: GetWeeklyActivityLeaderboard :many
 SELECT
     rankings.rank,
@@ -50,6 +57,14 @@ FROM (
 LIMIT 15
 OFFSET @offset_by;
 
+-- name: GetWeeklyActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / @limit_by) AS INT) AS total_pages
+FROM guild_activity_tracking_weekly_current
+WHERE
+    guild_id = @guild_id
+    AND grant_type = @grant_type;
+
 -- name: GetMonthlyActivityLeaderboard :many
 SELECT
     rankings.rank,
@@ -69,6 +84,14 @@ FROM (
 ) AS rankings
 LIMIT 15
 OFFSET @offset_by;
+
+-- name: GetMonthlyActivityLeaderboardPages :one
+SELECT
+    CAST(CEIL(COUNT(*)::DECIMAL / @limit_by) AS INT) AS total_pages
+FROM guild_activity_tracking_monthly_current
+WHERE
+    guild_id = @guild_id
+    AND grant_type = @grant_type;
 
 -- name: IncrementWeeklyActivityLeaderboard :exec
 INSERT INTO guild_activity_tracking_weekly_current (

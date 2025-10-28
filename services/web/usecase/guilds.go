@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -389,6 +390,156 @@ func (uc *GuildUsecase) GenerateGuildActivityLeaderboardCard(ctx context.Context
 	}
 
 	return card, nil
+}
+
+func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer string, guildId string, activityType, timePeriod string, page int) (*u.GuildLeaderboard, error) {
+	guild, err := uc.d.Guild(ctx, guildId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverInfo := layouts.ServerInfo{
+		Icon: guild.IconURL("100"),
+		Name: guild.Name,
+	}
+
+	limitBy := int32(15)
+
+	var header string
+	var totalPages int32
+	var userIds []string
+	var fields []layouts.LeaderboardDataField
+	var card gomponents.Node
+
+	switch timePeriod {
+	case "weekly":
+		header = "Activity Points - Weekly"
+
+		leaderboard, err := uc.q.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		pages, err := uc.q.GetWeeklyActivityLeaderboardPages(ctx, db.GetWeeklyActivityLeaderboardPagesParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			LimitBy:   limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+		totalPages = pages
+
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: value.MemberID,
+				Value:    int(value.EarnedPoints),
+			})
+		}
+	case "monthly":
+		header = "Activity Points - Monthly"
+
+		leaderboard, err := uc.q.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		pages, err := uc.q.GetMonthlyActivityLeaderboardPages(ctx, db.GetMonthlyActivityLeaderboardPagesParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			LimitBy:   limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+		totalPages = pages
+
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: value.MemberID,
+				Value:    int(value.EarnedPoints),
+			})
+		}
+	default:
+		header = "Activity Points - All Time"
+
+		leaderboard, err := uc.q.GetAllTimeActivityLeaderboard(ctx, db.GetAllTimeActivityLeaderboardParams{
+			ActivityType: activityType,
+			GuildID:      guildId,
+			LimitBy:      limitBy,
+			OffsetBy:     int32(page-1) * limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		pages, err := uc.q.GetAllTimeActivityLeaderboardPages(ctx, db.GetAllTimeActivityLeaderboardPagesParams{
+			GuildID: guildId,
+			LimitBy: limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+		totalPages = pages
+
+		for _, value := range leaderboard {
+			userIds = append(userIds, value.MemberID)
+
+			fields = append(fields, layouts.LeaderboardDataField{
+				Rank:     int(value.Rank),
+				Username: value.MemberID,
+				Value:    int(value.Points),
+			})
+		}
+	}
+
+	if err := uc.d.RequestGuildMembersList(ctx, guildId, userIds, 0, "", true); err != nil {
+		return nil, err
+	}
+	for index, field := range fields {
+		member, err := uc.d.GuildMember(ctx, guildId, field.Username)
+		if member == nil || err != nil {
+			continue
+		}
+
+		fields[index].Username = fmt.Sprintf("@%s", member.User.Username)
+	}
+
+	card = layouts.ServerLeaderboard(layouts.ServerLeaderboardProps{
+		Referer:    referer,
+		ServerInfo: serverInfo,
+		LeaderboardInfo: layouts.LeaderboardInfo{
+			Name: header,
+			Data: fields,
+		},
+	})
+
+	var renderedCard bytes.Buffer
+	if err := card.Render(&renderedCard); err != nil {
+		return nil, err
+	}
+
+	return &u.GuildLeaderboard{
+		HTML: renderedCard.String(),
+
+		CurrentPage: int32(page),
+		TotalPages:  totalPages,
+		HasNextPage: int32(page) < totalPages,
+	}, nil
 }
 
 func (uc *GuildUsecase) CreateVoiceRoomLobby(ctx context.Context, guildId string, originChannelId string, settings u.VoiceRoomLobbySettings) (*u.VoiceRoomLobby, error) {
