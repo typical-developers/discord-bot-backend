@@ -1,21 +1,22 @@
 package logger
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/typical-developers/discord-bot-backend/internal/bufferpool"
 )
 
 type Formatter struct{}
 
 func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
-	var buff bytes.Buffer
+	buff := bufferpool.Buffers.Get()
+	defer bufferpool.Buffers.Put(buff)
 
 	fmt.Fprintf(
-		&buff, "[%s] %s: %s\n",
+		buff, "[%s] %s: %s\n",
 		entry.Time.Format("2006-01-02T15:04:05.000Z"),
 		strings.ToUpper(entry.Level.String()), entry.Message,
 	)
@@ -26,7 +27,7 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			return nil, err
 		}
 
-		fmt.Fprintf(&buff, "%s\n", fields)
+		fmt.Fprintf(buff, "%s\n", fields)
 	}
 
 	return buff.Bytes(), nil

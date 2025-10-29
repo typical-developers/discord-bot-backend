@@ -1,13 +1,13 @@
 package usecase
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 
 	"github.com/lib/pq"
+	"github.com/typical-developers/discord-bot-backend/internal/bufferpool"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/internal/pages/layouts"
 	discord_state "github.com/typical-developers/discord-bot-backend/pkg/discord-state"
@@ -540,8 +540,10 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 		},
 	})
 
-	var renderedCard bytes.Buffer
-	if err := card.Render(&renderedCard); err != nil {
+	renderedCard := bufferpool.Buffers.Get()
+	defer bufferpool.Buffers.Put(renderedCard)
+
+	if err := card.Render(renderedCard); err != nil {
 		return nil, err
 	}
 
