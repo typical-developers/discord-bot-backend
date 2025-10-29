@@ -123,6 +123,7 @@ FROM (
     FROM guild_profiles
     WHERE
         guild_profiles.guild_id = $2
+        AND chat_activity > 0
 ) AS rankings
 LIMIT $4
 OFFSET $3
@@ -175,6 +176,7 @@ SELECT
 FROM guild_profiles
 WHERE
     guild_id = $2
+    AND chat_activity > 0
 `
 
 type GetAllTimeActivityLeaderboardPagesParams struct {
@@ -205,6 +207,7 @@ FROM (
     WHERE
         guild_id = $1
         AND grant_type = $2
+        AND earned_points > 0
 ) AS rankings
 LIMIT 15
 OFFSET $3
@@ -252,6 +255,7 @@ FROM guild_activity_tracking_monthly_current
 WHERE
     guild_id = $2
     AND grant_type = $3
+    AND earned_points > 0
 `
 
 type GetMonthlyActivityLeaderboardPagesParams struct {
@@ -306,6 +310,7 @@ FROM (
     WHERE
         guild_id = $1
         AND grant_type = $2
+        AND earned_points > 0
 ) AS rankings
 LIMIT 15
 OFFSET $3
@@ -353,6 +358,7 @@ FROM guild_activity_tracking_weekly_current
 WHERE
     guild_id = $2
     AND grant_type = $3
+    AND earned_points > 0
 `
 
 type GetWeeklyActivityLeaderboardPagesParams struct {
