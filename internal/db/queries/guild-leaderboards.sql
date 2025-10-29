@@ -26,7 +26,6 @@ FROM (
     FROM guild_profiles
     WHERE
         guild_profiles.guild_id = @guild_id
-        AND chat_activity > 0
 ) AS rankings
 LIMIT @limit_by
 OFFSET @offset_by;
@@ -36,8 +35,7 @@ SELECT
     CAST(CEIL(COUNT(*)::DECIMAL / @limit_by) AS INT) AS total_pages
 FROM guild_profiles
 WHERE
-    guild_id = @guild_id
-    AND chat_activity > 0;
+    guild_id = @guild_id;
 
 -- name: GetWeeklyActivityLeaderboard :many
 SELECT
@@ -55,7 +53,6 @@ FROM (
     WHERE
         guild_id = @guild_id
         AND grant_type = @grant_type
-        AND earned_points > 0
 ) AS rankings
 LIMIT 15
 OFFSET @offset_by;
@@ -66,8 +63,7 @@ SELECT
 FROM guild_activity_tracking_weekly_current
 WHERE
     guild_id = @guild_id
-    AND grant_type = @grant_type
-    AND earned_points > 0;
+    AND grant_type = @grant_type;
 
 -- name: GetMonthlyActivityLeaderboard :many
 SELECT
@@ -85,7 +81,6 @@ FROM (
     WHERE
         guild_id = @guild_id
         AND grant_type = @grant_type
-        AND earned_points > 0
 ) AS rankings
 LIMIT 15
 OFFSET @offset_by;
@@ -96,8 +91,7 @@ SELECT
 FROM guild_activity_tracking_monthly_current
 WHERE
     guild_id = @guild_id
-    AND grant_type = @grant_type
-    AND earned_points > 0;
+    AND grant_type = @grant_type;
 
 -- name: IncrementWeeklyActivityLeaderboard :exec
 INSERT INTO guild_activity_tracking_weekly_current (
