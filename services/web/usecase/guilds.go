@@ -415,15 +415,6 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 	case "weekly":
 		header = "Activity Points - Weekly"
 
-		leaderboard, err := uc.q.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
-			GuildID:   guildId,
-			GrantType: activityType,
-			OffsetBy:  int32(page-1) * limitBy,
-		})
-		if err != nil {
-			return nil, err
-		}
-
 		pages, err := uc.q.GetWeeklyActivityLeaderboardPages(ctx, db.GetWeeklyActivityLeaderboardPagesParams{
 			GuildID:   guildId,
 			GrantType: activityType,
@@ -432,7 +423,20 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 		if err != nil {
 			return nil, err
 		}
+
 		totalPages = pages
+		if int32(page) > totalPages {
+			page = 1
+		}
+
+		leaderboard, err := uc.q.GetWeeklyActivityLeaderboard(ctx, db.GetWeeklyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
 
 		for _, value := range leaderboard {
 			userIds = append(userIds, value.MemberID)
@@ -446,15 +450,6 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 	case "monthly":
 		header = "Activity Points - Monthly"
 
-		leaderboard, err := uc.q.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
-			GuildID:   guildId,
-			GrantType: activityType,
-			OffsetBy:  int32(page-1) * limitBy,
-		})
-		if err != nil {
-			return nil, err
-		}
-
 		pages, err := uc.q.GetMonthlyActivityLeaderboardPages(ctx, db.GetMonthlyActivityLeaderboardPagesParams{
 			GuildID:   guildId,
 			GrantType: activityType,
@@ -463,7 +458,20 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 		if err != nil {
 			return nil, err
 		}
+
 		totalPages = pages
+		if int32(page) > totalPages {
+			page = 1
+		}
+
+		leaderboard, err := uc.q.GetMonthlyActivityLeaderboard(ctx, db.GetMonthlyActivityLeaderboardParams{
+			GuildID:   guildId,
+			GrantType: activityType,
+			OffsetBy:  int32(page-1) * limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
 
 		for _, value := range leaderboard {
 			userIds = append(userIds, value.MemberID)
@@ -477,6 +485,19 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 	default:
 		header = "Activity Points - All Time"
 
+		pages, err := uc.q.GetAllTimeActivityLeaderboardPages(ctx, db.GetAllTimeActivityLeaderboardPagesParams{
+			GuildID: guildId,
+			LimitBy: limitBy,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		totalPages = pages
+		if int32(page) > totalPages {
+			page = 1
+		}
+
 		leaderboard, err := uc.q.GetAllTimeActivityLeaderboard(ctx, db.GetAllTimeActivityLeaderboardParams{
 			ActivityType: activityType,
 			GuildID:      guildId,
@@ -486,15 +507,6 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 		if err != nil {
 			return nil, err
 		}
-
-		pages, err := uc.q.GetAllTimeActivityLeaderboardPages(ctx, db.GetAllTimeActivityLeaderboardPagesParams{
-			GuildID: guildId,
-			LimitBy: limitBy,
-		})
-		if err != nil {
-			return nil, err
-		}
-		totalPages = pages
 
 		for _, value := range leaderboard {
 			userIds = append(userIds, value.MemberID)
