@@ -178,7 +178,17 @@ type ActivityInfo struct {
 	CurrentTitleInfo   *ActivityRole
 }
 
+type CardStyling struct {
+	Gradient1HSL       string
+	Gradient2HSL       string
+	BackgroundColor    string
+	BackgroundImageURL string
+}
+
 type ProfileCardProps struct {
+	CardStyle          int32
+	CardStyleOverrides CardStyling
+
 	DisplayName  string
 	Username     string
 	AvatarURL    string
@@ -186,12 +196,36 @@ type ProfileCardProps struct {
 }
 
 func ProfileCard(props ProfileCardProps) Node {
+	cardStyling := &CardStyling{
+		Gradient1HSL:       "21, 97%, 69%",
+		Gradient2HSL:       "270, 94%, 64%",
+		BackgroundColor:    "#0E0911",
+		BackgroundImageURL: "url(/static/images/card-style_0-background.png) no-repeat",
+	}
+
+	switch props.CardStyle {
+	// This will set based on overrides.
+	case 1:
+		overrides := props.CardStyleOverrides
+
+		if overrides.Gradient1HSL != "" {
+			cardStyling.Gradient1HSL = overrides.Gradient1HSL
+		}
+		if overrides.Gradient2HSL != "" {
+			cardStyling.Gradient2HSL = overrides.Gradient2HSL
+		}
+		if overrides.BackgroundImageURL != "" {
+			cardStyling.BackgroundImageURL = fmt.Sprintf("url(%s) no-repeat center/cover", overrides.BackgroundImageURL)
+		}
+	case 2:
+		cardStyling.Gradient1HSL = "263, 97%, 70%"
+		cardStyling.Gradient2HSL = "234, 95%, 64%"
+		cardStyling.BackgroundColor = "linear-gradient(180deg, #9F66FD 0.60%, #4D5EFA 25%);"
+		cardStyling.BackgroundImageURL = "url(/static/images/card-style_2-background.png) no-repeat"
+	}
+
 	return HTML5(HTML5Props{
 		Head: []Node{
-			// If(os.Getenv("ENVIRONMENT") == "development",
-			// 	Script(Src("/html/hot-reload.js")),
-			// ),
-
 			Link(Rel("stylesheet"), Href("/static/css/index.css")),
 			Link(Rel("stylesheet"), Href("/static/css/profile-card.css")),
 			Link(Rel("stylesheet"), Href("/static/css/typography.css")),
@@ -200,6 +234,10 @@ func ProfileCard(props ProfileCardProps) Node {
 			Link(Rel("stylesheet"), Href("/static/css/fixel.css"), As("font")),
 		},
 		Body: []Node{
+			Style(fmt.Sprintf(`
+				--profile-card-background: %s;
+				--profile-card-image: %s;
+			`, cardStyling.BackgroundColor, cardStyling.BackgroundImageURL)),
 			Div(ID("root"),
 				Div(
 					Class("content"),
@@ -216,7 +254,10 @@ func ProfileCard(props ProfileCardProps) Node {
 					),
 					Div(
 						Class("progress-info"),
-						Style("--gradient-1-hsl: 21, 97.40%, 69.60%; --gradient-2-hsl: 270, 94.50%, 64.10%;"),
+						Style(fmt.Sprintf(`
+							--gradient-1-hsl: %s;
+							--gradient-2-hsl: %s;
+						`, cardStyling.Gradient1HSL, cardStyling.Gradient2HSL)),
 						ProgressGroup(ProgressGroupProps{
 							ActivityType:   "Chat",
 							Icon:           ChatBubbleIcon(IconProps{Width: "26px", Height: "26px"}),

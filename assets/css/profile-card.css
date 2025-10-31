@@ -1,7 +1,5 @@
 :root {
-    --profile-card-background: #0E0911;
     --profile-card-border: #342c38;
-    --profile-card-image: url('/static/images/card-style_0-background.png');
 }
 
 #root {
@@ -37,10 +35,9 @@
     width: 100%;
     height: 100%;
 
-    background-image:
+    background:
         linear-gradient(0deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.25) 80%, rgba(0, 0, 0, 0) 100%),
         var(--profile-card-image);
-    background-repeat: no-repeat;
 }
 
 .user {
