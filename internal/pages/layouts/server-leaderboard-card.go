@@ -59,6 +59,16 @@ func LeaderboardData(props LeaderboardDataProps) Node {
 	for _, data := range props.Data {
 		value := pages.Format.Sprintf("%d", data.Value)
 
+		var rankColorOverride string
+		switch data.Rank {
+		case 1:
+			rankColorOverride = "linear-gradient(90deg, #82F5FF 0%, #14AAB8 100%)"
+		case 2:
+			rankColorOverride = "linear-gradient(90deg, #FFD54C 0%, #F8A304 100%)"
+		case 3:
+			rankColorOverride = "linear-gradient(90deg, #BFD7D9 0%, #859EAD 100%)"
+		}
+
 		d := Li(
 			Class("row-item"),
 			Typography(
@@ -66,6 +76,12 @@ func LeaderboardData(props LeaderboardDataProps) Node {
 					Size:   FontSizeMedium,
 					Weight: FontWeightBlack,
 				},
+
+				If(rankColorOverride != "", Group{
+					Class("gradient-text rank"),
+					Style(fmt.Sprintf(`background-image: %s`, rankColorOverride)),
+				}),
+
 				Class("rank"), Text(fmt.Sprintf("#%d", data.Rank)),
 			),
 			Typography(

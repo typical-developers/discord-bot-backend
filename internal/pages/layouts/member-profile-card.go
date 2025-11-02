@@ -124,6 +124,16 @@ type ProgressGroupHeaderProps struct {
 }
 
 func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
+	var rankColorOverride string
+	switch props.Rank {
+	case 1:
+		rankColorOverride = "linear-gradient(90deg, #82F5FF 0%, #14AAB8 100%)"
+	case 2:
+		rankColorOverride = "linear-gradient(90deg, #FFD54C 0%, #F8A304 100%)"
+	case 3:
+		rankColorOverride = "linear-gradient(90deg, #BFD7D9 0%, #859EAD 100%)"
+	}
+
 	return Div(
 		Class("header"),
 		props.Icon,
@@ -141,7 +151,14 @@ func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
 		Typography(TypographyProps{
 			Size:   FontSizeMedium,
 			Weight: FontWeightBlack,
-		}, Text(pages.Format.Sprintf("#%d", props.Rank))),
+		},
+			If(rankColorOverride != "", Group{
+				Class("gradient-text"),
+				Style(fmt.Sprintf(`background-image: %s`, rankColorOverride)),
+			}),
+
+			Text(pages.Format.Sprintf("#%d", props.Rank)),
+		),
 	)
 }
 
@@ -254,6 +271,7 @@ func ProfileCard(props ProfileCardProps) Node {
 					),
 					Div(
 						Class("progress-info"),
+
 						Style(fmt.Sprintf(`
 							--gradient-1-hsl: %s;
 							--gradient-2-hsl: %s;

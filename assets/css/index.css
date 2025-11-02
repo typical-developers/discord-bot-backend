@@ -18,3 +18,9 @@ html, body {
 body {
     padding: 1px;
 }
+
+.gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
