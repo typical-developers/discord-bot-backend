@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/lib/pq"
 	"github.com/typical-developers/discord-bot-backend/internal/bufferpool"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
@@ -524,7 +525,27 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 	}
 	for index, field := range fields {
 		member, err := uc.d.GuildMember(ctx, guildId, field.Username)
-		if member == nil || err != nil {
+		if err != nil {
+			var dgError *discordgo.RESTError
+			if errors.As(err, &dgError) && dgError.Message.Code == discordgo.ErrCodeUnknownMember {
+				user, err := uc.d.User(ctx, field.Username)
+				if user == nil || err != nil {
+					continue
+				}
+
+				fields[index].Username = fmt.Sprintf("@%s", user.Username)
+			}
+
+			continue
+		}
+
+		if member == nil {
+			user, err := uc.d.User(ctx, field.Username)
+			if user == nil || err != nil {
+				continue
+			}
+
+			fields[index].Username = fmt.Sprintf("@%s", user.Username)
 			continue
 		}
 
