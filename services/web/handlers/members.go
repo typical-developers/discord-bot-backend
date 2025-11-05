@@ -51,28 +51,27 @@ func (h *MemberHandler) CreateMemberProfile(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		if errors.Is(err, u.ErrMemberProfileExists) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusConflict)
+		var ueErr u.UsecaseError
+		if errors.As(err, &ueErr) {
+			var writeErr error
 
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			switch ueErr.Code {
+			case u.ErrMemberProfileExists.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusConflict)
+			case u.ErrMemberNotInGuild.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
 			}
 
-			return
-		}
-
-		if errors.Is(err, u.ErrMemberNotInGuild) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
-
-			if err != nil {
-				log.Error(err)
+			if writeErr != nil {
+				log.Error(writeErr)
 				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
 			}
 
@@ -116,28 +115,27 @@ func (h *MemberHandler) GetMemberProfile(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		if errors.Is(err, u.ErrMemberProfileNotFound) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
+		var ueErr u.UsecaseError
+		if errors.As(err, &ueErr) {
+			var writeErr error
 
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			switch ueErr.Code {
+			case u.ErrMemberProfileNotFound.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
+			case u.ErrMemberNotInGuild.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
 			}
 
-			return
-		}
-
-		if errors.Is(err, u.ErrMemberNotInGuild) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
-
-			if err != nil {
-				log.Error(err)
+			if writeErr != nil {
+				log.Error(writeErr)
 				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
 			}
 
@@ -181,28 +179,27 @@ func (h *MemberHandler) GenerateMemberProfileCard(w http.ResponseWriter, r *http
 			return
 		}
 
-		if errors.Is(err, u.ErrMemberProfileNotFound) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
+		var ueErr u.UsecaseError
+		if errors.As(err, &ueErr) {
+			var writeErr error
 
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			switch ueErr.Code {
+			case u.ErrMemberProfileNotFound.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
+			case u.ErrMemberNotInGuild.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
 			}
 
-			return
-		}
-
-		if errors.Is(err, u.ErrMemberNotInGuild) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
-
-			if err != nil {
-				log.Error(err)
+			if writeErr != nil {
+				log.Error(writeErr)
 				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
 			}
 
@@ -245,56 +242,39 @@ func (h *MemberHandler) IncrementMemberChatActivityPoints(w http.ResponseWriter,
 			return
 		}
 
-		if errors.Is(err, u.ErrMemberProfileNotFound) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
+		var ueErr u.UsecaseError
+		if errors.As(err, &ueErr) {
+			var writeErr error
 
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			switch ueErr.Code {
+			case u.ErrMemberProfileNotFound.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
+			case u.ErrMemberOnGrantCooldown.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusTooManyRequests)
+			case u.ErrChatActivityTrackingDisabled.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusForbidden)
+			case u.ErrMemberNotInGuild.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
 			}
 
-			return
-		}
-
-		if errors.Is(err, u.ErrMemberOnGrantCooldown) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusTooManyRequests)
-
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
-			}
-
-			return
-		}
-
-		if errors.Is(err, u.ErrChatActivityTrackingDisabled) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusForbidden)
-
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
-			}
-
-			return
-		}
-
-		if errors.Is(err, u.ErrMemberNotInGuild) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
-
-			if err != nil {
-				log.Error(err)
+			if writeErr != nil {
+				log.Error(writeErr)
 				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
 			}
 
@@ -383,15 +363,22 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		if errors.Is(err, u.ErrMemberProfileNotFound) {
-			err := httpx.WriteJSON(w, APIError{
-				Success: false,
-				Message: err.Error(),
-			}, http.StatusNotFound)
+		var ueErr u.UsecaseError
+		if errors.As(err, &ueErr) {
+			var writeErr error
 
-			if err != nil {
-				log.Error(err)
-				http.Error(w, ErrInternalError.Error(), http.StatusInternalServerError)
+			switch ueErr.Code {
+			case u.ErrMemberProfileNotFound.Code:
+				writeErr = httpx.WriteJSON(w, APIError{
+					Success: false,
+					Code:    ueErr.Code,
+					Message: ueErr.Message,
+				}, http.StatusNotFound)
+			}
+
+			if writeErr != nil {
+				log.Error(writeErr)
+				http.Error(w, ueErr.Message, http.StatusInternalServerError)
 			}
 
 			return

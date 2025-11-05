@@ -25,6 +25,7 @@ const docTemplate = `{
                 "tags": [
                     "Guilds"
                 ],
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -637,6 +638,9 @@ const docTemplate = `{
         "handlers.APIError": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 },

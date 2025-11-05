@@ -1,6 +1,8 @@
 definitions:
   handlers.APIError:
     properties:
+      code:
+        type: string
       message:
         type: string
       success:
@@ -29,6 +31,7 @@ info:
 paths:
   /v1/guild/{guild_id}/activity-leaderboard-card:
     get:
+      deprecated: true
       parameters:
       - description: The guild ID.
         in: path

@@ -116,14 +116,8 @@ func (uc *GuildUsecase) GetGuildSettings(ctx context.Context, guildId string) (*
 }
 
 func (uc *GuildUsecase) UpdateGuildActivitySettings(ctx context.Context, guildId string, opts u.UpdateAcitivtySettings) (*u.GuildSettings, error) {
-	tx, err := uc.db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	q := uc.q.WithTx(tx)
-
 	if opts.ChatActivity != nil {
-		err := q.UpdateGuildChatActivitySettings(ctx, db.UpdateGuildChatActivitySettingsParams{
+		err := uc.q.UpdateGuildChatActivitySettings(ctx, db.UpdateGuildChatActivitySettingsParams{
 			GuildID:       guildId,
 			IsEnabled:     sqlx.Bool(opts.ChatActivity.IsEnabled),
 			GrantAmount:   sqlx.Int32(opts.ChatActivity.GrantAmount),
@@ -131,13 +125,12 @@ func (uc *GuildUsecase) UpdateGuildActivitySettings(ctx context.Context, guildId
 		})
 
 		if err != nil {
-			_ = tx.Rollback()
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, u.ErrGuildNotFound
+			}
+
 			return nil, err
 		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, err
 	}
 
 	return uc.GetGuildSettings(ctx, guildId)
@@ -191,6 +184,11 @@ func (uc *GuildUsecase) UpdateMessageEmbedSettings(ctx context.Context, guildId 
 
 		if err != nil {
 			_ = tx.Rollback()
+
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, u.ErrGuildNotFound
+			}
+
 			return nil, err
 		}
 	}
@@ -206,6 +204,11 @@ func (uc *GuildUsecase) UpdateMessageEmbedSettings(ctx context.Context, guildId 
 
 		if err != nil {
 			_ = tx.Rollback()
+
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, u.ErrGuildNotFound
+			}
+
 			return nil, err
 		}
 	}
@@ -221,6 +224,11 @@ func (uc *GuildUsecase) UpdateMessageEmbedSettings(ctx context.Context, guildId 
 
 		if err != nil {
 			_ = tx.Rollback()
+
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, u.ErrGuildNotFound
+			}
+
 			return nil, err
 		}
 	}
@@ -518,6 +526,10 @@ func (uc *GuildUsecase) GetGuildActivityLeaderboard(ctx context.Context, referer
 				Value:    int(value.Points),
 			})
 		}
+	}
+
+	if len(fields) <= 0 {
+		return nil, u.ErrLeaderboardNoRows
 	}
 
 	if err := uc.d.RequestGuildMembersList(ctx, guildId, userIds, 0, "", true); err != nil {
