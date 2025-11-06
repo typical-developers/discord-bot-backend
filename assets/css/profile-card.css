@@ -61,9 +61,10 @@
     width: fit-content;
     padding: 7px 10px;
     border-radius: 50px;
-
     border: 1px solid var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, transparent 90%);
+
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.35);
+    background: color-mix(in srgb, var(--accent) 30%, #000 70%);
     color: var(--accent);
     text-transform: uppercase;
 }
@@ -75,6 +76,7 @@
 
     border-radius: 15px;
     border: 1px solid var(--border-subtle);
+    filter: drop-shadow(0px 2px 10px rgba(0, 0, 0, 0.35));
 }
 
 .user .user-info {
@@ -87,6 +89,7 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
+    text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .user-info .tags {
@@ -102,12 +105,14 @@
     padding: 15px;
     border: 1px solid var(--border-subtle);
     border-radius: 15px;
+
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.15);
     background-image: linear-gradient(
         to right,
         hsla(var(--gradient-1-hsl), 10%),
         hsla(var(--gradient-2-hsl), 10%)
     );
-    backdrop-filter: blur(10px);
 }
 
 .progress-group {

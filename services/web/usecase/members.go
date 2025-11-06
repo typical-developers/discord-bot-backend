@@ -217,6 +217,8 @@ func (uc *MemberUsecase) GenerateMemberProfileCard(ctx context.Context, guildId 
 	}
 
 	layout := layouts.ProfileCardProps{
+		CardStyle: profile.CardStyle,
+
 		DisplayName: profile.DisplayName,
 		Username:    profile.Username,
 		AvatarURL:   profile.AvatarURL,
@@ -236,6 +238,14 @@ func (uc *MemberUsecase) GenerateMemberProfileCard(ctx context.Context, guildId 
 	if profile.ChatActivity.NextActivityRole != nil {
 		layout.ChatActivity.RoleCurrentPoints = int(profile.ChatActivity.NextActivityRole.CurrentProgress)
 		layout.ChatActivity.RoleRequiredPoints = int(profile.ChatActivity.NextActivityRole.RequiredProgress)
+	}
+
+	// These set overrides based on the user profile.
+	if profile.CardStyle == 1 {
+		member, err := uc.d.GuildMember(ctx, guildId, userId)
+		if err == nil {
+			layout.CardStyleOverrides.BackgroundImageURL = member.BannerURL("2048")
+		}
 	}
 
 	return layouts.ProfileCard(layout), nil
