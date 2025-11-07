@@ -84,7 +84,6 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 			switch ueErr.Code {
 			case u.ErrGuildSettingsExists.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusConflict)
@@ -104,8 +103,7 @@ func (h *GuildHandler) CreateGuildSettings(w http.ResponseWriter, r *http.Reques
 	}
 
 	err = httpx.WriteJSON(w, GuildSettingsResponse{
-		Success: true,
-		Data:    *settings,
+		Data: *settings,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -147,7 +145,6 @@ func (h *GuildHandler) GetGuildSettings(w http.ResponseWriter, r *http.Request) 
 			switch ueErr.Code {
 			case u.ErrGuildNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -167,8 +164,7 @@ func (h *GuildHandler) GetGuildSettings(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err = httpx.WriteJSON(w, GuildSettingsResponse{
-		Success: true,
-		Data:    *settings,
+		Data: *settings,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -195,7 +191,6 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 	var updateBody *GuildActivitySettingsUpdateBody
 	if err := json.NewDecoder(r.Body).Decode(&updateBody); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -208,7 +203,6 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 	}
 	if err := updateBody.Validate(); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: err.Error(),
 		}, http.StatusBadRequest)
 
@@ -241,7 +235,6 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 			switch ueErr.Code {
 			case u.ErrGuildNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -261,8 +254,7 @@ func (h *GuildHandler) UpdateGuildActivitySettings(w http.ResponseWriter, r *htt
 	}
 
 	err = httpx.WriteJSON(w, GuildSettingsResponse{
-		Success: true,
-		Data:    *settings,
+		Data: *settings,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -289,7 +281,6 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 	var createBody *GuildActivityRoleCreateBody
 	if err := json.NewDecoder(r.Body).Decode(&createBody); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -319,7 +310,6 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 			switch ueErr.Code {
 			case u.ErrActivityRoleExists.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusConflict)
@@ -339,8 +329,7 @@ func (h *GuildHandler) CreateActivityRole(w http.ResponseWriter, r *http.Request
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[any]{
-		Success: true,
-		Data:    nil,
+		Data: nil,
 	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
@@ -362,7 +351,6 @@ func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r 
 	var body *GuildMessageEmbedSettingsUpdateBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -376,7 +364,6 @@ func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r 
 
 	if err := body.Validate(); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: err.Error(),
 		}, http.StatusBadRequest)
 
@@ -415,7 +402,6 @@ func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r 
 			switch ueErr.Code {
 			case u.ErrGuildNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -435,8 +421,7 @@ func (h *GuildHandler) UpdateGuildMessageEmbedSettings(w http.ResponseWriter, r 
 	}
 
 	err = httpx.WriteJSON(w, GuildSettingsResponse{
-		Success: true,
-		Data:    *settings,
+		Data: *settings,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -492,7 +477,6 @@ func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *htt
 	referer := r.Header.Get("Referer")
 	if referer == "" {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: "Referer header is required.",
 		}, http.StatusBadRequest)
 
@@ -533,7 +517,6 @@ func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *htt
 				fallthrough
 			case u.ErrLeaderboardNoRows.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -553,8 +536,7 @@ func (h *GuildHandler) GetGuildActivityLeaderboard(w http.ResponseWriter, r *htt
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.GuildLeaderboard]{
-		Success: true,
-		Data:    *leaderboard,
+		Data: *leaderboard,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -578,7 +560,6 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 	var body *VoiceRoomLobbySettings
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -615,7 +596,6 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 				fallthrough
 			case u.ErrVoiceRoomLobbyIsVoiceRoom.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusConflict)
@@ -635,8 +615,7 @@ func (h *GuildHandler) CreateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
-		Success: true,
-		Data:    *lobby,
+		Data: *lobby,
 	}, http.StatusCreated)
 	if err != nil {
 		log.Error(err)
@@ -676,7 +655,6 @@ func (h *GuildHandler) GetVoiceRoomLobby(w http.ResponseWriter, r *http.Request)
 			switch ueErr.Code {
 			case u.ErrVoiceRoomLobbyNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -695,8 +673,7 @@ func (h *GuildHandler) GetVoiceRoomLobby(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
-		Success: true,
-		Data:    *lobby,
+		Data: *lobby,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -720,7 +697,6 @@ func (h *GuildHandler) UpdateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 	var body *VoiceRoomLobbySettings
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -756,7 +732,6 @@ func (h *GuildHandler) UpdateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 			switch ueErr.Code {
 			case u.ErrVoiceRoomLobbyNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -776,8 +751,7 @@ func (h *GuildHandler) UpdateVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoomLobby]{
-		Success: true,
-		Data:    *lobby,
+		Data: *lobby,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -817,7 +791,6 @@ func (h *GuildHandler) DeleteVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 			switch ueErr.Code {
 			case u.ErrVoiceRoomLobbyNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -837,8 +810,7 @@ func (h *GuildHandler) DeleteVoiceRoomLobby(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[any]{
-		Success: true,
-		Data:    nil,
+		Data: nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -862,7 +834,6 @@ func (h *GuildHandler) RegisterVoiceRoom(w http.ResponseWriter, r *http.Request)
 	var body *VoiceRoomRegisterBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -892,7 +863,6 @@ func (h *GuildHandler) RegisterVoiceRoom(w http.ResponseWriter, r *http.Request)
 			switch ueErr.Code {
 			case u.ErrVoiceRoomExists.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusConflict)
@@ -912,8 +882,7 @@ func (h *GuildHandler) RegisterVoiceRoom(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoom]{
-		Success: true,
-		Data:    *registeredRoom,
+		Data: *registeredRoom,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -953,7 +922,6 @@ func (h *GuildHandler) GetVoiceRoom(w http.ResponseWriter, r *http.Request) {
 			switch ueErr.Code {
 			case u.ErrVoiceRoomNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -973,8 +941,7 @@ func (h *GuildHandler) GetVoiceRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoom]{
-		Success: true,
-		Data:    *room,
+		Data: *room,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -998,7 +965,6 @@ func (h *GuildHandler) UpdateVoiceRoom(w http.ResponseWriter, r *http.Request) {
 	var body *VoiceRoomModifyBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -1032,7 +998,6 @@ func (h *GuildHandler) UpdateVoiceRoom(w http.ResponseWriter, r *http.Request) {
 			switch ueErr.Code {
 			case u.ErrVoiceRoomNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -1052,8 +1017,7 @@ func (h *GuildHandler) UpdateVoiceRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[u.VoiceRoom]{
-		Success: true,
-		Data:    *room,
+		Data: *room,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -1093,7 +1057,6 @@ func (h *GuildHandler) DeleteVoiceRoom(w http.ResponseWriter, r *http.Request) {
 			switch ueErr.Code {
 			case u.ErrVoiceRoomNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -1113,8 +1076,7 @@ func (h *GuildHandler) DeleteVoiceRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[any]{
-		Success: true,
-		Data:    nil,
+		Data: nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)

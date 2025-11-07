@@ -58,13 +58,11 @@ func (h *MemberHandler) CreateMemberProfile(w http.ResponseWriter, r *http.Reque
 			switch ueErr.Code {
 			case u.ErrMemberProfileExists.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusConflict)
 			case u.ErrMemberNotInGuild.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -84,8 +82,7 @@ func (h *MemberHandler) CreateMemberProfile(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = httpx.WriteJSON(w, MemberProfileResponse{
-		Success: true,
-		Data:    *profile,
+		Data: *profile,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -122,13 +119,11 @@ func (h *MemberHandler) GetMemberProfile(w http.ResponseWriter, r *http.Request)
 			switch ueErr.Code {
 			case u.ErrMemberProfileNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
 			case u.ErrMemberNotInGuild.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -148,8 +143,7 @@ func (h *MemberHandler) GetMemberProfile(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = httpx.WriteJSON(w, MemberProfileResponse{
-		Success: true,
-		Data:    *profile,
+		Data: *profile,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -186,13 +180,11 @@ func (h *MemberHandler) GenerateMemberProfileCard(w http.ResponseWriter, r *http
 			switch ueErr.Code {
 			case u.ErrMemberProfileNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
 			case u.ErrMemberNotInGuild.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -249,25 +241,21 @@ func (h *MemberHandler) IncrementMemberChatActivityPoints(w http.ResponseWriter,
 			switch ueErr.Code {
 			case u.ErrMemberProfileNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
 			case u.ErrMemberOnGrantCooldown.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusTooManyRequests)
 			case u.ErrChatActivityTrackingDisabled.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusForbidden)
 			case u.ErrMemberNotInGuild.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -287,8 +275,7 @@ func (h *MemberHandler) IncrementMemberChatActivityPoints(w http.ResponseWriter,
 	}
 
 	err = httpx.WriteJSON(w, MemberProfileResponse{
-		Success: true,
-		Data:    *profile,
+		Data: *profile,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)
@@ -313,7 +300,6 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 	var body *MigrateMemberProfileBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -326,7 +312,6 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 	}
 	if err := body.Validate(); err != nil {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: err.Error(),
 		}, http.StatusBadRequest)
 
@@ -340,7 +325,6 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 
 	if memberId == body.ToMemberId {
 		err := httpx.WriteJSON(w, APIError{
-			Success: false,
 			Message: ErrInvalidRequestBody.Error(),
 		}, http.StatusBadRequest)
 
@@ -370,7 +354,6 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 			switch ueErr.Code {
 			case u.ErrMemberProfileNotFound.Code:
 				writeErr = httpx.WriteJSON(w, APIError{
-					Success: false,
 					Code:    ueErr.Code,
 					Message: ueErr.Message,
 				}, http.StatusNotFound)
@@ -390,8 +373,7 @@ func (h *MemberHandler) MigrateMemberProfile(w http.ResponseWriter, r *http.Requ
 	}
 
 	err = httpx.WriteJSON(w, APIResponse[any]{
-		Success: true,
-		Data:    nil,
+		Data: nil,
 	}, http.StatusOK)
 	if err != nil {
 		log.Error(err)

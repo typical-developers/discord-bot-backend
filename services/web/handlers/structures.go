@@ -4,12 +4,10 @@ import u "github.com/typical-developers/discord-bot-backend/internal/usecase"
 
 // --- Response Generics
 type APIResponse[T any] struct {
-	Success bool `json:"success"`
-	Data    T    `json:"data"`
+	Data T `json:"data"`
 }
 
 type APIError struct {
-	Success bool   `json:"success"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
