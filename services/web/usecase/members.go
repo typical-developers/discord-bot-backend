@@ -216,6 +216,24 @@ func (uc *MemberUsecase) GenerateMemberProfileCard(ctx context.Context, guildId 
 		return nil, err
 	}
 
+	chatRankings, err := uc.q.GetActivityLeaderboardRankings(ctx, db.GetActivityLeaderboardRankingsParams{
+		GuildID:   guildId,
+		MemberID:  userId,
+		GrantType: "chat",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var weeklyRank int
+	var monthlyRank int
+	if chatRankings.WeeklyLeaderboardRank.Valid {
+		weeklyRank = int(chatRankings.WeeklyLeaderboardRank.Int32)
+	}
+	if chatRankings.MonthlyLeaderboardRank.Valid {
+		monthlyRank = int(chatRankings.MonthlyLeaderboardRank.Int32)
+	}
+
 	layout := layouts.ProfileCardProps{
 		CardStyle: profile.CardStyle,
 
@@ -223,7 +241,11 @@ func (uc *MemberUsecase) GenerateMemberProfileCard(ctx context.Context, guildId 
 		Username:    profile.Username,
 		AvatarURL:   profile.AvatarURL,
 		ChatActivity: layouts.ActivityInfo{
-			Rank:        int(profile.ChatActivity.Rank),
+			Ranking: layouts.RankingInfo{
+				AllTime: int(profile.ChatActivity.Rank),
+				Weekly:  weeklyRank,
+				Monthly: monthlyRank,
+			},
 			TotalPoints: int(profile.ChatActivity.Points),
 		},
 	}

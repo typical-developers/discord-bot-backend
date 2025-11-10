@@ -19,6 +19,7 @@ type Querier interface {
 	DeleteVoiceRoomLobby(ctx context.Context, arg DeleteVoiceRoomLobbyParams) error
 	FlushOudatedMonthlyActivityLeaderboard(ctx context.Context) error
 	FlushOudatedWeeklyActivityLeaderboard(ctx context.Context) error
+	GetActivityLeaderboardRankings(ctx context.Context, arg GetActivityLeaderboardRankingsParams) (GetActivityLeaderboardRankingsRow, error)
 	GetAllTimeActivityLeaderboard(ctx context.Context, arg GetAllTimeActivityLeaderboardParams) ([]GetAllTimeActivityLeaderboardRow, error)
 	GetAllTimeActivityLeaderboardPages(ctx context.Context, arg GetAllTimeActivityLeaderboardPagesParams) (int32, error)
 	GetGuildActivityRoles(ctx context.Context, arg GetGuildActivityRolesParams) ([]GetGuildActivityRolesRow, error)

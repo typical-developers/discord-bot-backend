@@ -137,6 +137,26 @@
     gap: 2px;
 }
 
+.progress-group .header .details.ranking {
+    align-items: flex-end;
+    text-align: right;
+    width: 100%;
+}
+
+.progress-group .header .leaderboards {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
+.progress-group .header .leaderboards .divider {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--border-subtle);
+}
+
 .progress-group .progress-bar {
     box-sizing: border-box;
     overflow: hidden;

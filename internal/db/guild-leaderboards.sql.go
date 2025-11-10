@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const archiveMonthlyActivityLeaderboard = `-- name: ArchiveMonthlyActivityLeaderboard :exec
@@ -93,6 +94,54 @@ TRUNCATE TABLE guild_activity_tracking_weekly_current
 func (q *Queries) FlushOudatedWeeklyActivityLeaderboard(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, flushOudatedWeeklyActivityLeaderboard)
 	return err
+}
+
+const getActivityLeaderboardRankings = `-- name: GetActivityLeaderboardRankings :one
+WITH
+    weekly_leaderboard AS (
+        SELECT
+            member_id,
+            COALESCE(ROW_NUMBER() OVER (ORDER BY earned_points DESC), 0)::INT AS rank
+        FROM guild_activity_tracking_weekly_current
+        WHERE
+            guild_activity_tracking_weekly_current.guild_id = $2
+            AND guild_activity_tracking_weekly_current.grant_type = $3
+    ),
+    monthly_leaderboard AS (
+        SELECT
+            member_id,
+            COALESCE(ROW_NUMBER() OVER (ORDER BY earned_points DESC), 0)::INT AS rank
+        FROM guild_activity_tracking_monthly_current
+        WHERE
+            guild_activity_tracking_monthly_current.guild_id = $2
+            AND guild_activity_tracking_monthly_current.grant_type = $3
+    )
+SELECT
+    m.member_id,
+    weekly_leaderboard.rank AS weekly_leaderboard_rank,
+    monthly_leaderboard.rank AS monthly_leaderboard_rank
+FROM (SELECT $1::TEXT AS member_id) m
+LEFT JOIN weekly_leaderboard ON weekly_leaderboard.member_id = m.member_id
+LEFT JOIN monthly_leaderboard ON monthly_leaderboard.member_id = m.member_id
+`
+
+type GetActivityLeaderboardRankingsParams struct {
+	MemberID  string
+	GuildID   string
+	GrantType string
+}
+
+type GetActivityLeaderboardRankingsRow struct {
+	MemberID               string
+	WeeklyLeaderboardRank  sql.NullInt32
+	MonthlyLeaderboardRank sql.NullInt32
+}
+
+func (q *Queries) GetActivityLeaderboardRankings(ctx context.Context, arg GetActivityLeaderboardRankingsParams) (GetActivityLeaderboardRankingsRow, error) {
+	row := q.db.QueryRowContext(ctx, getActivityLeaderboardRankings, arg.MemberID, arg.GuildID, arg.GrantType)
+	var i GetActivityLeaderboardRankingsRow
+	err := row.Scan(&i.MemberID, &i.WeeklyLeaderboardRank, &i.MonthlyLeaderboardRank)
+	return i, err
 }
 
 const getAllTimeActivityLeaderboard = `-- name: GetAllTimeActivityLeaderboard :many

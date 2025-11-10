@@ -93,6 +93,34 @@ WHERE
     guild_id = @guild_id
     AND grant_type = @grant_type;
 
+-- name: GetActivityLeaderboardRankings :one
+WITH
+    weekly_leaderboard AS (
+        SELECT
+            member_id,
+            COALESCE(ROW_NUMBER() OVER (ORDER BY earned_points DESC), 0)::INT AS rank
+        FROM guild_activity_tracking_weekly_current
+        WHERE
+            guild_activity_tracking_weekly_current.guild_id = @guild_id
+            AND guild_activity_tracking_weekly_current.grant_type = @grant_type
+    ),
+    monthly_leaderboard AS (
+        SELECT
+            member_id,
+            COALESCE(ROW_NUMBER() OVER (ORDER BY earned_points DESC), 0)::INT AS rank
+        FROM guild_activity_tracking_monthly_current
+        WHERE
+            guild_activity_tracking_monthly_current.guild_id = @guild_id
+            AND guild_activity_tracking_monthly_current.grant_type = @grant_type
+    )
+SELECT
+    m.member_id,
+    weekly_leaderboard.rank AS weekly_leaderboard_rank,
+    monthly_leaderboard.rank AS monthly_leaderboard_rank
+FROM (SELECT @member_id::TEXT AS member_id) m
+LEFT JOIN weekly_leaderboard ON weekly_leaderboard.member_id = m.member_id
+LEFT JOIN monthly_leaderboard ON monthly_leaderboard.member_id = m.member_id;
+
 -- name: IncrementWeeklyActivityLeaderboard :exec
 INSERT INTO guild_activity_tracking_weekly_current (
     grant_type, guild_id, member_id, earned_points

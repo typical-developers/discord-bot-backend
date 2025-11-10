@@ -116,29 +116,25 @@ func ProgressBar(props ProgressBarProps) Node {
 	)
 }
 
+type RankingInfo struct {
+	AllTime int
+	Weekly  int
+	Monthly int
+}
+
 type ProgressGroupHeaderProps struct {
 	ActivityType string
 	Icon         Node
-	Rank         int
+	Ranking      RankingInfo
 	TotalPoints  int
 }
 
 func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
-	var rankColorOverride string
-	switch props.Rank {
-	case 1:
-		rankColorOverride = "linear-gradient(90deg, #82F5FF 0%, #14AAB8 100%)"
-	case 2:
-		rankColorOverride = "linear-gradient(90deg, #FFD54C 0%, #F8A304 100%)"
-	case 3:
-		rankColorOverride = "linear-gradient(90deg, #BFD7D9 0%, #859EAD 100%)"
-	}
-
 	return Div(
 		Class("header"),
 		props.Icon,
 		Div(
-			Class("details"),
+			Class("details with-icon"),
 			Typography(TypographyProps{
 				Size:   FontSizeNormal,
 				Weight: FontWeightBlack,
@@ -148,16 +144,30 @@ func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
 				Weight: FontWeightRegular,
 			}, Text(pages.Format.Sprintf("%d Points", props.TotalPoints))),
 		),
-		Typography(TypographyProps{
-			Size:   FontSizeMedium,
-			Weight: FontWeightBlack,
-		},
-			If(rankColorOverride != "", Group{
-				Class("gradient-text"),
-				Style(fmt.Sprintf(`background-image: %s`, rankColorOverride)),
-			}),
+		Div(
+			Class("details ranking"),
+			Typography(TypographyProps{
+				Size:   FontSizeMedium,
+				Weight: FontWeightBlack,
+			}, RankingText(props.Ranking.AllTime)),
 
-			Text(pages.Format.Sprintf("#%d", props.Rank)),
+			Div(
+				Class("leaderboards"),
+
+				If(props.Ranking.Weekly != 0, Typography(TypographyProps{
+					Size:   FontSizeSmall,
+					Weight: FontWeightBold,
+				}, RankingText(props.Ranking.Weekly, "Weekly"))),
+
+				If(props.Ranking.Weekly != 0 && props.Ranking.Monthly != 0, Div(Class("divider"))),
+
+				If(props.Ranking.Monthly != 0, Group{
+					Typography(TypographyProps{
+						Size:   FontSizeSmall,
+						Weight: FontWeightBold,
+					}, RankingText(props.Ranking.Monthly, "Monthly")),
+				}),
+			),
 		),
 	)
 }
@@ -165,7 +175,7 @@ func ProgressGroupHeader(props ProgressGroupHeaderProps) Node {
 type ProgressGroupProps struct {
 	ActivityType   string
 	Icon           Node
-	Rank           int
+	Ranking        RankingInfo
 	TotalPoints    int
 	CurrentPoints  int
 	RequiredPoints int
@@ -176,7 +186,7 @@ func ProgressGroup(props ProgressGroupProps) Node {
 		Class("progress-group"),
 		ProgressGroupHeader(ProgressGroupHeaderProps{
 			Icon:         props.Icon,
-			Rank:         props.Rank,
+			Ranking:      props.Ranking,
 			TotalPoints:  props.TotalPoints,
 			ActivityType: props.ActivityType,
 		}),
@@ -188,7 +198,7 @@ func ProgressGroup(props ProgressGroupProps) Node {
 }
 
 type ActivityInfo struct {
-	Rank               int
+	Ranking            RankingInfo
 	TotalPoints        int
 	RoleCurrentPoints  int
 	RoleRequiredPoints int
@@ -279,7 +289,7 @@ func ProfileCard(props ProfileCardProps) Node {
 						ProgressGroup(ProgressGroupProps{
 							ActivityType:   "Chat",
 							Icon:           ChatBubbleIcon(IconProps{Width: "26px", Height: "26px"}),
-							Rank:           props.ChatActivity.Rank,
+							Ranking:        props.ChatActivity.Ranking,
 							TotalPoints:    props.ChatActivity.TotalPoints,
 							CurrentPoints:  props.ChatActivity.RoleCurrentPoints,
 							RequiredPoints: props.ChatActivity.RoleRequiredPoints,
