@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/lib/pq"
-	"github.com/typical-developers/discord-bot-backend/internal/bufferpool"
 	"github.com/typical-developers/discord-bot-backend/internal/db"
 	"github.com/typical-developers/discord-bot-backend/internal/pages/layouts"
+	"github.com/typical-developers/discord-bot-backend/pkg/bufferpool"
 	discord_state "github.com/typical-developers/discord-bot-backend/pkg/discord-state"
 	"github.com/typical-developers/discord-bot-backend/pkg/sqlx"
 	"maragu.dev/gomponents"

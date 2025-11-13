@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/typical-developers/discord-bot-backend/internal/bufferpool"
+	"github.com/typical-developers/discord-bot-backend/pkg/bufferpool"
 )
 
 type Formatter struct{}
