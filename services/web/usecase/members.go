@@ -207,6 +207,11 @@ func (uc *MemberUsecase) IncrementMemberChatActivityPoints(ctx context.Context, 
 		return nil, err
 	}
 
+	// TODO:
+	// This increases the return time for this request. We do similar fetches (outside of roles) in the method used below.
+	//
+	// It would be better to have some sort of structure that can have its data set and return the new structure
+	// instead of fetching everything again.
 	return uc.GetMemberProfile(ctx, guildId, userId)
 }
 
