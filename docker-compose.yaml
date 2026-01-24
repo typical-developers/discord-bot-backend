@@ -1,0 +1,29 @@
+name: discord-bot-backend
+
+services:
+  schema-migrate:
+    container_name: schema-migrate
+    build: ./deployments/docker/migrations
+    volumes:
+      - ./sql/migrations:/migrations:ro
+    env_file: .env
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: ./deployments/docker/web/Dockerfile
+    depends_on:
+      schema-migrate:
+        condition: service_completed_successfully
+    env_file: ./services/web/.env
+
+  workers:
+    container_name: workers
+    build:
+      context: .
+      dockerfile: ./deployments/docker/cron/Dockerfile
+    depends_on:
+      schema-migrate:
+        condition: service_completed_successfully
+    env_file: ./services/cron/.env
