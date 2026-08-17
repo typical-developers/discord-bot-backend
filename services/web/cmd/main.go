@@ -141,7 +141,6 @@ func main() {
 	}
 
 	discord.Identify.Intents = discordgo.IntentsGuilds |
-		discordgo.IntentsGuildMembers |
 		discordgo.IntentsGuildMessages
 	err = discord.Open()
 	if err != nil {
