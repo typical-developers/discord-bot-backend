@@ -18,6 +18,8 @@ services:
       schema-migrate:
         condition: service_completed_successfully
     env_file: ./services/web/.env
+    ports:
+      - "8080:8080"
 
   workers:
     container_name: workers
