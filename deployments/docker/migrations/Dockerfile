@@ -7,7 +7,8 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.19.0/
     | tar -xvz && \
     mv migrate /usr/local/bin/migrate
 
-COPY ./migrations.sh /migrations.sh
+COPY ./deployments/docker/migrations/migrations.sh /migrations.sh
+COPY ./sql/migrations /migrations
 RUN chmod +x /migrations.sh
 
 ENTRYPOINT [ "/bin/bash", "/migrations.sh" ]

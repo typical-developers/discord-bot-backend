@@ -3,9 +3,10 @@ name: discord-bot-backend
 services:
   schema-migrate:
     container_name: schema-migrate
-    build: ./deployments/docker/migrations
-    volumes:
-      - ./sql/migrations:/migrations:ro
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./deployments/docker/migrations/Dockerfile
     env_file: .env
 
   api:
