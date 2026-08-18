@@ -3,11 +3,11 @@ set -e
 
 missing_env=()
 required_env=(
-    POSTGRES_HOST
-    POSTGRES_PORT
-    POSTGRES_USER
-    POSTGRES_PASSWORD
-    POSTGRES_DB
+    DATABASE_HOST
+    DATABASE_PORT
+    DATABASE_USERNAME
+    DATABASE_PASSWORD
+    DATABASE_OPTIONS
 )
 
 for var in "${required_env[@]}"; do
@@ -22,11 +22,11 @@ if [ ${#missing_env[@]} -gt 0 ]; then
 fi
 
 echo "Waiting for primary database to be available before running migrations . . ."
-until pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER"; do
+until pg_isready -h "$DATABASE_HOST" -p "$DATABASE_PORT" -U "$DATABASE_USERNAME"; do
     sleep 2
 done
 
 echo "Running migrations . . ."
-migrate -path /migrations -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" up
+migrate -path /migrations -database "postgres://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT?$DATABASE_OPTIONS" up
 
 echo "Migrations complete."
